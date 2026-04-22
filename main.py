@@ -19,6 +19,7 @@ class PySnipsApp(App):
     def rgb(self, r, g, b, a=255):
         return rgb(r, g, b, a=255)
 
+    # צריך את זה כי kivy לא יודע לעבוד עם עברית
     font = 'assets/fonts/PlaypenSansHebrew.ttf'
 
     def build(self):
