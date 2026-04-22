@@ -1,0 +1,206 @@
+<ManagerReadyCodeScreen>:
+    BoxLayout:
+        orientation: "horizontal"
+        spacing: "10dp"
+        padding: "10dp"
+        canvas.before:
+            Color:
+                rgba: app.rgb(23, 26, 36)
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        # SIDEBAR
+        BoxLayout:
+            orientation: "vertical"
+            size_hint_x: None
+            width: root.sidebar_width_open if root.sidebar_open else root.sidebar_width_closed
+            padding: "8dp"
+            spacing: "10dp"
+            canvas.before:
+                Color:
+                    rgba: app.rgb(13, 18, 31)
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+
+            # כפתור כיווץ
+            Button:
+                size_hint_y: None
+                height: "44dp"
+                text: "<<" if root.sidebar_open else ">>"
+                on_press: root.toggle_sidebar()
+
+            Button:
+                size_hint_y: None
+                height: "44dp"
+                text: app.rtl("חזור") if root.sidebar_open else "↩"
+                font_name: app.font
+                on_press: root.manager.current = "main"
+
+            Widget:
+                size_hint_y: None
+                height: "10dp"
+
+            Button:
+                size_hint_y: None
+                height: "48dp"
+                text: app.rtl("כפתורים") if root.sidebar_open else "B"
+                font_name: app.font
+
+            Button:
+                size_hint_y: None
+                height: "48dp"
+                text: "TextInput" if root.sidebar_open else "T"
+
+            Button:
+                size_hint_y: None
+                height: "48dp"
+                text: app.rtl("תוויות") if root.sidebar_open else "L"
+                font_name: app.font
+
+            Button:
+                size_hint_y: None
+                height: "48dp"
+                text: "Layouts" if root.sidebar_open else "Ly"
+
+            Button:
+                size_hint_y: None
+                height: "48dp"
+                text: app.rtl("תבניות") if root.sidebar_open else "Tp"
+                font_name: app.font
+
+            Widget:
+
+        # CONTENT
+        BoxLayout:
+            orientation: "vertical"
+            padding: "8dp"
+            spacing: "10dp"
+
+            # כותרת עליונה
+            BoxLayout:
+                size_hint_y: None
+                height: "56dp"
+                padding: "8dp"
+                canvas.before:
+                    Color:
+                        rgba: app.rgb(18, 23, 38)
+                    Rectangle:
+                        pos: self.pos
+                        size: self.size
+
+                Label:
+                    text: app.rtl("קוד מוכן - כפתורים")
+                    font_name: app.font
+                    font_size: "22sp"
+                    halign: "right"
+                    valign: "middle"
+                    text_size: self.size
+
+            # רשימת דוגמאות
+            ScrollView:
+                do_scroll_x: False
+
+                BoxLayout:
+                    orientation: "vertical"
+                    size_hint_y: None
+                    height: self.minimum_height
+                    spacing: "10dp"
+                    padding: "2dp"
+
+                    BoxLayout:
+                        orientation: "vertical"
+                        size_hint_y: None
+                        height: "140dp"
+                        padding: "12dp"
+                        spacing: "8dp"
+                        canvas.before:
+                            Color:
+                                rgba: app.rgb(28, 33, 51)
+                            Rectangle:
+                                pos: self.pos
+                                size: self.size
+
+                        Label:
+                            text: app.rtl("כפתור מעוגל כהה")
+                            font_name: app.font
+                            font_size: "18sp"
+                            halign: "right"
+                            text_size: self.size
+
+                        Label:
+                            text: app.rtl("דוגמה מוכנה לכפתור בעיצוב כהה עם פינות מעוגלות")
+                            font_name: app.font
+                            halign: "right"
+                            text_size: self.size
+
+                        Button:
+                            size_hint_y: None
+                            height: "40dp"
+                            text: app.rtl("פתח דוגמה")
+                            font_name: app.font
+
+                    BoxLayout:
+                        orientation: "vertical"
+                        size_hint_y: None
+                        height: "140dp"
+                        padding: "12dp"
+                        spacing: "8dp"
+                        canvas.before:
+                            Color:
+                                rgba: app.rgb(28, 33, 51)
+                            Rectangle:
+                                pos: self.pos
+                                size: self.size
+
+                        Label:
+                            text: app.rtl("כפתור עם אייקון")
+                            font_name: app.font
+                            font_size: "18sp"
+                            halign: "right"
+                            text_size: self.size
+
+                        Label:
+                            text: app.rtl("דוגמה לכפתור עם אייקון וטקסט")
+                            font_name: app.font
+                            halign: "right"
+                            text_size: self.size
+
+                        Button:
+                            size_hint_y: None
+                            height: "40dp"
+                            text: app.rtl("פתח דוגמה")
+                            font_name: app.font
+
+                    BoxLayout:
+                        orientation: "vertical"
+                        size_hint_y: None
+                        height: "140dp"
+                        padding: "12dp"
+                        spacing: "8dp"
+                        canvas.before:
+                            Color:
+                                rgba: app.rgb(28, 33, 51)
+                            Rectangle:
+                                pos: self.pos
+                                size: self.size
+
+                        Label:
+                            text: app.rtl("כפתור מינימליסטי")
+                            font_name: app.font
+                            font_size: "18sp"
+                            halign: "right"
+                            text_size: self.size
+
+                        Label:
+                            text: app.rtl("כפתור פשוט ונקי למסכים כהים")
+                            font_name: app.font
+                            halign: "right"
+                            text_size: self.size
+
+                        Button:
+                            size_hint_y: None
+                            height: "40dp"
+                            text: app.rtl("פתח דוגמה")
+                            font_name: app.font

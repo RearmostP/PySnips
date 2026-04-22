@@ -1,0 +1,30 @@
+<MainScreen>:
+    BoxLayout:
+        orientation: "vertical"
+        padding: "10dp"
+        spacing: "10dp"
+
+        BoxLayout:
+            size_hint_y: 0.45
+            spacing: "10dp"
+
+            BoxLayout:
+                orientation: "horizontal"
+
+                Button:
+                    font_name: app.font
+                    text: app.rtl("שליפים")
+
+                Button:
+                    font_name: app.font
+                    text: app.rtl("קוד מוכן")
+                    on_press: root.manager.current = "manager_ready_code_screen"
+
+        BoxLayout:
+            size_hint_y: 0.55
+            canvas.before:
+                Color:
+                    rgba: 0.2, 0.2, 0.5, 1
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
