@@ -12,9 +12,11 @@ PySnips היא אפליקציית פרודוקטיביות אישית שנבנת
 - דוגמאות KV / Python
 - עיצוב כהה ומודרני
 - גישה מהירה ללמידה ולעבודה
-- 
 
-PySnips נבנתה בעיקר לשימוש אישי, אך משותפת כפרויקט קוד פתוח לכל מי שלומד Python או Kivy.
+
+האפליקציה PySnips נבנתה בעיקר לשימוש אישי, אך משותפת כפרויקט קוד פתוח לכל מי שלומד Python או Kivy.
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 PySnips is a personal productivity app built with Python and Kivy.
 
 The app is designed to organize useful Python and Kivy snippets, ready-made UI components, and reusable code examples in one clean and fast interface.
@@ -29,3 +31,4 @@ Main features:
 - Built for quick access and learning
 
 PySnips is mainly created for personal use, but shared as an open-source project for anyone learning Python or Kivy.
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
