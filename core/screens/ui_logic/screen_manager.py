@@ -1,0 +1,5 @@
+
+
+
+class ScreenManager(QStackedWidget):
+    pass

@@ -209,7 +209,7 @@ class AppErrorHandler:
         if solution_hint:
             detailed_text += f"💡 כיצד לתקן:\n{solution_hint}\n\n"
 
-        detailed_text += f"📂 פרטים מלאים נשמרו בנתיב: {ERROR_LOG_PATH}"
+        detailed_text += f" פרטים מלאים נשמרו בנתיב: {ERROR_LOG_PATH}"
 
         msg_box.setDetailedText(detailed_text)
         msg_box.setStandardButtons(QMessageBox.Ok)

@@ -1,4 +1,3 @@
-# core/common/integrity.py
 """
 🛡️ PySnips 0.4 - System Integrity Testing System (The Compiler)
 ==================================================================
@@ -30,16 +29,30 @@
    פונקציית compile_system_integrity שמפרקת את ה-XML של ה-UI, יוצרת קלאסים מסודרים עם משתנים קבועים,
    ומייצרת את מפת הגישה הדינמית WIDGET_MAPS עבור האפליקציה.
 """
+import sys
+
+#  הזרקה מוקדמת: מוודאים שמצב דבאג פעיל עוד לפני ייבוא הלוגר
+if __name__ == "__main__" and "--debug" not in sys.argv:
+    sys.argv.append("--debug")
 
 import os
-from pathlib import Path
 from datetime import datetime
 import json
 import xml.etree.ElementTree as ET
 
 from core.common.app_paths import AppPaths
+from core.common.error_manager import AppErrorHandler, AppDebugger
 
-APPROVED_PREFIXES = ["btn", "lbl", "inp", "lst", "cmb", "txt"]
+APPROVED_PREFIXES = {
+    "btn": "QPushButton",
+    "lbl": "QLabel",
+    "inp": "QLineEdit",
+    "lst": "QListWidget",
+    "cmb": "QComboBox",
+    "txt": "QTextEdit",
+    "scl": "QScrollArea",
+    "wdg": "QWidget"
+}
 
 DESIGNER_GENERIC_PREFIXES = [
     "pushButton", "label", "lineEdit", "textEdit", "comboBox", "listWidget",
@@ -50,8 +63,8 @@ DESIGNER_GENERIC_PREFIXES = [
 ]
 
 POLICY_GUIDE = (
-    "📋 ספר החוקים לשמות ווידג'טים ב-PySnips 0.3:\n"
-    f"  1. חובה להשתמש בקידומת מאושרת בת 3 אותיות מתוך הרשימה: {APPROVED_PREFIXES}\n"
+    " ספר החוקים לשמות ווידג'טים ב-PySnips:\n"
+    f"  1. חובה להשתמש בקידומת מאושרת בת 3 אותיות מתוך הרשימה: {list(APPROVED_PREFIXES.keys())}\n"
     "  2. חובה לשים קו תחתון (_) מיד אחרי הקידומת (למשל: btn_).\n"
     "  3. אסור להצמיד מספרים לאותיות! חובה להפריד מספרים עם קו תחתון (למשל: btn_snippet_1 ולא btn_snippet1).\n"
     "  4. שמות אוטומטיים של ה-Designer יסוננו אוטומטית."
@@ -59,7 +72,7 @@ POLICY_GUIDE = (
 
 
 def validate_ui_element(obj_name: str, file_name: str) -> bool:
-    """בודק את תקינות שם הווידג'ט ומציג שגיאות מפורטות"""
+    """בודק את תקינות שם הווידג'ט ומציג שגיאות מפורטות במערכת השגיאות המובנית"""
     if "_" not in obj_name:
         return False
 
@@ -70,33 +83,30 @@ def validate_ui_element(obj_name: str, file_name: str) -> bool:
     # בדיקת מספר צמוד לאות
     for i in range(len(obj_name) - 1):
         if obj_name[i].isalpha() and obj_name[i + 1].isdigit():
-            print("\n" + "=" * 65)
-            print(f"❌ [שגיאת מבנה] בקובץ UI: 📂 {file_name}")
-            print(f"   <- האלמנט הבעייתי: '{obj_name}'")
-            print(f"   <- הסיבה המיידית: מצאת מספר שצמוד לאות.")
-            print("-" * 65)
-            print(POLICY_GUIDE)
-            print("=" * 65 + "\n")
+            AppErrorHandler.handle_error(
+                user_message=f"שגיאת מבנה חמורה בקובץ ממשק המשתמש: {file_name}",
+                dev_message=f"האלמנט '{obj_name}' מכיל מספר הצמוד ישירות לאות ללא הפרדת קו תחתון (_).",
+                severity="ERROR",
+                solution_hint=f"{POLICY_GUIDE}\n\nתיקון מוצע: שנה ב-Designer ל-'{obj_name[:i+1]}_{obj_name[i+1:]}'"
+            )
             return False
 
     if len(prefix_raw) != 3:
-        print("\n" + "=" * 65)
-        print(f"❌ [שגיאת קידומת] בקובץ UI: 📂 {file_name}")
-        print(f"   <- האלמנט הבעייתי: '{obj_name}'")
-        print(f"   <- הסיבה המיידית: הקידומת '{prefix_raw}' היא באורך {len(prefix_raw)} אותיות.")
-        print("-" * 65)
-        print(POLICY_GUIDE)
-        print("=" * 65 + "\n")
+        AppErrorHandler.handle_error(
+            user_message=f"שגיאת אכיפת קידומת בקובץ ממשק המשתמש: {file_name}",
+            dev_message=f"האלמנט '{obj_name}' משתמש בקידומת '{prefix_raw}' שאורכה {len(prefix_raw)} אותיות (מותר רק 3).",
+            severity="ERROR",
+            solution_hint=POLICY_GUIDE
+        )
         return False
 
     if prefix_raw not in APPROVED_PREFIXES:
-        print("\n" + "=" * 65)
-        print(f"❌ [שגיאת קיצור] בקובץ UI: 📂 {file_name}")
-        print(f"   <- האלמנט הבעייתי: '{obj_name}'")
-        print(f"   <- הסיבה המיידית: הקידומת '{prefix_raw}' אינה מוכרת.")
-        print("-" * 65)
-        print(POLICY_GUIDE)
-        print("=" * 65 + "\n")
+        AppErrorHandler.handle_error(
+            user_message=f"שגיאת קיצור לא מוכר בקובץ ממשק המשתמש: {file_name}",
+            dev_message=f"הקידומת '{prefix_raw}' שנמצאה באלמנט '{obj_name}' אינה רשומה בפורמט המערכת המאושר.",
+            severity="ERROR",
+            solution_hint=POLICY_GUIDE
+        )
         return False
 
     return True
@@ -104,10 +114,7 @@ def validate_ui_element(obj_name: str, file_name: str) -> bool:
 
 def find_widget_usages_in_code(widget_var_name: str, class_name: str) -> list:
     """סורק את כל קובצי הפייתון ומחפש איפה המתכנת השתמש בשם המשתנה הישן"""
-
-
     usages = []
-
     search_pattern = f"{class_name}.{widget_var_name}"
 
     for py_file in AppPaths.PROJECT_DIR.glob("**/*.py"):
@@ -117,7 +124,7 @@ def find_widget_usages_in_code(widget_var_name: str, class_name: str) -> list:
             with open(py_file, "r", encoding="utf-8") as f:
                 for line_num, line in enumerate(f, 1):
                     if search_pattern in line:
-                        usages.append(f"📂 {py_file.relative_to(AppPaths.PROJECT_DIR)} (שורה {line_num}): `{line.strip()}`")
+                        usages.append(f" {py_file.relative_to(AppPaths.PROJECT_DIR)} (שורה {line_num}): `{line.strip()}`")
         except Exception:
             pass
     return usages
@@ -125,14 +132,19 @@ def find_widget_usages_in_code(widget_var_name: str, class_name: str) -> list:
 
 def compile_system_integrity():
     """מנוע הסריקה המרכזי - בודק שלמות ומשכתב אך ורק את קובץ mapping.py"""
-    print("🔄 [Integrity System] מתחיל סריקת שלמות ואכיפת חוקי עיצוב...")
+    # הדפסת לוג קבוע - מועבר כהודעה קריטית או ישירה ללוגר כדי שיופיע תמיד
+    AppDebugger.log(" [Integrity System] מתחיל סריקת שלמות ואכיפת חוקי עיצוב...")
 
-    common_dir = Path(__file__).resolve().parent
-    ui_dir = common_dir.parent / "ui"
-    mapping_file = common_dir / "mapping.py"
+    ui_dir = AppPaths.UI_DIR
+    mapping_file = AppPaths.COMMON_DIR / "mapping.py"
 
     if not ui_dir.exists():
-        print(f"❌ שגיאה: תיקיית ה-UI לא נמצאה בנתיב: {ui_dir}")
+        AppErrorHandler.handle_error(
+            user_message="שגיאת מערכת: תיקיית ה-UI לא נמצאה.",
+            dev_message=f"לא ניתן לבצע בדיקת קומפילציה ואכיפה משום שהנתיב חסר פיזית בדיסק: {ui_dir}",
+            severity="CRITICAL",
+            solution_hint="וודא שתיקיית קובצי העיצוב קיימת במיקום המוגדר תחת AppPaths."
+        )
         return
 
     ui_files = list(ui_dir.glob("*.ui"))
@@ -141,7 +153,6 @@ def compile_system_integrity():
         for f in ui_files
     }
 
-    # ניסיון לקרוא נתונים קודמים מתוך mapping.py הקיים
     old_timestamps = {}
     try:
         import core.common.mapping as current_mapping
@@ -152,8 +163,6 @@ def compile_system_integrity():
     has_errors = False
     changed_files = []
     full_widget_maps = {}
-
-    # בניית הקוד הסטטי של חלק 1
     generated_classes_code = ""
 
     for ui_file in ui_files:
@@ -179,7 +188,6 @@ def compile_system_integrity():
                             if prefix not in DESIGNER_GENERIC_PREFIXES:
                                 has_errors = True
 
-            # בדיקת הגנה מפני שינוי שם ללא עדכון קוד הפייתון
             try:
                 import core.common.mapping as old_mapping
                 old_class = getattr(old_mapping, class_name, None)
@@ -190,23 +198,24 @@ def compile_system_integrity():
                         if actual_value not in found_elements:
                             code_usages = find_widget_usages_in_code(old_var, class_name)
                             if code_usages:
-                                print("\n" + "!" * 70)
-                                print(f"⛔ [חסימת קומפילציה] שינית שם בדיזיינר עבור הרכיב: '{actual_value}'")
-                                print(f"    שם המשתנה הישן בקוד: {class_name}.{old_var}")
-                                print(f"    חובה לעדכן את המקומות הבאים בקוד הפייתון לפני עדכון המיפוי:")
-                                print("-" * 70)
-                                for usage in code_usages:
-                                    print(usage)
-                                print("!" * 70 + "\n")
+                                usages_str = "\n".join(code_usages)
+                                AppErrorHandler.handle_error(
+                                    user_message=f"חסימת קומפילציה: רכיב שונה בדיזיינר אך נמצא בשימוש בקוד הפייתון!",
+                                    dev_message=(
+                                        f"שינית שם או מחקת ב-Designer את הרכיב: '{actual_value}'\n"
+                                        f"שם המשתנה הישן שעדיין רשום בקוד: {class_name}.{old_var}\n"
+                                        f"נתיבי שימוש שנמצאו בפרויקט:\n{usages_str}"
+                                    ),
+                                    severity="CRITICAL",
+                                    solution_hint="עדכן או מחק את השורות המצוינות בקובצי הפייתון לפני הרצה מחדש של ה-Integrity."
+                                )
                                 has_errors = True
             except Exception:
                 pass
 
-            # שמירה למפה הכללית של הפרויקט
             sorted_elements = sorted(set(found_elements))
             full_widget_maps[class_name] = sorted_elements
 
-            # בניית קוד המחלקה עבור קובץ ה-mapping
             generated_classes_code += f"class {class_name}:\n"
             generated_classes_code += f'    """רכיבים דינמיים עבור {file_name}"""\n'
             if not sorted_elements:
@@ -217,19 +226,27 @@ def compile_system_integrity():
             generated_classes_code += "\n"
 
         except Exception as e:
-            print(f"❌ שגיאה קריטית בקריאת הקובץ {file_name}: {e}")
+            AppErrorHandler.handle_error(
+                error_obj=e,
+                user_message=f"שגיאה קריטית בפענוח מבנה הקובץ {file_name}",
+                dev_message=f"מנוע ה-Integrity נכשל בקריאת מבנה ה-XML של הקובץ: {ui_file}",
+                severity="CRITICAL"
+            )
             has_errors = True
 
     if has_errors:
-        print("⛔ השכתוב בוטל! המערכת לא מסונכרנת עם קוד הפייתון או מכילה שגיאות שמות.")
+        AppErrorHandler.handle_error(
+            user_message="הקומפילציה והשכתוב בוטלו!",
+            dev_message="המערכת מנעה את עדכון קובץ המיפוי עקב שגיאות שמות או חוסר סנכרון מול קוד הפייתון.",
+            severity="ERROR"
+        )
         return
 
     if changed_files:
-        print(f"📝 זוהו שינויים בדיזיינר עבור: {', '.join(changed_files)}")
+        AppDebugger.log(f" זוהו שינויים בדיזיינר עבור: {', '.join(changed_files)}")
     else:
-        print("✨ לא זוהו שינויים חדשים בדיזיינר.")
+        AppDebugger.log(" לא זוהו שינויים חדשים בדיזיינר.")
 
-    # הרכבת קובץ ה-mapping.py הסופי והנקי
     timestamps_pretty = json.dumps(current_timestamps, indent=4)
     maps_pretty = json.dumps(full_widget_maps, indent=4)
 
@@ -242,10 +259,17 @@ def compile_system_integrity():
         f"WIDGET_MAPS = {maps_pretty}\n"
     )
 
-    with open(mapping_file, "w", encoding="utf-8") as f:
-        f.write(final_mapping_content)
-
-    print("🎉 קובץ mapping.py שוכתב ועודכן בהצלחה! המערכת יציבה ומסונכרנת.")
+    try:
+        with open(mapping_file, "w", encoding="utf-8") as f:
+            f.write(final_mapping_content)
+        AppDebugger.log("🎉 קובץ mapping.py שוכתב ועודכן בהצלחה! המערכת יציבה ומסונכרנת.")
+    except Exception as e:
+        AppErrorHandler.handle_error(
+            error_obj=e,
+            user_message="נכשלה כתיבת קובץ המיפוי הסטטי.",
+            dev_message=f"לא ניתן לשמור שינויים פיזיים לתוך קובץ היעד: {mapping_file}",
+            severity="CRITICAL"
+        )
 
 
 if __name__ == "__main__":
