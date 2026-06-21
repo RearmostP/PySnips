@@ -1,138 +1,254 @@
-# core/common/error_manager.py
 """
-⚙️ PySnips 0.3 - Global Error Management System
-=================================================
+PySnips Error & Debug Management System
+=======================================
+מערכת מרכזית לניהול שגיאות (Errors) וניפוי באגים (Debug) עבור אפליקציית PySnips.
 
-📜 מדריך שימוש וצורת עבודה:
------------------------------
-מערכת זו משמשת כשומר הסף הראשי של האפליקציה מפני קריסות בלתי צפויות.
-בסביבות GUI (כמו PySide6), שגיאות קוד שלא טופלו ב-try/except עלולות לגרום
-לאפליקציה להיסגר בשבריר שנייה ("להיעלם" מהמסך) בלי להשאיר עקבות למשתמש.
+הוראות שימוש חיוניות:
+--------------------
 
-איך המערכת עובדת מאחורי הקלעים?
-1. חטיפת שגיאות גלובלית (sys.excepthook): המערכת מחליפה את מנגנון הטיפול
-   ברירת המחדל של פייתון. כל שגיאה (Exception) שמתרחשת בכל מקום באפליקציה
-   ולא נתפסה באופן מקומי - מנותבת אוטומטית לכאן.
+1. שימוש בתוך בלוק תפיסת שגיאות (try/except):
+   במצב זה חובה להעביר את אובייקט השגיאה (e) כפרמטר `error_obj`.
 
-2. מערכת רישום כפולה (Logging Handler):
-   - כותבת באופן מיידי את עץ השגיאה המלא (Traceback) לקובץ 'pysnips.log'.
-   - מדפיסה למסוף (sys.stdout) הודעה מודגשת ומעוצבת עבור המתכנת ב-PyCharm.
+   >>> try:
+   >>>     res = 10 / 0
+   >>> except ZeroDivisionError as e:
+   >>>     AppErrorHandler.handle_error(
+   >>>         error_obj=e,
+   >>>         user_message="שגיאה בחישוב הנתונים הגרפיים.",
+   >>>         severity="ERROR"
+   >>>     )
 
-3. חווית משתמש (QMessageBox): אם השגיאה התרחשה בזמן שהממשק הגרפי כבר רץ,
-   המערכת תקפיץ חלון אזהרה קריטי רשמי של Qt המודיע למשתמש שהאפליקציה קרסה,
-   ומאפשר לו להרחיב את התיאור הטכני ולהעתיק את נתיב קובץ הלוג כדי לשלוח למפתח.
+2. שימוש בתוך בדיקות תנאי לוגיות (if):
+   במצב זה אין אובייקט שגיאה, לכן משמיטים את הפרמטר `error_obj`. המערכת תזהה לבד
+   את מיקום ה-if ותתעד אותו כ-`LogicalError`.
 
-🛠️ הוראות הפעלה באפליקציה:
-----------------------------
-כדי שהמערכת תגן על כל חלקי התוכנה (כולל שלבי האתחול), יש לקרוא לפונקציה
-setup_error_manager() בשורה הראשונה ביותר בתוך קובץ ה-main.py, לפני כל ייבוא
-או הפעלה של לוגיקה אחרת.
+   >>> if not icon_path.exists():
+   >>>     AppErrorHandler.handle_error(
+   >>>         user_message="לא הצלחנו לטעון את האייקון של האפליקציה.",
+   >>>         dev_message=f"הקובץ חסר בנתיב: {icon_path}",
+   >>>         severity="WARNING"
+   >>>     )
+
+3. שליטה מתקדמת בערוצי הפלט (דגלים):
+   ניתן לכבות או להדליק באופן דינמי את ערוצי הפלט (טרמינל, לוג, חלון גרפי) באמצעות דגלים בוליאנים.
+
+   >>> AppErrorHandler.handle_error(
+   >>>     user_message="שגיאת רקע שקטה",
+   >>>     show_gui=False,       # לא יקפיץ חלון למשתמש
+   >>>     show_terminal=False   # לא ידפיס לטרמינל (יירשם רק בקובץ הלוג)
+   >>> )
+
+4. שימוש במערכת ה-Debug (ניפוי באגים):
+   הודעות אלו מיועדות למעקב פיתוח רגיל. הן יודפסו ויירשמו לקובץ הלוג המיוחד `pysnips_debug.log`
+   רק אם האפליקציה הורצה עם הדגל: `python main.py --debug`. ברצה רגילה הן יהיו רדומות לחלוטין.
+
+   >>> AppDebugger.log("מתחיל לטעון את רכיבי המערכת הדינמיים...")
+
+נתיבי קבצי הלוג:
+--------------
+- שגיאות קריטיות:  logs/pysnips.log
+- הודעות דבאג:      logs/pysnips_debug.log
 """
+
 
 import sys
-import logging
+import traceback
 from pathlib import Path
+import datetime
 from PySide6.QtWidgets import QMessageBox, QApplication
 
 from core.common.app_paths import AppPaths
 
-LOG_FILE_PATH = AppPaths.LOGS_DIR / "pysnips.log"
+# הגדרת נתיבי קבצי הלוג של האפליקציה
+
+ERROR_LOG_PATH = AppPaths.LOGS_DIR / "pysnips.log"
+DEBUG_LOG_PATH = AppPaths.LOGS_DIR / "pysnips_debug.log"
 
 
-def setup_error_manager():
-    """
-    מגדיר את מערכת ניהול השגיאות הגלובלית של האפליקציה.
-    חוטף שגיאות לא מטופלות, רושם אותן ללוג ומציג חלון למשתמש.
-    """
-    # 1. הגדרת מערכת ה-Logging (כותב לקובץ ומדפיס למסוף במקביל)
-    logging.basicConfig(
-        level=logging.ERROR,
-        format="%(asctime)s [%(levelname)s] (%(filename)s:%(lineno)d): %(message)s",
-        datefmt="%Y-%m-%d %H:%M:%S",
-        handlers=[
-            logging.FileHandler(LOG_FILE_PATH, encoding="utf-8"),
-            logging.StreamHandler(sys.stdout)  # <--- התיקון פה! Stream אחד בלבד
-        ]
-    )
 
-    # 2. פונקציית החטיפה (Excepthook)
-    def global_exception_handler(exctype, value, traceback):
-        # הדפסת השגיאה המלאה לתוך קובץ הלוג
-        logging.error("קריסת מערכת בלתי צפויה!", exc_info=(exctype, value, traceback))
+class AppErrorHandler:
+    """M1: מערכת לניהול שגיאות גמישה - מאפשרת כיבוי/הדלקה של ערוצים והודעות מופרדות"""
 
-        # יצירת הודעה מעוצבת ומפורטת עבור המסוף של המתכנת
-        print("\n" + "🔥 " * 25)
-        print(f"❌ [Error Manager] קריסה קריטית באפליקציה!")
-        print(f"   <- סוג השגיאה: {exctype.__name__}")
-        print(f"   <- פירוט: {value}")
-        print(f"   📂 פרטי הקריסה המלאים נשמרו בנתיב: {LOG_FILE_PATH}")
-        print("🔥 " * 25 + "\n")
+    @classmethod
+    def handle_error(
+            cls,
+            user_message: str,  # הודעת המשתמש - פרמטר ראשון (חובה)
+            error_obj: Exception = None,  # אובייקט השגיאה (אופציונלי)
+            dev_message: str = "",
+            severity: str = "ERROR",
+            solution_hint: str = "",
+            show_terminal: bool = True,
+            show_log: bool = True,
+            show_gui: bool = True
+    ):
+        """
+        מנהל השגיאות המרכזי - תומך גם בבלוק except וגם בבדיקות if ידניות.
+        """
+        # 1. חילוץ דינמי של מקור השגיאה
+        if error_obj and error_obj.__traceback__:
+            # אם יש אובייקט שגיאה אמיתי - נחלץ את נקודת הכשל המקורית שלו
+            tb = error_obj.__traceback__
+            summary = traceback.extract_tb(tb)
+            last_frame = summary[-1] if summary else None
+        else:
+            # 💡 אם זו בדיקת if ידנית - נבדוק מי קרא ל-handle_error ברגע זה!
+            summary = traceback.extract_stack()
+            # summary[-2] לוקח אותנו צעד אחד אחורה, אל השורה שבה כתבת את ה-if
+            last_frame = summary[-2] if len(summary) >= 2 else None
 
-        # 3. הקפצת חלון התרעה ידידותי למשתמש (רק אם ה-QApplication כבר רץ)
-        if QApplication.instance():
-            show_error_dialog_to_user(exctype.__name__, str(value))
+        if last_frame:
+            error_context = {
+                "filename": Path(last_frame.filename).name,
+                "line": last_frame.lineno,
+                "function": last_frame.name
+            }
+        else:
+            error_context = {"filename": "Unknown", "line": 0, "function": "Unknown"}
 
-        # סגירת האפליקציה בצורה בטוחה עם קוד שגיאה 1
-        sys.exit(1)
+        # קביעת שם השגיאה הטכנית להצגה
+        error_name = type(error_obj).__name__ if error_obj else "LogicalError"
+        error_details = str(error_obj) if error_obj else "בדיקת תנאי ידנית בקוד (תנאי נכשל)"
 
-    # הזרקת החוטף הגלובלי לתוך הליבה של פייתון
-    sys.excepthook = global_exception_handler
-    print("🛡️  Error Manager: מערכת הגנת הקריסות הופעלה בהצלחה.")
+        # התיקון החסר: יצירת המשתנה עבור הודעת הפיתוח
+        final_dev_message = dev_message if dev_message else user_message
 
+        # 2. הפעלה מותנית (Conditional) של הערוצים לפי הדגלים
+        if show_terminal:
+            cls._print_to_terminal(error_context, error_obj, final_dev_message, severity)
+        if show_log:
+            cls._write_to_log(error_context, error_obj, final_dev_message, severity)
+        if show_gui:
+            cls._show_gui_dialog(user_message, error_obj, severity, solution_hint)
 
-def show_error_dialog_to_user(error_type: str, error_message: str, icon_type: str = "critical"):
-    """
-    מציג חלון הודעה (QMessageBox) מעוצב למשתמש בזמן שגיאה או אזהרה.
-    מתאים לשימוש יזום על ידי המתכנת בכל רחבי האפליקציה (למשל ב-try/except).
+    @staticmethod
+    def _print_to_terminal(context: dict, error_obj: Exception, user_message: str, severity: str):
+        """מדפיסה תבנית מעוצבת לטרמינל - קווי קישוט אפורים, קידומות מודגשות"""
 
-    💡 כיצד להשתמש בקוד שלך (דוגמה):
-    ---------------------------------
-    try:
-        with open("snips.json", "r") as f:
-            data = json.load(f)
-    except FileNotFoundError:
-        show_error_dialog_to_user(
-            error_type="קובץ חסר",
-            error_message="לא נפתח קובץ המידע snips.json. האפליקציה תיצור קובץ חדש.",
-            icon_type="warning"  # אפשרויות: "critical", "warning", "info"
+        # 🎨 קודי עיצוב וצבעים
+        RESET = "\033[0m"
+        BOLD = "\033[1m"
+        GRAY = "\033[90m"  # צבע אפור עבור קווי הקישוט
+
+        # התאמת אייקון וצבע רק עבור שורת החומרה (Severity)
+        if severity == "CRITICAL":
+            COLOR_SEV = "\033[95m"  # סגול מודגש
+            icon = "🔥"
+        elif severity == "ERROR":
+            COLOR_SEV = "\033[91m"  # אדום
+            icon = "❌"
+        elif severity == "WARNING":
+            COLOR_SEV = "\033[93m"  # צהוב
+            icon = "⚠️"
+        else:
+            COLOR_SEV = "\033[94m"  # כחול
+            icon = "ℹ️"
+
+        # קביעת שם השגיאה והפרטים להדפסה
+        error_name = type(error_obj).__name__ if error_obj else "LogicalError"
+        error_details = str(error_obj) if error_obj else "None"
+
+        # 🖨️ הדפסת הבלוק המעוצב שלך
+        print(f"\n{icon} {GRAY}{'=' * 30} [App Error] {'=' * 30}{RESET} {icon}")
+        print(f" {COLOR_SEV}{BOLD}[{severity}]{RESET}")
+        print(f" {BOLD}[SYSTEM MESSAGE]{RESET} {user_message}")
+        print(f" {BOLD}[The error]{RESET}  {error_name}: {error_details}")
+        print(
+            f" {BOLD}[Error location]{RESET} `{context['filename']}` -> line {context['line']} -> function `{context['function']}`")
+        print(f"{icon} {GRAY}{'=' * 73}{RESET} {icon}\n")
+
+    @staticmethod
+    def _write_to_log(context: dict, error_obj: Exception, user_message: str, severity: str):
+        """כותבת את השגיאה בצורה מרווחת, קריאה ומיושרת לקובץ הלוג"""
+
+        # 1. השגת הזמן הנוכחי בפורמט נקי
+        current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+        # 2. חילוץ פרטי השגיאה
+        error_name = type(error_obj).__name__ if error_obj else "LogicalError"
+        error_details = str(error_obj) if error_obj else "None"
+
+        # 3. בניית הבלוק המעוצב של הלוג (עם שורות חדשות \n)
+        log_block = (
+            f"============================== [App Error] ==============================\n"
+            f" [{current_time}] [{severity}]\n"
+            f" [SYSTEM MESSAGE] {user_message}\n"
+            f" [The error]      {error_name}: {error_details}\n"
+            f" [Error location] `{context['filename']}` -> line {context['line']} -> function `{context['function']}`\n"
+            f"=========================================================================\n\n"
         )
 
-    📥 פרמטרים:
-    -----------
-    :param error_type: (str) כותרת משנית/סוג השגיאה (יופיע בתוך הפירוט הטכני).
-    :param error_message: (str) תיאור השגיאה בעברית שמסביר למשתמש מה קרה.
-    :param icon_type: (str) סוג האייקון שיוצג בחלון. ברירת מחדל היא "critical".
-                       אפשרויות:
-                       - "critical" (איקס אדום - לשגיאות קורסות)
-                       - "warning" (משולש צהוב - לאזהרות או קבצים חסרים)
-                       - "info" (עיגול כחול - להודעות מידע רגילות)
-    """
-    # ודאות שה-QApplication רץ, אחרת לא ניתן להציג חלונות Qt
-    if not QApplication.instance():
-        print(f"⚠️ [QMessageBox חסום] לא ניתן להציג חלון, QApplication לא באוויר. שגיאה: {error_message}")
-        return
+        # 4. כתיבה (append) בפועל לקובץ הלוג
+        try:
+            with open(ERROR_LOG_PATH, "a", encoding="utf-8") as f:
+                f.write(log_block)
+        except Exception as e:
+            # הגנה מפני קריסה במקרה שהקובץ נעול
+            print(f"⚠️ לא ניתן לכתוב לקובץ הלוג: {e}")
 
-    msg_box = QMessageBox()
-    msg_box.setWindowTitle("הודעת מערכת - PySnips")
-    msg_box.setText("אופס! נתקלנו בבעיה בביצוע הפעולה.")
+    @staticmethod
+    def _show_gui_dialog(user_message: str, error_obj: Exception, severity: str, solution_hint: str):
+        """מציגה חלון QMessageBox מעוצב למשתמש (רק אם הממשק הגרפי רץ)"""
+        if not QApplication.instance():
+            return  # מונע קריסה אם ה-GUI עוד לא באוויר
 
-    # קביעת האייקון בהתאם לבקשת המתכנת
-    if icon_type == "warning":
-        msg_box.setIcon(QMessageBox.Warning)
-        msg_box.setText("אזהרה במערכת")  # משנה את הטקסט הראשי שיתאים לאזהרה
-    elif icon_type == "info":
-        msg_box.setIcon(QMessageBox.Information)
-        msg_box.setText("הודעת עדכון")
-    else:
-        msg_box.setIcon(QMessageBox.Critical)
+        msg_box = QMessageBox()
+        msg_box.setWindowTitle("הודעת מערכת - PySnips")
+        msg_box.setText(f"<h3>{user_message}</h3>")
 
-    # פירוט טכני מורחב שהמשתמש יכול לראות בלחיצה על "Show Details"
-    detailed_text = (
-        f"סוג האירוע: {error_type}\n"
-        f"תיאור: {error_message}\n\n"
-        f"📂 במידה ומדובר בקריסה, פרטים מלאים נשמרים ב-pysnips.log"
-    )
-    msg_box.setDetailedText(detailed_text)
+        # קביעת האייקון לפי רמת החומרה
+        if severity == "WARNING":
+            msg_box.setIcon(QMessageBox.Warning)
+        else:
+            msg_box.setIcon(QMessageBox.Critical)
 
-    msg_box.setStandardButtons(QMessageBox.Ok)
-    msg_box.exec()
+        # בניית הפירוט הטכני המורחב (המשתמש יראה בלחיצה על "Show Details")
+        detailed_text = (
+            f"סוג השגיאה: {type(error_obj).__name__}\n"
+            f"תיאור טכני: {error_obj}\n\n"
+        )
+        if solution_hint:
+            detailed_text += f"💡 כיצד לתקן:\n{solution_hint}\n\n"
+
+        detailed_text += f"📂 פרטים מלאים נשמרו בנתיב: {ERROR_LOG_PATH}"
+
+        msg_box.setDetailedText(detailed_text)
+        msg_box.setStandardButtons(QMessageBox.Ok)
+        msg_box.exec()
+
+
+class AppDebugger:
+    """M2: מערכת ניפוי באגים (Debug) - פועלת רק אם האפליקציה הורצה עם הדגל --debug"""
+
+    # בדיקה דינמית: האם המתכנת הריץ את התוכנה עם הדגל מבוקש?
+    IS_DEBUG_MODE = "--debug" in sys.argv
+
+    @classmethod
+    def log(cls, message: str):
+        """
+        מדפיס הודעת מעקב לטרמינל ורושם אותה לקובץ לוג ייעודי.
+        אם התוכנה לא רצה במצב דבאג - הפונקציה לא עושה כלום (רדומה).
+        """
+        if not cls.IS_DEBUG_MODE:
+            return  # יציאה שקטה, מצב דבאג כבוי
+
+        # שימוש ב-traceback כדי לדעת מי קרא לפונקציית הלוג (שלב 1 אחורה במחסנית)
+        # אנחנו לוקחים את ה-Stack הנוכחי כדי לדעת איפה המתכנת שם את ה-AppDebugger.log
+        summary = traceback.extract_stack()
+        if len(summary) >= 2:
+            caller_frame = summary[-2]  # הצעד שקרא ל-log()
+            filename = Path(caller_frame.filename).name
+            line = caller_frame.lineno
+        else:
+            filename, line = "Unknown", 0
+
+        formatted_msg = f"[DEBUG] ({filename}:{line}) -> {message}"
+
+        # 1. הדפסה ישירה למסך המתכנת
+        print(formatted_msg)
+
+        # 2. כתיבה לקובץ לוג נפרד של דבאג
+        try:
+            with open(DEBUG_LOG_PATH, "a", encoding="utf-8") as f:
+                f.write(formatted_msg + "\n")
+        except Exception:
+            pass  # הגנה מפני קריסה של הדבאגר עצמו

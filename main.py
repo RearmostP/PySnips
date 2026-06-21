@@ -37,22 +37,39 @@
 אנא בקר בשאר הקבצים וקרא את התיאור שלהם כדי להכיר את המערכת לעומק!
 """
 
+from pathlib import Path
 import sys
 from PySide6.QtWidgets import QApplication
-from core.common.error_manager import setup_error_manager
+from PySide6.QtCore import Qt
+
 from core.boot import run_startup_checks
 from core.common.app_host import PySnipsHost
+from core.common.error_manager import AppErrorHandler
 
 if __name__ == "__main__":
-    # 1. הפעלת מנהל השגיאות הגלובלי (שומר הסף הראשי)
-    setup_error_manager()
 
-    # 2. הרצת מנהל סדר הפעולות (חתימות הזמן מול ווינדוס)
+
+    # 1. הרצת מנהל סדר הפעולות (חתימות הזמן מול ווינדוס)
     if not run_startup_checks():
         sys.exit(1)
 
+
     # 3. הפעלת ה-GUI של האפליקציה
     app = QApplication(sys.argv)
+    # כפיית כיווניות שמאל-לימין כדי למנוע היפוך אוטומטי של ה-Layouts
+    app.setLayoutDirection(Qt.LayoutDirection.RightToLeft)
     window = PySnipsHost()
     window.show()
+
+    ico = Path(__file__).resolve().parent / "icons" / "dnjd.ico"
+    if not ico.exists():
+        AppErrorHandler.handle_error(
+            user_message="אופס! הפעולה נכשלה, לא הצלחנו לעבד את המידע הגרפי.",
+            dev_message="התרחשה שגיאת ValueError מלאכותית לצורך בדיקת ערוצי המערכת.",
+            severity="WARNING",
+            solution_hint="אין צורך לתקן כלום, זו שגיאה יזומה כדי לראות שהלוג והחלון עובדים בתיאום.",
+            show_terminal=True,  # רוצים לראות בטרמינל
+            show_log=True,  # רוצים שיירשם בקובץ pysnips.log
+            show_gui=True  # רוצים שיקפוץ חלון למשתמש
+        )
     sys.exit(app.exec())
