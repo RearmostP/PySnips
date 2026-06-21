@@ -28,7 +28,7 @@
   ├── integrity.py    <- "הקומפיילר החכם". סורק את ה-UI, אוכף חוקי שמות ויוצר את המיפוי.
   ├── mapping.py      <- קובץ נתונים סטטי ונקי. מכיל את חתימות הזמן, קבועי השמות ומפת ה-WIDGET_MAPS.
   ├── error_manager.py<- שומר הסף הגלובלי. חוטף קריסות, כותב לוגים ומקפיץ חלונות QMessageBox.
-  └── app_host.py     <- "מארח האפליקציה". עמוד השדרה של הממשק, מנהל את החלון הראשי והניווט.
+  └── dynamic_ui_loader.py     <- טוען קבצי ui דינאמחת בזמן ריצה
 
 📢 בקשה מהמתכנת:
 ----------------
@@ -37,14 +37,12 @@
 אנא בקר בשאר הקבצים וקרא את התיאור שלהם כדי להכיר את המערכת לעומק!
 """
 
-from pathlib import Path
 import sys
 from PySide6.QtWidgets import QApplication
 from PySide6.QtCore import Qt
 
 from core.boot import run_startup_checks
-from core.common.app_host import PySnipsHost
-from core.common.error_manager import AppErrorHandler
+from core.screens.ui_logic.screen_manager import ScreenManager
 
 if __name__ == "__main__":
 
@@ -58,18 +56,9 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
     # כפיית כיווניות שמאל-לימין כדי למנוע היפוך אוטומטי של ה-Layouts
     app.setLayoutDirection(Qt.LayoutDirection.RightToLeft)
-    window = PySnipsHost()
+    window = ScreenManager()
+    window.resize(800, 600)  # גודל התחלתי לאפליקציה
+
     window.show()
 
-    ico = Path(__file__).resolve().parent / "icons" / "dnjd.ico"
-    if not ico.exists():
-        AppErrorHandler.handle_error(
-            user_message="אופס! הפעולה נכשלה, לא הצלחנו לעבד את המידע הגרפי.",
-            dev_message="התרחשה שגיאת ValueError מלאכותית לצורך בדיקת ערוצי המערכת.",
-            severity="WARNING",
-            solution_hint="אין צורך לתקן כלום, זו שגיאה יזומה כדי לראות שהלוג והחלון עובדים בתיאום.",
-            show_terminal=True,  # רוצים לראות בטרמינל
-            show_log=True,  # רוצים שיירשם בקובץ pysnips.log
-            show_gui=True  # רוצים שיקפוץ חלון למשתמש
-        )
     sys.exit(app.exec())
