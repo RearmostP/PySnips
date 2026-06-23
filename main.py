@@ -41,24 +41,27 @@ import sys
 from PySide6.QtWidgets import QApplication
 from PySide6.QtCore import Qt
 
-from core.boot import run_startup_checks
-from core.screens.ui_logic.screen_manager import ScreenManager
+from core.app_coordinator import AppCoordinator
+from core.common.error_manager import AppDebugger
+
+
+def main():
+    # 1. יצירת מופע האפליקציה של Qt
+    app = QApplication(sys.argv)
+
+    # הגדרת כיוון גלובלי לכל האפליקציה (ימין לשמאל)
+    app.setLayoutDirection(Qt.LayoutDirection.RightToLeft)
+
+    # 2. הודעת דיבאג על העברת שליטה
+    AppDebugger.log("האתחול עבר בהצלחה. מעביר שליטה ל-AppCoordinator.")
+
+    # 3. יצירת ה-Coordinator והפעלתו (הוא כבר ינהל את הבדיקות והטעינה)
+    coordinator = AppCoordinator()
+    coordinator.start()
+
+    # 4. לולאת האירועים המרכזית של Qt
+    sys.exit(app.exec())
+
 
 if __name__ == "__main__":
-
-
-    # 1. הרצת מנהל סדר הפעולות (חתימות הזמן מול ווינדוס)
-    if not run_startup_checks():
-        sys.exit(1)
-
-
-    # 3. הפעלת ה-GUI של האפליקציה
-    app = QApplication(sys.argv)
-    # כפיית כיווניות שמאל-לימין כדי למנוע היפוך אוטומטי של ה-Layouts
-    app.setLayoutDirection(Qt.LayoutDirection.RightToLeft)
-    window = ScreenManager()
-    window.resize(800, 600)  # גודל התחלתי לאפליקציה
-
-    window.show()
-
-    sys.exit(app.exec())
+    main()

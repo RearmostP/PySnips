@@ -50,8 +50,10 @@ PySnips Error & Debug Management System
 - הודעות דבאג:      logs/pysnips_debug.log
 """
 
-
 import sys
+import inspect
+import os
+import re
 import traceback
 from pathlib import Path
 import datetime
@@ -217,38 +219,44 @@ class AppErrorHandler:
 
 
 class AppDebugger:
-    """M2: מערכת ניפוי באגים (Debug) - פועלת רק אם האפליקציה הורצה עם הדגל --debug"""
+    @staticmethod
+    def log(message: str):
+        if "--debug" not in sys.argv:
+            return  # אם לא ביקשו דיבאג, אל תדפיס כלום וצא מהפונקציה
+        """מדפיס לוג מעוצב, צבעוני ומיושר אנכית לטרמינל"""
+        # 1. חילוץ אוטומטי של שם הקובץ ומספר השורה
+        frame = inspect.stack()[1]
+        filename = os.path.basename(frame.filename)
+        line_number = frame.lineno
 
-    # בדיקה דינמית: האם המתכנת הריץ את התוכנה עם הדגל מבוקש?
-    IS_DEBUG_MODE = "--debug" in sys.argv
+        # 2. הגדרת קודי צבעים (ANSI Escape Codes)
+        GREEN = "\033[92m"
+        YELLOW = "\033[93m"
+        CYAN = "\033[96m"
+        GRAY = "\033[90m"
+        WHITE = "\033[37m"
+        RESET = "\033[0m"
 
-    @classmethod
-    def log(cls, message: str):
-        """
-        מדפיס הודעת מעקב לטרמינל ורושם אותה לקובץ לוג ייעודי.
-        אם התוכנה לא רצה במצב דבאג - הפונקציה לא עושה כלום (רדומה).
-        """
-        if not cls.IS_DEBUG_MODE:
-            return  # יציאה שקטה, מצב דבאג כבוי
+        # 3. ניקוי מרכאות והחלפה לפורמט root: עבור נתיבים
+        path_pattern = r"['\"]([^'\"]+\.(?:ui|py))['\"]"
+        if re.search(path_pattern, message):
+            message = re.sub(path_pattern, r"root:\1", message)
+            message = re.sub(r"(root:[^\s]+)", f"{CYAN}\\1{RESET}", message)
 
-        # שימוש ב-traceback כדי לדעת מי קרא לפונקציית הלוג (שלב 1 אחורה במחסנית)
-        # אנחנו לוקחים את ה-Stack הנוכחי כדי לדעת איפה המתכנת שם את ה-AppDebugger.log
-        summary = traceback.extract_stack()
-        if len(summary) >= 2:
-            caller_frame = summary[-2]  # הצעד שקרא ל-log()
-            filename = Path(caller_frame.filename).name
-            line = caller_frame.lineno
-        else:
-            filename, line = "Unknown", 0
+        # 4. יצירת מחרוזת המיקום ויישור שלה לאורך קבוע (למשל 26 תווים)
+        # ה-ljust דואג להשלים ברווחים אם המחרוזת קצרה מהאורך שהוגדר
+        raw_location = f"({filename}:{line_number})"
+        padded_location = raw_location.ljust(26)
 
-        formatted_msg = f"[DEBUG] ({filename}:{line}) -> {message}"
+        # 5. הזרקת הצבעים לתוך המחרוזת המיושרת
+        # אנחנו צובעים את הסוגריים והתוכן בנפרד כדי שהרווחים של ה-ljust לא ישפיעו על הצבעים
+        colored_location = (
+            f"{GRAY}({YELLOW}{filename}:{line_number}{GRAY})"
+            f"{RESET}{' ' * (26 - len(raw_location))}"
+        )
 
-        # 1. הדפסה ישירה למסך המתכנת
-        print(formatted_msg)
+        log_prefix = f"{GREEN}[DEBUG]{RESET}"
+        arrow = f"{WHITE}->{RESET}"
 
-        # 2. כתיבה לקובץ לוג נפרד של דבאג
-        try:
-            with open(DEBUG_LOG_PATH, "a", encoding="utf-8") as f:
-                f.write(formatted_msg + "\n")
-        except Exception:
-            pass  # הגנה מפני קריסה של הדבאגר עצמו
+        # 6. הדפסת השורה הסופית המיושרת לחלוטין
+        print(f"{log_prefix} {colored_location} {arrow} {message}")
