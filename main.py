@@ -39,7 +39,6 @@
 
 import sys
 from PySide6.QtWidgets import QApplication
-from PySide6.QtCore import Qt
 
 from core.app_coordinator import AppCoordinator
 from core.common.error_manager import AppDebugger
@@ -48,9 +47,6 @@ from core.common.error_manager import AppDebugger
 def main():
     # 1. יצירת מופע האפליקציה של Qt
     app = QApplication(sys.argv)
-
-    # הגדרת כיוון גלובלי לכל האפליקציה (ימין לשמאל)
-    app.setLayoutDirection(Qt.LayoutDirection.RightToLeft)
 
     # 2. הודעת דיבאג על העברת שליטה
     AppDebugger.log("האתחול עבר בהצלחה. מעביר שליטה ל-AppCoordinator.")

@@ -1,8 +1,10 @@
 import sys
+
 from core.common.screen_manager import ScreenManager
+
 from core.screens.ui_logic.home.home_screen import HomeScreen
 from core.screens.ui_logic.snips.snippets_screen import SnippetsScreen
-from core.screens.ui_logic.snips.create_snip_dialog import CreateSnipDialog
+from core.screens.ui_logic.snips.create_snips_dialog import CreateSnipsDialog
 
 from core.common.error_manager import AppDebugger
 from core.boot import run_startup_checks
@@ -54,11 +56,48 @@ class AppCoordinator:
         flow = SnippetsFlow(self.screen_manager)
         flow.start()
 
+        # חבר את כפתור יצירת השליף לפותח הדיאלוג ברמת ה-Coordinator
+        snippets_screen = self.screen_manager._screens.get("snippets")
+        if snippets_screen:
+   
+            snippets_screen.btn_new_snippet.clicked.connect(self._open_create_snips_dialog)
+
     def _route_to_ready_code(self):
         AppDebugger.log("נתב מרכזי: מעביר שליטה ל-ReadyCodeFlow.")
         flow = ReadyCodeFlow(self.screen_manager)
         flow.start()
 
+    def _open_create_snips_dialog(self):
+        """Helper on the coordinator to open the CreateSnips dialog via flow."""
+        flow = CreateSnipsFlow(self.screen_manager)
+        flow.start()
+
+#-----------------------------------------------------------------------------
+
+class CreateSnipsFlow:
+    """Flow לטיפול בדיאלוג יצירת שליף"""
+
+    def __init__(self, screen_manager):
+        self.screen_manager = screen_manager
+        self.dialog = CreateSnipsDialog(parent=self.screen_manager)
+
+    def start(self):
+
+        AppDebugger.log("CreateSnipsFlow: מציג דיאלוג יצירת שליף...")
+
+        # מרכז הדיאלוג ביחס למסך 'snippets' אם קיים, אחרת ביחס ל-screen_manager
+        parent_widget = self.screen_manager._screens.get("snippets", self.screen_manager)
+
+        # מיקום: מרכז אופקי, ו-40px מתחת לשפת החלון העליונה של האפליקציה — כמו בתמונה
+        center_x = parent_widget.x() + (parent_widget.width() - self.dialog.width()) // 2
+        top_y = parent_widget.y() + 40
+        self.dialog.move(center_x, top_y)
+
+        self.dialog.setup_events()
+        self.dialog.exec()
+
+
+#----------------------------------------------------------------------------------------------------
 
 class SnippetsFlow:
     """מחלקה עצמאית שמנהלת את סדר הפעולות והלוגיקה של מסך השליפים"""
@@ -77,7 +116,6 @@ class SnippetsFlow:
 
             # חיבור אירועים ורכיבים
             snippets_screen.setup_events()
-            snippets_screen.btn_new_snip.clicked.connect(self._handle_new_snippet_dialog)
 
             # רישום אקטיבי - רק עכשיו הוא נכנס ל-ScreenManager
             self.screen_manager.register_screen("snippets", snippets_screen)
@@ -86,12 +124,12 @@ class SnippetsFlow:
         self.screen_manager.switch_to("snippets")
         AppDebugger.log("SnippetsFlow: המעבר למסך השליפים בוצע בהצלחה.")
 
-    def _handle_new_snippet_dialog(self):
-        """טעינה והצגה מודאלית של דיאלוג יצירת שליף חדש"""
-        AppDebugger.log("SnippetsFlow: המשתמש ביקש ליצור שליף. מציג דיאלוג...")
-        dialog = CreateSnipDialog(parent=self.screen_manager)
-        dialog.exec()
+    def _open_create_snips_dialog(self):
+        # פונה ל-CreateSnipsFlow כדי להציג את הדיאלוג
+        flow = CreateSnipsFlow(self.screen_manager)
+        flow.start()
 
+#----------------------------------------------------------------------------------------
 
 class ReadyCodeFlow:
     """מחלקה עצמאית שמנהלת את סדר הפעולות והלוגיקה של מסך קוד מוכן"""

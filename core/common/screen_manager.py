@@ -46,6 +46,7 @@ class ScreenManager(QWidget):
                 dev_message=f"ניסיון מעבר למסך לא קיים ברשימה: '{name}'",
                 severity="WARNING"
             )
+
     # בשביל שהיה אפשר לגשת ולבדוק אם קיים מסך מסויים ברשימה
     def has_screen(self, name: str) -> bool:
         return name in self._screens

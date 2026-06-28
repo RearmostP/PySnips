@@ -1,4 +1,3 @@
-import os
 from PySide6.QtWidgets import QMenu
 
 from core.common.app_paths import AppPaths
@@ -6,22 +5,21 @@ from core.common.dynamic_ui_loader import create_dynamic_ui_loader
 from core.common.error_manager import AppDebugger, AppErrorHandler
 
 
+
+
+
+
 class SnippetsScreen(create_dynamic_ui_loader(AppPaths.SNIPPETS_SCREEN)):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        # מצב התחלתי של הסרגל
-        self.sidebar_expanded = True
 
     def setup_events(self):
         """
         פונקציה שמחברת את האירועים והכפתורים.
-        נקראת רק לאחר שקובץ ה-UI נטען במלואו לזיכרון.
+        נקראת רק לאחר שקובץ ה-UI נטען במלואו לזיכרון על ידי SnippetsFlow שב app_coordinator.py.
         """
         AppDebugger.log(" SnippetsScreen: מחבר אירועים ורכיבי ממשק...")
-
-        # תיקון: גישה ישירה ל-self ללא .ui
-        self.btn_toggle_sidebar.clicked.connect(self.toggle_sidebar)
 
         # בניית תפריט ההמבורגר (☰)
         self.setup_hamburger_menu()
@@ -32,27 +30,30 @@ class SnippetsScreen(create_dynamic_ui_loader(AppPaths.SNIPPETS_SCREEN)):
 
         action_home = self.hamburger_menu.addAction("🏠 בית")
         action_settings = self.hamburger_menu.addAction("⚙️ הגדרות")
+        action_about = self.hamburger_menu.addAction("ℹ️ אודות")
 
         action_home.triggered.connect(self.go_back_home)
+        action_settings.triggered.connect(self.open_settings)
+        action_about.triggered.connect(self.show_about)
 
-        # תיקון: גישה ישירה ל-self ללא .ui
         self.btn_menu.setMenu(self.hamburger_menu)
 
-    def toggle_sidebar(self):
-        """מצמצם או מרחיב את הסרגל הימני בלחיצת כפתור"""
-        if self.sidebar_expanded:
-            # תיקון: גישה ישירה ל-self ללא .ui
-            self.wdg_sidebar.setFixedWidth(50)
-            self.btn_toggle_sidebar.setText("◀")
-            self.sidebar_expanded = False
-        else:
-            # תיקון: גישה ישירה ל-self ללא .ui
-            self.wdg_sidebar.setFixedWidth(200)
-            self.btn_toggle_sidebar.setText("▶")
-            self.sidebar_expanded = True
 
+# ----------------------------------------------------------------
     def go_back_home(self):
         """חזרה למסך הבית באמצעות מנהל המסכים"""
         if hasattr(self, 'manager') and self.manager:
             AppDebugger.log("🏠 SnippetsScreen: חוזר למסך הבית...")
             self.manager.switch_to("home")
+
+    def open_settings(self):
+        """פתיחת חלון הגדרות"""
+        AppDebugger.log("⚙️ SnippetsScreen: פתיחת הגדרות...")
+
+    def show_about(self):
+        """הצגת מידע אודות היישום"""
+        AppDebugger.log("ℹ️ SnippetsScreen: הצגת מידע אודות...")
+#---------------------------------------------------------------------
+
+
+

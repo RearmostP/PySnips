@@ -20,6 +20,20 @@ def run_startup_checks() -> bool:
 
             if not path.exists():
                 if is_file:
+                    # אם זה הקובץ categorys.json - צור קובץ ברירת-מחדל עם קטגוריות
+                    try:
+                        if path == Path(AppPaths.CATEGORYS_JSON):
+                            path.parent.mkdir(parents=True, exist_ok=True)
+                            import json
+                            default_cats = ["python", "kivy"]
+                            with open(path, 'w', encoding='utf-8') as f:
+                                json.dump(default_cats, f, ensure_ascii=False, indent=2)
+                            AppDebugger.log(f" Bootstrapper: יצר קובץ קטגוריות דיפולטיבי: {path}")
+                            continue
+                    except Exception as e:
+                        AppErrorHandler.handle_error(error_obj=e, user_message="שגיאת אתחול: לא ניתן ליצור קובץ ברירת-מחדל.", dev_message=str(e), severity="CRITICAL")
+                        return False
+
                     # אם זה קובץ חסר והוא קריטי -> חוסמים ריצה
                     if is_critical:
                         AppErrorHandler.handle_error(

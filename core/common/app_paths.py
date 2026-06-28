@@ -18,6 +18,7 @@ class AppPaths:
     # ----------------- user_data -------------------------
     USERS_DATA_DIR = DATA_DIR / "user_data"
     SNIPS_DATA_DIR = USERS_DATA_DIR / "snips"
+    CATEGORYS_JSON = SNIPS_DATA_DIR / "categorys.json"
     READY_CODE_DATA_DIR = DATA_DIR / "ready_code"
 
     # ----------------- system_data ------------------------
@@ -57,6 +58,7 @@ class AppPaths:
         # ------ user_data ------
         USERS_DATA_DIR: True,
         SNIPS_DATA_DIR: True,
+        CATEGORYS_JSON: True,
         READY_CODE_DATA_DIR: False,
 
         # ------ system_data ----

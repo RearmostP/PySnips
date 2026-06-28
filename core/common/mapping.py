@@ -6,7 +6,7 @@ UI_TIMESTAMPS = {
     "create_snips_dialog.ui": "2026-06-23 14:25:25",
     "home_screen.ui": "2026-06-21 16:27:49",
     "ready_code_screen.ui": "2026-06-14 03:18:18",
-    "snippets_screen.ui": "2026-06-23 14:28:44"
+    "snippets_screen.ui": "2026-06-24 15:33:03"
 }
 
 class CreateSnipsDialogElements:
@@ -35,16 +35,16 @@ class ReadyCodeScreenElements:
 
 class SnippetsScreenElements:
     """רכיבים דינמיים עבור snippets_screen.ui"""
+    BTN_ADD_CATEGORY = "btn_add_category"
     BTN_MENU = "btn_menu"
-    BTN_NEW_SNIP = "btn_new_snip"
-    BTN_TOGGLE_SIDEBAR = "btn_toggle_sidebar"
-    FRM_SIDEBAR_LINE = "frm_sidebar_line"
-    INP_SEARCH_BAR = "inp_search_bar"
-    LBL_RECENT_TITLE = "lbl_recent_title"
-    LST_CATEGORIES = "lst_categories"
-    SCL_SNIPS = "scl_snips"
-    WDG_MAIN_SNIPS = "wdg_main_snips"
-    WDG_SCROLL_AREA_CONTENTS = "wdg_scroll_area_contents"
+    BTN_NEW_SNIPPET = "btn_new_snippet"
+    FRM_SPLITTER = "frm_splitter"
+    INP_SEARCH_SNIPS = "inp_search_snips"
+    LBL_APP_NAME = "lbl_app_name"
+    LBL_CATEGORY_TITLE = "lbl_category_title"
+    SCL_CATEGORIES = "scl_categories"
+    SCL_SNIPPETS = "scl_snippets"
+    WDG_MAIN_CONTENT = "wdg_main_content"
     WDG_SIDEBAR = "wdg_sidebar"
 
 WIDGET_MAPS = {
@@ -70,16 +70,16 @@ WIDGET_MAPS = {
         "btn_back_home"
     ],
     "SnippetsScreenElements": [
+        "btn_add_category",
         "btn_menu",
-        "btn_new_snip",
-        "btn_toggle_sidebar",
-        "frm_sidebar_line",
-        "inp_search_bar",
-        "lbl_recent_title",
-        "lst_categories",
-        "scl_snips",
-        "wdg_main_snips",
-        "wdg_scroll_area_contents",
+        "btn_new_snippet",
+        "frm_splitter",
+        "inp_search_snips",
+        "lbl_app_name",
+        "lbl_category_title",
+        "scl_categories",
+        "scl_snippets",
+        "wdg_main_content",
         "wdg_sidebar"
     ]
 }
