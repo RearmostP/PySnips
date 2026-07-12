@@ -41,7 +41,7 @@ def _sanitize(name: str) -> str:
     """הפוך שם קטגוריה לשם קובץ בטוח לשימוש במערכת קבצים."""
     safe = ''.join(c for c in (name or '') if c.isalnum() or c in (' ', '_', '-')).strip()
     if not safe:
-        return 'uncategorized'
+        return 'שם לא ידוע'
     return safe.replace(' ', '_')
 
 

@@ -64,14 +64,14 @@ class SnippetCard(create_dynamic_ui_loader(AppPaths.SNIPPET_CARD_UI)): # Inherit
         AppDebugger.log(f"SnippetCard: טוען נתונים עבור שליף ID: {self.snippet_meta.get('id')}")
         
         # Set title
-        self.title_label.setText(self._get_snippet_title(self.snippet_meta)) # Direct access to UI element
+        self.lbl_title_label.setText(self._get_snippet_title(self.snippet_meta)) # Direct access to UI element
 
         # Load and set content
         snippet_content = self._read_snippet_content(self.snippet_meta)
         if snippet_content.is_markdown:
-            self.content_preview.setMarkdown(snippet_content.text) # Direct access to UI element
+            self.txt_content_preview.setMarkdown(snippet_content.text) # Direct access to UI element
         else:
-            self.content_preview.setPlainText(snippet_content.text) # Direct access to UI element
+            self.txt_content_preview.setPlainText(snippet_content.text) # Direct access to UI element
 
     def setup_logic(self):
         """מחבר את כפתורי ה-UI לפונקציות הלוגיות."""
@@ -116,13 +116,13 @@ class SnippetCard(create_dynamic_ui_loader(AppPaths.SNIPPET_CARD_UI)): # Inherit
                 border: 1px solid #2d2d2d;
                 border-radius: 6px;
             }
-            QLabel#title_label { /* Use the objectName from the .ui file */
+            QLabel#lbl_title_label { /* Use the objectName from the .ui file */
                 font-weight: bold;
                 font-size: 14px;
                 color: #ffffff;
                 font-family: 'Segoe UI', Arial, sans-serif;
             }
-            QTextEdit#content_preview { /* Use the objectName from the .ui file */
+            QTextEdit#txt_content_preview { /* Use the objectName from the .ui file */
                 background-color: #181818;
                 color: #d4d4d4;
                 border: 1px solid #2d2d2d;

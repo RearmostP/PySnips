@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>400</width>
-    <height>300</height>
+    <height>389</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -30,7 +30,7 @@
     <number>12</number>
    </property>
    <item>
-    <widget class="QLabel" name="title_label">
+    <widget class="QLabel" name="lbl_title_label">
      <property name="font">
       <font>
        <pointsize>14</pointsize>
@@ -81,7 +81,7 @@
      <item>
       <spacer name="horizontalSpacer">
        <property name="orientation">
-        <enum>Qt::Horizontal</enum>
+        <enum>Qt::Orientation::Horizontal</enum>
        </property>
        <property name="sizeHint" stdset="0">
         <size>
@@ -113,15 +113,9 @@
     </layout>
    </item>
    <item>
-    <widget class="QTextEdit" name="content_preview">
+    <widget class="QTextEdit" name="txt_content_preview">
      <property name="readOnly">
       <bool>true</bool>
-     </property>
-     <property name="minimumHeight">
-      <number>300</number>
-     </property>
-     <property name="maximumHeight">
-      <number>450</number>
      </property>
     </widget>
    </item>

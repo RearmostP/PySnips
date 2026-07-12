@@ -55,13 +55,15 @@ def load_custom_font(font_path: Path | str) -> str:
     path_str = str(font_path)
     font_id = QFontDatabase.addApplicationFont(path_str)
     if font_id == -1:
-        AppDebugger.log(f"טעינת הגופן נכשלה מהנתיב: {path_str}")
+        AppErrorHandler.handle_error(
+            user_message=f"לא הצליח לטעון פונט מהנטיו {font_path}",
+            severity="WARNING"
+        )
         return ""
 
     font_families = QFontDatabase.applicationFontFamilies(font_id)
     if font_families:
         font_name = font_families[0]
-        AppDebugger.log(f"גופן המערכת נטען בהצלחה: {font_name}")
         return font_name
     return ""
 
@@ -69,7 +71,6 @@ def load_custom_font(font_path: Path | str) -> str:
 def get_categories() -> list:
     """החזר קטגוריות מ-CATEGORYS_JSON, בנה מחדש את האינדקס במידת הצורך."""
     try:
-        AppDebugger.log(f"טוען קטגוריות מהנתיב: {AppPaths.CATEGORYS_JSON}")
         with open(AppPaths.CATEGORYS_JSON, 'r', encoding='utf-8') as f:
             categories = json.load(f)
             AppDebugger.log(f"נמצאו ונטענו {len(categories)} קטגוריות לזיכרון")
@@ -97,7 +98,7 @@ def update_categories_file(new_category: str):
         AppErrorHandler.handle_error(
             error_obj=e,
             user_message="שגיאה בעדכון קובץ הקטגוריות",
-            dev_message=f"Error updating categorys.json: {str(e)}",
+            dev_message=f"שגיאה בעדכון קובץ הקטגוריות categorys.json: {str(e)}",
             severity="ERROR"
         )
 
@@ -137,7 +138,7 @@ def rebuild_category_index() -> list:
         AppErrorHandler.handle_error(
             error_obj=e,
             user_message="שגיאה בבניית אינדקס הקטגוריות",
-            dev_message=str(e),
+            dev_message=f"שגיאה בבניית אינדקס הקטגוריות categorys.json: {str(e)}",
             severity="ERROR"
         )
         return []
@@ -240,7 +241,7 @@ def run_startup_checks() -> bool:
                 severity="WARNING"
             )
 
-        AppDebugger.log("מנהל אתחול: בדיקות השלמות הסתיימו בהצלחה. המערכת מוכנה.")
+        AppDebugger.log("מנהל אתחול: בדיקות השלמות הסתיימו בהצלחה. המערכת מוכנה." + "\n")
         return True
 
     except Exception as e:

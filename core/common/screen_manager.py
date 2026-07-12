@@ -41,7 +41,6 @@ class ScreenManager(QWidget):
     def register_screen(self, name: str, screen_widget: QWidget):
         """
         רישום מסך חדש במערכת.
-        הפונקציה נקראת מבחוץ (על ידי ה-Coordinator) ומזריקה את המסך לערימה.
         """
         self.screens[name] = screen_widget
         self.stacked_widget.addWidget(screen_widget)

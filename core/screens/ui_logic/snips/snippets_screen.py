@@ -68,10 +68,10 @@ def replace_widget_in_grid_layout(layout: QGridLayout, old_widget: QWidget, new_
         bool: True אם ההחלפה בוצעה בהצלחה, False אחרת.
     """
     if not layout or not old_widget or not new_widget:
-        AppDebugger.log("Error: Invalid arguments for replace_widget_in_grid_layout.")
+        AppDebugger.log("Error: ארגומנטים לא חוקיים עבור replace_widget_in_grid_layout.")
         return False
 
-    # מצא את המיקום של הווידג'ט הישן
+    # מצא את המיקום של הווידג'ט הישן ב-layout
     row, col, rowspan, colspan = -1, -1, -1, -1
     item_to_remove: QLayoutItem | None = None
 
@@ -94,7 +94,6 @@ def replace_widget_in_grid_layout(layout: QGridLayout, old_widget: QWidget, new_
 
     # הוסף את הווידג'ט החדש באותו מיקום
     layout.addWidget(new_widget, row, col, rowspan, colspan)
-    AppDebugger.log(f"Widget replaced successfully at position ({row}, {col}).")
     return True
 # --- סוף פונקציית עזר ---
 
@@ -110,18 +109,14 @@ class SnippetsScreen(create_dynamic_ui_loader(AppPaths.SNIPPETS_SCREEN)):
         פונקציה שמחברת את האירועים והכפתורים.
         נקראת רק לאחר שקובץ ה-UI נטען במלואו לזיכרון.
         """
-        AppDebugger.log("SnippetsScreen: Connecting UI events and elements...")
-
+        AppDebugger.log("SnippetsScreen: חיבור אירועי ואלמנטים של ממשק משתמש...")
         # בניית תפריט ההמבורגר
         self.setup_hamburger_menu()
-
         # טעינת כפתורי קטגוריות דינמיים
         self.load_category_buttons()
-
         # חיבור כפתור הוספת קטגוריה
         self.btn_add_category.clicked.connect(self._add_new_category)
-
-        # חיבור כפתור הוספת שליף (אם קיים)
+        # חיבור כפתור הוספת שליף
         self.btn_new_snippet.clicked.connect(self.open_create_snips_dialog)
 
         # טעינת שליפים אחרונים או קטגוריה ראשונה כברירת מחדל
@@ -144,13 +139,11 @@ class SnippetsScreen(create_dynamic_ui_loader(AppPaths.SNIPPETS_SCREEN)):
     def load_category_buttons(self):
         """טעינת כפתורי קטגוריות דינמיים לתוך ה-scroll area"""
         try:
-            AppDebugger.log("Loading category buttons to memory...")
             categories = get_categories()
             AppDebugger.log(f"Loaded {len(categories)} categories")
 
             layout = self.scl_categories.widget().layout()
             if not layout:
-                AppDebugger.log("Error: Layout not found for categories")
                 return
 
             # ניקוי כפתורים קיימים כדי למנוע כפילויות בריענון
@@ -170,15 +163,12 @@ class SnippetsScreen(create_dynamic_ui_loader(AppPaths.SNIPPETS_SCREEN)):
                 btn.clicked.connect(lambda checked, cat=category: self.on_category_selected(cat))
 
                 layout.insertWidget(layout.count() - 1, btn)
-                AppDebugger.log(f"Added button for category: {category}")
-
-            AppDebugger.log(f"SnippetsScreen: Successfully loaded {len(categories)} categories")
 
         except Exception as e:
             AppErrorHandler.handle_error(
                 error_obj=e,
                 user_message="שגיאה בטעינת כפתורי קטגוריות",
-                dev_message=f"SnippetsScreen: Error loading category buttons: {str(e)}",
+                dev_message=f"SnippetsScreen: שגיאה בטעינת כפתורי הקטגוריות: {str(e)}",
                 severity="ERROR"
             )
 
@@ -197,7 +187,7 @@ class SnippetsScreen(create_dynamic_ui_loader(AppPaths.SNIPPETS_SCREEN)):
             AppDebugger.log("Error: grid_snippets_layout not found for snippets")
             return
 
-        # תיקון קריטי: ניקוי יסודי של ה-Layout כולל Spacers ישנים למניעת זליגת זיכרון
+        # ניקוי יסודי של ה-Layout כולל Spacers ישנים למניעת זליגת זיכרון
         while layout.count():
             item = layout.takeAt(0)
             widget = item.widget()
@@ -207,11 +197,20 @@ class SnippetsScreen(create_dynamic_ui_loader(AppPaths.SNIPPETS_SCREEN)):
             elif item.spacerItem():
                 del item
 
+        # --- מצבים מיוחדים ---
+#--------------------------------------------------------------------------
         if category == "Recent Snippets":
             placeholder_label = QLabel("הצגת שליפים אחרונים (בפיתוח)")
             placeholder_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
             layout.addWidget(placeholder_label, 0, 0)
             return
+# --------------------------------------------------------------------------
+        if category == "Search":
+            placeholder_label = QLabel("הצגת שליפים עם התאגים בתצוגה מקדימה (בפיתוח)")
+            placeholder_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            layout.addWidget(placeholder_label, 0, 0)
+            return
+# --------------------------------------------------------------------------
 
         safe_cat = _sanitize(category)
         category_dir = AppPaths.SNIPS_FILES / safe_cat
@@ -238,13 +237,11 @@ class SnippetsScreen(create_dynamic_ui_loader(AppPaths.SNIPPETS_SCREEN)):
             spacer_item = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
             layout.addItem(spacer_item, row, 0, 1, -1)
 
-            AppDebugger.log(f"SnippetsScreen: Loaded {len(snippets_metadata)} snippets for category: {category}")
-
         except Exception as e:
             AppErrorHandler.handle_error(
                 error_obj=e,
                 user_message=f"שגיאה בטעינת שליפים עבור קטגוריה '{category}'",
-                dev_message=f"SnippetsScreen: Error loading snippets for category {category}: {str(e)}",
+                dev_message=f"SnippetsScreen: שגיאה בטעינת שליפים עבור קטגוריה  {category}: {str(e)}",
                 severity="ERROR"
             )
             error_label = QLabel(f"שגיאה בטעינת שליפים: {str(e)}")
@@ -261,17 +258,17 @@ class SnippetsScreen(create_dynamic_ui_loader(AppPaths.SNIPPETS_SCREEN)):
         """
         מטפל בבקשת עריכה של שליף: מחליף את כרטיסיית השליף בווידג'ט עריכה.
         """
-        AppDebugger.log(f"SnippetsScreen: Edit requested for snippet ID: {snippet_meta.get('id')}")
+        AppDebugger.log(f"SnippetsScreen: Request to edit snippet ID: {snippet_meta.get('id')}")
 
         grid_snippets_layout = self.grid_snippets_layout
         if not grid_snippets_layout:
             AppDebugger.log("Error: grid_snippets_layout not found for snippet editing.")
             return
 
-        # Store references to the active editor and its original card
+        # אחסון הפניות לעורך הפעיל ולכרטיס המקורי שלו
         self._active_editor_original_card = old_snippet_card
 
-        # Create the new EditCardWidget
+        #  יצירת EditCardWidget חדש
         edit_widget = EditCardWidget(
             snippet_meta=snippet_meta,
             on_save_callback=self._on_edit_save,
@@ -279,34 +276,32 @@ class SnippetsScreen(create_dynamic_ui_loader(AppPaths.SNIPPETS_SCREEN)):
         )
         self._active_editor_widget = edit_widget
 
-        # Replace the old card with the edit widget
+        # החלפת הכרטיס הישן עם ווידג'ט העריכה
         replace_widget_in_grid_layout(grid_snippets_layout, old_snippet_card.get_view(), edit_widget.get_view()) # Use get_view()
-        AppDebugger.log(f"SnippetsScreen: Replaced snippet card with editor for ID: {snippet_meta.get('id')}")
+
 
     def _on_edit_save(self, updated_snippet_meta: dict):
         """
         Callback מ-EditCardWidget כאשר העריכה נשמרה.
         מחליף את ווידג'ט העריכה בחזרה לכרטיסיית שליף מעודכנת.
         """
-        AppDebugger.log(f"SnippetsScreen: Edit saved for snippet ID: {updated_snippet_meta.get('id')}")
 
         grid_snippets_layout = self.grid_snippets_layout
         if not grid_snippets_layout or not self._active_editor_widget or not self._active_editor_original_card:
-            AppDebugger.log("Error: Cannot save edit, missing layout or active editor info.")
+            AppDebugger.log("Error: לא נשמר העריכה.")
             return
 
-        # Create a new, updated snippet card
+        # יוצר כרטיס קטע חדש ומעודכן
         new_snippet_card = self._create_snippet_widget(updated_snippet_meta)
 
-        # Replace the editor with the new card
+        # מחליף את העורך בכרטיס החדש
         replace_widget_in_grid_layout(grid_snippets_layout, self._active_editor_widget.get_view(), new_snippet_card.get_view()) # Use get_view()
 
-        # Clear active editor state
+        # ניקוי מצב העורך הפעיל
         self._active_editor_widget = None
         self._active_editor_original_card = None
 
-        AppDebugger.log(f"SnippetsScreen: Replaced editor with updated card for ID: {updated_snippet_meta.get('id')}")
-        # Optionally, reload the entire category to ensure consistency, but replacing the card is usually sufficient.
+        #לחלופין, ניתן לטעון מחדש את כל הקטגוריה כדי להבטיח עקביות, אך בדרך כלל מספיקה החלפת הכרטיס.
         # self.on_category_selected(updated_snippet_meta.get('category'))
 
     def _on_edit_cancel(self):
@@ -314,70 +309,71 @@ class SnippetsScreen(create_dynamic_ui_loader(AppPaths.SNIPPETS_SCREEN)):
         Callback מ-EditCardWidget כאשר העריכה בוטלה.
         מחליף את ווידג'ט העריכה בחזרה לכרטיסיית השליף המקורית.
         """
-        AppDebugger.log("SnippetsScreen: Edit cancelled.")
 
         grid_snippets_layout = self.grid_snippets_layout
         if not grid_snippets_layout or not self._active_editor_widget or not self._active_editor_original_card:
             AppDebugger.log("Error: Cannot cancel edit, missing layout or active editor info.")
             return
 
-        # Create a new snippet card using the meta-data from the original card
-        # This ensures we are not trying to re-use a deleted C++ object.
+        # יוצר כרטיס קטע חדש באמצעות נתוני המטא מהכרטיס המקורי
+        # זה מבטיח שאנו לא מנסים להשתמש באובייקט C++ שנמחק.
         new_snippet_card = self._create_snippet_widget(self._active_editor_original_card.snippet_meta)
 
-        # Replace the editor with the new card
+        # מחליף את העורך בכרטיס החדש
         replace_widget_in_grid_layout(grid_snippets_layout, self._active_editor_widget.get_view(), new_snippet_card.get_view())
 
-        # Clear active editor state
+        # ניקוי מצב העורך הפעיל
         self._active_editor_widget = None
         self._active_editor_original_card = None
 
-        AppDebugger.log("SnippetsScreen: Replaced editor with original card.")
 
     def _add_new_category(self):
         """פתיחת דיאלוג ליצירת קטגוריה חדשה ושמירתה."""
         AppDebugger.log("SnippetsScreen: Opening dialog for new category...")
-        category_name, ok = QInputDialog.getText(self, "New Category", "Enter category name:")
+        category_name, ok = QInputDialog.getText(self, "קטגוריה חדשה", "הכנס שם קטגוריה:")
 
         if ok and category_name:
             sanitized_name = _sanitize(category_name)
             if not sanitized_name:
-                QMessageBox.warning(self, "Invalid Name", "Category name cannot be empty or contain only special characters.")
+                QMessageBox.warning(self, "שם לא חוקי", "שם הקטגוריה אינו יכול להיות ריק או להכיל תווים מיוחדים בלבד.")
                 return
 
             try:
                 # בדוק אם הקטגוריה כבר קיימת
                 current_categories = get_categories()
                 if sanitized_name in current_categories:
-                    QMessageBox.information(self, "Category Exists", f"The category '{category_name}' already exists.")
+                    if sanitized_name == 'uncategorized':
+                        QMessageBox.information(self, "קטגוריה קיימת",
+                                                f"השם שהוזן ('{category_name}') מתורגם לקטגוריה 'uncategorized' שכבר קיימת. אנא בחר שם אחר.")
+                    else:
+                        QMessageBox.information(self, "קטגוריה קיימת",
+                                                f"הקטגוריה '{category_name}' כבר קיימת.")
                     return
 
                 # יצירת תיקיית הקטגוריה
                 category_dir = AppPaths.SNIPS_FILES / sanitized_name
                 category_dir.mkdir(parents=True, exist_ok=True)
-                AppDebugger.log(f"SnippetsScreen: Created category directory: {category_dir}")
+                AppDebugger.log(f"SnippetsScreen: נוצר קטגוריה חדשה: {category_dir}")
 
                 # עדכון קובץ ה-JSON של הקטגוריות
                 update_categories_file(sanitized_name)
-                AppDebugger.log(f"SnippetsScreen: Updated categorys.json with category: {sanitized_name}")
 
-                QMessageBox.information(self, "Success", f"Category '{category_name}' created successfully!")
                 self.load_category_buttons() # רענן את כפתורי הקטגוריות
                 self.on_category_selected(sanitized_name) # בחר את הקטגוריה החדשה
             except Exception as e:
                 AppErrorHandler.handle_error(
                     error_obj=e,
                     user_message=f"שגיאה ביצירת קטגוריה חדשה: {category_name}",
-                    dev_message=f"SnippetsScreen: Error creating new category: {str(e)}",
+                    dev_message=f"SnippetsScreen: שגיאה ביצירת קטגוריה חדשה: {category_name}: {str(e)}",
                     severity="ERROR",
                     show_gui=True
                 )
         elif ok and not category_name:
-            QMessageBox.warning(self, "Empty Name", "Category name cannot be empty.")
+            QMessageBox.warning(self, "שם ריק", "שם הקטגוריה לא יכול להיות ריק.")
 
     def open_create_snips_dialog(self):
         """פותח את חלון יצירת שליפים"""
-        AppDebugger.log("SnippetsScreen: Opening create snippets dialog...")
+        AppDebugger.log("SnippetsScreen: פתיחת create snippets dialog...")
 
         dialog = CreateSnipsDialog(parent=self)
         dialog.setup_events() # Call setup_events here

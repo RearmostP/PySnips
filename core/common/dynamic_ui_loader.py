@@ -32,7 +32,13 @@ def get_ui_root_class(ui_filename: str) -> type:
     """
     ui_path = AppPaths.UI_DIR / ui_filename
     if not ui_path.exists():
-        return QWidget  # Fallback דיפולטיבי, השגיאה האמיתית תטופל בהמשך בטעינה
+        AppErrorHandler.handle_error(
+            user_message=f"קובץ ממשק המשתמש '{ui_filename}' לא נמצא.",
+            dev_message=f"לא ניתן למצוא את הקובץ בנתיב: {ui_path}",
+            severity="CRITICAL",
+            show_gui=True
+        )
+        sys.exit(1)
 
     try:
         tree = ET.parse(ui_path)
