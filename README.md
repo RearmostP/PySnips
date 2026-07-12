@@ -30,3 +30,18 @@ PySnips מספקת סביבה שולחנית יציבה, חסינת קריסות
 
 ---
 
+## הוראות התקנה 
+
+`git clone https://github.com/RearmostP/PySnips
+`
+
+`python -m venv .venv
+.venv\Scripts\activate
+`
+
+`pip install -r requirements.txt
+`
+
+והפעלת האפליקצייה 
+
+`pthon main.py`
