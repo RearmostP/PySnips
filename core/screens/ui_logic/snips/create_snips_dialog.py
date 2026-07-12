@@ -47,20 +47,20 @@ def _sanitize(name: str) -> str:
 
 class SnippetManager:
     """מנהל היצירה והשמירה של snippets - טיפול בלוגיקת העבודה הקשורה ל-snippets."""
-    
+
     def __init__(self):
         self.tags_list = []
-    
+
     def create_and_save(self, title: str, category: str, tags_str: str, content: str) -> bool:
         """
         יצירה ושמירה של snippet חדש.
-        
+
         Args:
             title: כותרת ה-snippet
             category: קטגוריה
             tags_str: תגיות מופרדות בפסיקים
             content: תוכן ה-snippet
-            
+
         Returns:
             bool: האם השמירה הצליחה
         """
@@ -74,25 +74,25 @@ class SnippetManager:
                     show_gui=True
                 )
                 return False
-            
+
             AppDebugger.log(f"📝 יוצר snippet חדש: '{title}' בקטגוריה '{category}'")
-            
+
             # עיבוד התגיות
             self.tags_list = self._parse_tags(tags_str)
-            
+
             # יצירת מזהה ייחודי
             snippet_id = str(uuid.uuid4())
             AppDebugger.log(f"  🆔 יצר ID snippet: {snippet_id}")
-            
+
             # בנייה של שם קובץ קריא
             fname = self._make_content_filename(title, snippet_id)
             AppDebugger.log(f"  📄 יצר שם קובץ: {fname}")
-            
+
             # קביעת תיקיית הקבצים לקטגוריה
             safe_cat = _sanitize(category)
             file_dir = AppPaths.SNIPS_FILES / safe_cat
             file_path = file_dir / fname
-            
+
             snippet_data = {
                 'id': snippet_id,
                 'title': title,
@@ -100,17 +100,17 @@ class SnippetManager:
                 'tags': self.tags_list,
                 'content_file': str(file_path),
             }
-            
+
             # שמירת קובץ התוכן
             if not self._save_content_file(snippet_id, content, title, category):
                 return False
-            
+
             # עדכון ה-snips.json של הקטגוריה
             self._save_snippets_json(snippet_data, category)
-            
+
             AppDebugger.log(f"✅ SnippetManager: שמר snippet חדש בהצלחה: {title}")
             return True
-            
+
         except Exception as e:
             AppErrorHandler.handle_error(
                 error_obj=e,
@@ -119,7 +119,7 @@ class SnippetManager:
                 severity="ERROR"
             )
             return False
-    
+
     @staticmethod
     def _parse_tags(tags_str: str) -> list:
         """עיבוד מחרוזת תגיות - הסרת כפילויות תוך שמירה על סדר."""
@@ -132,7 +132,7 @@ class SnippetManager:
             seen.add(t)
             tags_list.append(t)
         return tags_list
-    
+
     @staticmethod
     def _make_content_filename(title: str, snippet_id: str, maxlen: int = 50) -> str:
         """בנייה של שם קובץ בטוח, קריא - דוגמה: my-snippet-title-7f3a2b1c.md"""
@@ -142,20 +142,21 @@ class SnippetManager:
             slug = 'snippet'
         short_id = snippet_id.replace('-', '')[:8]
         return f"{slug}-{short_id}.md"
-    
+
     @staticmethod
-    def _save_content_file(snippet_id: str, content: str, title: str | None = None, category: str | None = None) -> bool:
+    def _save_content_file(snippet_id: str, content: str, title: str | None = None,
+                           category: str | None = None) -> bool:
         """שמירת תוכן ה-snippet לקובץ markdown בתיקיית הקטגוריה."""
         try:
             safe_cat = _sanitize(category)
             dir_path = AppPaths.SNIPS_FILES / safe_cat
             dir_path.mkdir(parents=True, exist_ok=True)
-            
+
             if title:
                 fname = SnippetManager._make_content_filename(title, snippet_id)
             else:
                 fname = f"{snippet_id}.md"
-            
+
             file_path = dir_path / fname
             AppDebugger.log(f"💾 שומר תוכן snippet לדיסק: {file_path}")
             with open(file_path, 'w', encoding='utf-8') as f:
@@ -170,7 +171,7 @@ class SnippetManager:
                 severity="ERROR"
             )
             return False
-    
+
     @staticmethod
     def _save_snippets_json(snippet_data: dict, category: str | None = None) -> bool:
         """הוספה או יצירה של snips.json לכל קטגוריה."""
@@ -178,10 +179,10 @@ class SnippetManager:
             safe_cat = _sanitize(category or snippet_data.get('category'))
             dir_path = AppPaths.SNIPS_FILES / safe_cat
             dir_path.mkdir(parents=True, exist_ok=True)
-            
+
             snippets_file = dir_path / "snips.json"
             snippets = []
-            
+
             if snippets_file.exists():
                 AppDebugger.log(f"🔄 טוען אינדקס snippets מהזיכרון: {snippets_file}")
                 with open(snippets_file, 'r', encoding='utf-8') as f:
@@ -193,14 +194,14 @@ class SnippetManager:
                         snippets = []
             else:
                 AppDebugger.log(f"📄 יוצר קובץ אינדקס snippets חדש: {snippets_file}")
-            
+
             snippets.append(snippet_data)
-            
+
             AppDebugger.log(f"💾 שומר {len(snippets)} snippets לדיסק: {snippets_file}")
             with open(snippets_file, 'w', encoding='utf-8') as f:
                 json.dump(snippets, f, ensure_ascii=False, indent=2)
             AppDebugger.log(f"✅ אינדקס snippets שומר בהצלחה")
-            
+
             return True
         except Exception as e:
             AppErrorHandler.handle_error(
@@ -259,24 +260,57 @@ class CreateSnipsDialog(create_dynamic_ui_loader(AppPaths.CREATE_SNIPS_DIALOG)):
 
     def _load_category_buttons(self):
         """טוען קטגוריות מקובץ JSON לתוך ה-combobox"""
+        categories_file_path = AppPaths.CATEGORYS_JSON
+        AppDebugger.log(f"🔄 מנסה לטעון קטגוריות ישירות מהקובץ: {categories_file_path}")
+        
+        categories_list = []
         try:
-            categories_file = AppPaths.CATEGORYS_JSON
-            AppDebugger.log(f"🔄 טוען קטגוריות מהזיכרון: {categories_file}")
-            categories = []
-            with open(categories_file, 'r', encoding='utf-8') as f:
-                categories = json.load(f)
-            AppDebugger.log(f"✅ טען {len(categories)} קטגוריות לזיכרון")
+            if Path(categories_file_path).exists():
+                with open(categories_file_path, 'r', encoding='utf-8') as f:
+                    loaded_content = json.load(f)
+                
+                if isinstance(loaded_content, list):
+                    categories_list = loaded_content
+                    AppDebugger.log(f"✅ טען {len(categories_list)} קטגוריות מהקובץ.")
+                else:
+                    AppDebugger.log(f"⚠️ תוכן הקובץ {categories_file_path} אינו רשימה. מתעלם מתוכן הקובץ.")
+                    # Optionally, handle this error more severely or create a default list
+            else:
+                AppDebugger.log(f"⚠️ קובץ הקטגוריות {categories_file_path} לא נמצא. טוען רשימה ריקה.")
 
-            # עדכון ה-combobox בלבד (ללא כפתורים דינמיים)
-            try:
-                self.cmb_category_spinner.clear()
-                self.cmb_category_spinner.addItems(categories)
-                AppDebugger.log(f"✅ עדכן combobox עם {len(categories)} קטגוריות")
-            except Exception as e:
-                AppDebugger.log(f"⚠️ נכשל בעדכון combobox: {str(e)}")
-
+        except json.JSONDecodeError as e:
+            AppErrorHandler.handle_error(
+                error_obj=e,
+                user_message=f"שגיאה בפענוח קובץ הקטגוריות: {categories_file_path}",
+                dev_message=f"JSON decoding error in {categories_file_path}: {str(e)}",
+                severity="ERROR",
+                show_gui=False
+            )
         except Exception as e:
-            AppErrorHandler.handle_error(error_obj=e, user_message="שגיאה בטעינת קטגוריות", dev_message=str(e), severity="ERROR", show_gui=False)
+            AppErrorHandler.handle_error(
+                error_obj=e,
+                user_message="שגיאה בטעינת קטגוריות",
+                dev_message=f"Error loading categories from file: {str(e)}",
+                severity="ERROR",
+                show_gui=False
+            )
+
+        # עדכון ה-combobox
+        try:
+            self.cmb_category_spinner.clear()
+            if categories_list:
+                self.cmb_category_spinner.addItems(categories_list)
+                AppDebugger.log(f"✅ עדכן combobox עם {len(categories_list)} קטגוריות.")
+            else:
+                AppDebugger.log("ℹ️ אין קטגוריות לטעינה ל-combobox.")
+        except Exception as e:
+            AppErrorHandler.handle_error(
+                error_obj=e,
+                user_message="שגיאה בעדכון רשימת הקטגוריות",
+                dev_message=f"Error updating combobox with categories: {str(e)}",
+                severity="ERROR",
+                show_gui=False
+            )
 
     def mousePressEvent(self, event):
         """תפיסת לחיצת העכבר על הדיאלוג לצורך גרירה"""

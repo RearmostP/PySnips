@@ -380,6 +380,7 @@ class SnippetsScreen(create_dynamic_ui_loader(AppPaths.SNIPPETS_SCREEN)):
         AppDebugger.log("SnippetsScreen: Opening create snippets dialog...")
 
         dialog = CreateSnipsDialog(parent=self)
+        dialog.setup_events() # Call setup_events here
         screen = self.screen()
         screen_center = screen.availableGeometry().center()
         dialog.move(screen_center - dialog.rect().center())

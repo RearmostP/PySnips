@@ -14,9 +14,10 @@
     *   מטפל בשגיאות קריטיות שעלולות למנוע את המשך פעולת האפליקציה.
 
 2.  **ניהול קטגוריות (get_categories, update_categories_file, rebuild_category_index)**:
-    *   טוען את רשימת הקטגוריות מקובץ `categorys.json`.
-    *   במקרה של כשל בטעינה או קובץ חסר, בונה מחדש את אינדקס הקטגוריות על ידי סריקת תיקיות השליפים.
-    *   מוודא שקיימים קבצי JSON ריקים עבור כל קטגוריה בתיקיית הנתונים.
+    *   `get_categories`: טוען את רשימת הקטגוריות מקובץ `categorys.json`.
+    *   `update_categories_file`: מוסיף קטגוריה חדשה ל-`categorys.json`.
+    *   `rebuild_category_index`: בונה מחדש את אינדקס הקטגוריות על ידי סריקת תיקיות השליפים.
+    *   `ensure_category_files_exist`: כעת רק מוודאת שתיקיית `SNIPS_DATA_DIR` קיימת, ללא יצירת קבצי JSON נפרדים לקטגוריות.
 
 3.  **טעינת גופנים מותאמים אישית (load_custom_font)**:
     *   סורק את תיקיית הגופנים (FONTS_DIR) וטוען אוטומטית קובצי גופן (.ttf, .otf) למערכת.
@@ -109,22 +110,14 @@ def rebuild_category_index() -> list:
         dir_path.mkdir(parents=True, exist_ok=True)
 
         categories = []
-        for p in dir_path.glob('*.json'):
-            if p.name == Path(AppPaths.CATEGORYS_JSON).name:
-                continue
+        for p in dir_path.glob('*/snips.json'): # Changed glob pattern to look for snips.json in subdirectories
             try:
-                AppDebugger.log(f"קורא קובץ קטגוריה: {p.name}")
-                with open(p, 'r', encoding='utf-8') as f:
-                    data = json.load(f)
-                if isinstance(data, list) and len(data) > 0 and isinstance(data[0], dict):
-                    cat = data[0].get('category')
-                    if cat:
-                        categories.append(cat)
-                        continue
+                # Extract category name from parent directory
+                cat_name = p.parent.name
+                categories.append(cat_name)
             except Exception as e:
                 AppDebugger.log(f"קריאת הקובץ נכשלה {p.name}: {str(e)}")
                 pass
-            categories.append(_desanitize(p.name))
 
         seen = set()
         out = []
@@ -151,38 +144,21 @@ def rebuild_category_index() -> list:
 
 
 def ensure_category_files_exist(categories: list | None = None) -> None:
-    """ודא שקובץ JSON לכל קטגוריה קיים"""
+    """
+    פונקציה זו נועדה במקור לוודא שקובץ JSON לכל קטגוריה קיים.
+    בהתאם לבקשה, לוגיקת יצירת קבצי ה-JSON הנפרדים הוסרה.
+    כעת, היא רק מוודאת שתיקיית SNIPS_DATA_DIR קיימת.
+    """
     try:
-        AppDebugger.log("בודק אם קבצי הקטגוריות קיימים בדיסק...")
-        if categories is None:
-            categories = get_categories()
+        AppDebugger.log("בודק אם תיקיית נתוני השליפים קיימת...")
         dir_path = Path(AppPaths.SNIPS_DATA_DIR)
         dir_path.mkdir(parents=True, exist_ok=True)
+        AppDebugger.log(f"תיקיית נתוני השליפים קיימת או נוצרה: {dir_path}")
 
-        created = 0
-        for cat in categories:
-            safe = _sanitize(cat)
-            file_path = dir_path / f"{safe}.json"
-            if not file_path.exists():
-                try:
-                    AppDebugger.log(f"יוצר קובץ קטגוריה חסר: {file_path}")
-                    with open(file_path, 'w', encoding='utf-8') as f:
-                        json.dump([], f, ensure_ascii=False, indent=2)
-                    created += 1
-                except Exception as e:
-                    AppDebugger.log(f"יצירת הקובץ נכשלה {file_path}: {str(e)}")
-                    pass
-            else:
-                AppDebugger.log(f"קובץ הקטגוריה כבר קיים: {file_path}")
-
-        if created:
-            AppDebugger.log(f"מנהל אתחול: נוצרו {created} קבצים חסרים עבור הקטגוריות")
-        else:
-            AppDebugger.log(f"כל {len(categories)} קבצי הקטגוריות כבר קיימים")
     except Exception as e:
         AppErrorHandler.handle_error(
             error_obj=e,
-            user_message="שגיאה בבדיקת קבצי הקטגוריות",
+            user_message="שגיאה בבדיקת/יצירת תיקיית נתוני השליפים",
             dev_message=str(e),
             severity="ERROR"
         )
