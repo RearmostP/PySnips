@@ -6,19 +6,26 @@ class AppPaths:
 
     # ----------------- assets --------------------------
     ASSETS_DIR = PROJECT_DIR / "assets"
+    FONTS_DIR = ASSETS_DIR / "fonts"
     ICONS_DIR = ASSETS_DIR / "icons"
 
     # ----------------- core -----------------------------
     CORE_DIR = PROJECT_DIR / "core"
     COMMON_DIR = CORE_DIR / "common"
+    SYSTEM_TOOLS_DIR = CORE_DIR / "system_tools"
 
     # ----------------- data -----------------------------
     DATA_DIR = PROJECT_DIR / "data"
 
     # ----------------- user_data -------------------------
     USERS_DATA_DIR = DATA_DIR / "user_data"
+
+    # ----------------- snips_data -------------------------
     SNIPS_DATA_DIR = USERS_DATA_DIR / "snips"
+    SNIPS_FILES = SNIPS_DATA_DIR / "snips_files"
     CATEGORYS_JSON = SNIPS_DATA_DIR / "categorys.json"
+
+    # ----------------- ready_code_data --------------------
     READY_CODE_DATA_DIR = DATA_DIR / "ready_code"
 
     # ----------------- system_data ------------------------
@@ -32,6 +39,8 @@ class AppPaths:
     HOME_SCREEN = str(UI_DIR / "home" / "home_screen.ui")
     SNIPPETS_SCREEN = str(UI_DIR / "snips" / "snippets_screen.ui")
     CREATE_SNIPS_DIALOG = str(UI_DIR / "snips" / "create_snips_dialog.ui")
+    SNIPPET_CARD_WIDGET = str(UI_DIR / "snips" / "widgets" / "snippet_card.py")
+    EDIT_SNIPPET = str(UI_DIR / "snips" / "widgets" / "edit_snippet.ui")
 
     READY_CODE_SCREEN = str(UI_DIR / "ready_code" / "ready_code_screen.ui")
 
@@ -51,6 +60,7 @@ class AppPaths:
         # ------ core -----------
         CORE_DIR: True,
         COMMON_DIR: True,
+        SYSTEM_TOOLS_DIR: True,
 
         # ------ data -----------
         DATA_DIR: True,
@@ -66,6 +76,16 @@ class AppPaths:
 
         # ------ ui -------------
         UI_DIR: True,
+
+        SNIPPET_CARD_WIDGET: True,
+        EDIT_SNIPPET: False,
+
+        # ------ screens --------
+        HOME_SCREEN: True,
+        SNIPPETS_SCREEN: True,
+        CREATE_SNIPS_DIALOG: True,
+        READY_CODE_SCREEN: False,
+
 
         # ------ Companion ------
         LOGS_DIR: False,

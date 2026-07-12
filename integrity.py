@@ -1,49 +1,19 @@
-"""
-🛡️ PySnips 0.4 - System Integrity Testing System (The Compiler)
-==================================================================
-
-🎯 תפקיד המערכת (System Role):
--------------------------------
-קובץ זה מתפקד כ"קומפיילר" חכם פנימי של האפליקציה, שתפקידו לאכוף את חוקי העיצוב והארכיטקטורה
-של הפרויקט בשלבי הפיתוח. המערכת מונעת מהמתכנת לבצע טעויות שמות (Naming Conventions) ב-Qt Designer,
-וחוסמת את האפליקציה מהרצה במידה ושינוי שם של רכיב בממשק עלול לשבור את קוד הפייתון הקיים.
-המערכת מוודאת סנכרון מוחלט ומפיקה קובץ מיפוי סטטי (mapping.py) נקי ונטול פונקציות.
-
-🧰 ארגז הכלים הקיים בקובץ (Developer Tools Included):
--------------------------------------------------------
-1. מערכת אכיפת הקידומות (Naming Policy Enforcer):
-   מנגנון המבוסס על רשימת APPROVED_PREFIXES המאשר רק קידומות תקניות בנות 3 אותיות (כמו btn, lbl).
-
-2. מסנן רכיבים גנריים (Designer Trash Filter):
-   רשימה שחורה (DESIGNER_GENERIC_PREFIXES) שמסננת ומתעלמת בשקט מרכיבים אוטומטיים של ה-Designer
-   שלא שונה שמם (כמו pushButton_1), כדי לא להציק למפתח בהודעות שגיאה מיותרות.
-
-3. סורק מבנה השמות (Syntax Validator):
-   פונקציית validate_ui_element המזהה שגיאות מבניות קריטיות (כמו הצמדת מספר לאות ללא קו תחתון, btn1).
-
-4. מאתר שימוש בקוד (Static Code Usage Tracker):
-   פונקציית find_widget_usages_in_code הסורקת באופן טקסטואלי את כל קובצי ה-py. בפרויקט ומאתרת
-   האם משתנה ישן שעומד להימחק עדיין נמצא בשימוש איפשהו בקוד, ומציגה למפתח מיקום ושורה מדויקים.
-
-5. מחולל קוד המיפוי (Code Generator & Mapper):
-   פונקציית compile_system_integrity שמפרקת את ה-XML של ה-UI, יוצרת קלאסים מסודרים עם משתנים קבועים,
-   ומייצרת את מפת הגישה הדינמית WIDGET_MAPS עבור האפליקציה.
-"""
-
-import sys
-import os
-from pathlib import Path
-from datetime import datetime
+import datetime
 import json
+import os
+import re
+import sys
 import xml.etree.ElementTree as ET
+from pathlib import Path
 
-# הזרקה מוקדמת: מוודאים שמצב דבאג פעיל עוד לפני ייבוא הרכיבים
+# הזרקה מוקדמת של מצב דבאג
 if __name__ == "__main__" and "--debug" not in sys.argv:
     sys.argv.append("--debug")
 
-# ייבוא נתיבים בלבד - ללא מערכת השגיאות של האפליקציה
+# ייבוא נתיבי המערכת של האפליקציה
 from core.common.app_paths import AppPaths
 
+# קבועי מערכת האכיפה הארכיטקטונית
 APPROVED_PREFIXES = {
     "btn": "QPushButton",
     "lbl": "QLabel",
@@ -66,7 +36,7 @@ DESIGNER_GENERIC_PREFIXES = [
 
 
 def log_integrity_error(file_name: str, obj_name: str, issue_details: str, solution: str):
-    """הדפסת שגיאות קומפילציה מותאמת אישית ישירות לטרמינל ללא תלות באפליקציה"""
+    """הדפסת שגיאות קומפילציה מותאמת אישית ישירות לטרמינל"""
     RESET = "\033[0m"
     BOLD = "\033[1m"
     RED = "\033[91m"
@@ -74,15 +44,15 @@ def log_integrity_error(file_name: str, obj_name: str, issue_details: str, solut
     GRAY = "\033[90m"
 
     print(f"\n🛑 {RED}{BOLD}[שגיאת קומפילציה במערכת השלמות]{RESET}")
-    print(f" {GRAY}{'-'*70}{RESET}")
+    print(f" {GRAY}{'-' * 70}{RESET}")
     print(f" {BOLD}[קובץ ממשק]:{RESET}    {YELLOW}{file_name}{RESET}")
     print(f" {BOLD}[רכיב פסול]:{RESET}    {RED}{obj_name}{RESET}")
     print(f" {BOLD}[תיאור השגיאה]:{RESET} {issue_details}")
     print(f" {BOLD}[פתרון מוצע]:{RESET}  {solution}")
-    print(f" {GRAY}{'-'*70}{RESET}\n")
+    print(f" {GRAY}{'-' * 70}{RESET}\n")
 
 
-def log_integrity_msg(message: str, is_debug: bool = True):
+def log_integrity_msg(message: str):
     """הדפסת לוגים שוטפים של מערכת השלמות באופן עצמאי"""
     CYAN = "\033[96m"
     RESET = "\033[0m"
@@ -106,7 +76,7 @@ def validate_ui_element(obj_name: str, file_name: str) -> bool:
                 file_name=file_name,
                 obj_name=obj_name,
                 issue_details="האלמנט מכיל מספר הצמוד ישירות לאות ללא הפרדת קו תחתון (_).",
-                solution=f"שנה ב-Designer ל-'{obj_name[:i+1]}_{obj_name[i+1:]}'"
+                solution=f"שנה ב-Designer ל-'{obj_name[:i + 1]}_{obj_name[i + 1:]}'"
             )
             return False
 
@@ -114,7 +84,7 @@ def validate_ui_element(obj_name: str, file_name: str) -> bool:
     if len(prefix_raw) != 3:
         log_integrity_error(
             file_name=file_name,
-            obj_name=obj_name,
+            obj_name=prefix_raw,
             issue_details=f"הקידומת '{prefix_raw}' היא באורך {len(prefix_raw)} אותיות (מותר רק 3).",
             solution=f"השתמש באחת מהקידומות המאושרות: {list(APPROVED_PREFIXES.keys())}"
         )
@@ -124,14 +94,13 @@ def validate_ui_element(obj_name: str, file_name: str) -> bool:
     if prefix_raw not in APPROVED_PREFIXES:
         log_integrity_error(
             file_name=file_name,
-            obj_name=obj_name,
+            obj_name=prefix_raw,
             issue_details=f"הקידומת '{prefix_raw}' אינה מוכרת במערכת האכיפה הארכיטקטונית.",
             solution=f"הקידומות המותרות הן: {list(APPROVED_PREFIXES.keys())}"
         )
         return False
 
     return True
-
 
 def find_widget_usages_in_code(widget_var_name: str, class_name: str) -> list:
     """סורק את כל קובצי הפייתון ומחפש איפה המפתח השתמש בשם המשתנה הישן"""
@@ -145,62 +114,69 @@ def find_widget_usages_in_code(widget_var_name: str, class_name: str) -> list:
             with open(py_file, "r", encoding="utf-8") as f:
                 for line_num, line in enumerate(f, 1):
                     if search_pattern in line:
-                        usages.append(f" {py_file.relative_to(AppPaths.PROJECT_DIR)} (שורה {line_num}): `{line.strip()}`")
+                        usages.append(
+                            f" {py_file.relative_to(AppPaths.PROJECT_DIR)} (שורה {line_num}): `{line.strip()}`")
         except Exception:
             pass
     return usages
 
 
-def compile_system_integrity():
-    """מנוע הסריקה המרכזי - אוסף קבצים מ-AppPaths, בודק שלמות ומשכתב את mapping.py"""
-    log_integrity_msg("מתחיל סריקת שלמות ואכיפת חוקי עיצוב...")
+class SystemIntegrityCompiler:
+    """קומפיילר ומנהל שלמות מערכת האוכף חוקי ארכיטקטורה ומסנכרן את mapping.py"""
 
-    mapping_file = AppPaths.COMMON_DIR / "mapping.py"
+    def __init__(self):
+        self.mapping_file = AppPaths.COMMON_DIR / "mapping.py"
+        self.ui_files = []
+        self.custom_widgets = []
 
-    # איסוף קובצי ה-UI ישירות מתוך המשתנים של AppPaths
-    ui_files = []
-    for attr_name in dir(AppPaths):
-        if attr_name.startswith("__"):
-            continue
+        # ניהול מצב הפיתוח והמיפויים
+        self.has_errors = False
+        self.full_widget_maps = {}
+        self.generated_classes_code = ""
 
-        attr_value = getattr(AppPaths, attr_name)
-        if isinstance(attr_value, (str, Path)) and str(attr_value).endswith(".ui"):
-            ui_path = Path(attr_value)
-            if ui_path.exists():
-                if ui_path not in ui_files:
-                    ui_files.append(ui_path)
-            else:
-                print(f"\n❌ [שגיאה קריטית] המשתנה AppPaths.{attr_name} מצביע לנתיב חסר בדיסק: {ui_path}\n")
-                return
+    def _collect_monitored_files(self) -> bool:
+        """סריקת AppPaths וחלוקת הקבצים הקיימים לפי סוגים. מחזירה True אם נמצאה שגיאה קריטית."""
+        for attr_name in dir(AppPaths):
+            if attr_name.startswith("__"):
+                continue
 
-    current_timestamps = {
-        f.name: datetime.fromtimestamp(os.path.getmtime(f)).strftime('%Y-%m-%d %H:%M:%S')
-        for f in ui_files
-    }
+            attr_value = getattr(AppPaths, attr_name)
+            if isinstance(attr_value, (str, Path)):
+                path_obj = Path(attr_value)
+                if path_obj.exists():
+                    if path_obj.suffix == ".ui" and path_obj not in self.ui_files:
+                        self.ui_files.append(path_obj)
+                    elif path_obj.name == "snippet_card.py" and path_obj not in self.custom_widgets:
+                        self.custom_widgets.append(path_obj)
+                elif str(attr_value).endswith((".ui", ".py")) and attr_name.isupper():
+                    print(f"\n[CRITICAL ERROR] AppPaths.{attr_name} points to a missing path: {path_obj}\n")
+                    return True
+        return False
 
-    old_timestamps = {}
-    try:
-        import core.common.mapping as current_mapping
-        old_timestamps = getattr(current_mapping, "UI_TIMESTAMPS", {})
-    except Exception:
-        pass
+    @staticmethod
+    def _get_changed_files(all_files: list[Path], current_timestamps: dict) -> list[str]:
+        """השוואת חתימות זמן מול המיפוי הישן כדי לאתר קבצים ששונו."""
+        changed_files = []
+        old_timestamps = {}
+        try:
+            import core.system_tools.mapping as current_mapping
+            old_timestamps = getattr(current_mapping, "UI_TIMESTAMPS", {})
+        except Exception:
+            pass
 
-    has_errors = False
-    changed_files = []
-    full_widget_maps = {}
-    generated_classes_code = ""
+        for f in all_files:
+            if old_timestamps.get(f.name) != current_timestamps.get(f.name):
+                changed_files.append(f.name)
+        return changed_files
 
-    for ui_file in ui_files:
+    def _parse_ui_xml_file(self, ui_file: Path, class_name: str) -> list[str]:
+        """ניתוח קובץ XML של מעצב ה-UI ואכיפת חוקי שמות."""
+        found_elements = []
         file_name = ui_file.name
-        class_name = "".join([part.capitalize() for part in ui_file.stem.split("_")]) + "Elements"
-
-        if old_timestamps.get(file_name) != current_timestamps.get(file_name):
-            changed_files.append(file_name)
 
         try:
             tree = ET.parse(ui_file)
             root = tree.getroot()
-            found_elements = []
 
             for widget in root.iter("widget"):
                 obj_name = widget.get("name")
@@ -211,11 +187,11 @@ def compile_system_integrity():
                         if "_" in obj_name:
                             prefix = obj_name.split("_")[0]
                             if prefix not in DESIGNER_GENERIC_PREFIXES:
-                                has_errors = True
+                                self.has_errors = True
 
-            # בדיקה אם רכיב שונה או נמחק בדיזיינר אך עדיין קיים בקוד פייתון
+            # בדיקת רכיבים שנמחקו/שונו אך עדיין נמצאים בשימוש בקוד פייתון
             try:
-                import core.common.mapping as old_mapping
+                import core.system_tools.mapping as old_mapping
                 old_class = getattr(old_mapping, class_name, None)
                 if old_class:
                     old_variables = [attr for attr in dir(old_class) if attr.isupper()]
@@ -231,54 +207,126 @@ def compile_system_integrity():
                                     issue_details=f"הרכיב שונה או נמחק ב-Designer, אך שם המשתנה הישן ({class_name}.{old_var}) עדיין מופיע בקוד!",
                                     solution=f"עדכן או מחק את השורות הבאות בקוד לפני הרצה מחדש:\n{usages_str}"
                                 )
-                                has_errors = True
+                                self.has_errors = True
             except Exception:
                 pass
 
-            sorted_elements = sorted(set(found_elements))
-            full_widget_maps[class_name] = sorted_elements
-
-            generated_classes_code += f"class {class_name}:\n"
-            generated_classes_code += f'    """רכיבים דינמיים עבור {file_name}"""\n'
-            if not sorted_elements:
-                generated_classes_code += "    pass\n"
-            else:
-                for elem in sorted_elements:
-                    generated_classes_code += f'    {elem.upper()} = "{elem}"\n'
-            generated_classes_code += "\n"
-
         except Exception as e:
-            print(f"\n❌ [שגיאה קריטית] נכשלה קריאת מבנה ה-XML של הקובץ {file_name}. פירוט: {e}\n")
-            has_errors = True
+            print(f"\n[CRITICAL ERROR] Failed to parse XML structure for {file_name}. Details: {e}\n")
+            self.has_errors = True
 
-    if has_errors:
-        print("\n🛑 [קומפילציה בוטלה] המערכת מנעה את שכתוב קובץ המיפוי עקב שגיאות מבנה או חוסר סנכרון.\n")
-        return
+        return sorted(set(found_elements))
 
-    if changed_files:
-        log_integrity_msg(f"זוהו שינויים בדיזיינר עבור: {', '.join(changed_files)}")
-    else:
-        log_integrity_msg("לא זוהו שינויים חדשים בדיזיינר.")
+    def _parse_custom_widget_py_file(self, widget_file: Path) -> list[str]:
+        """ניתוח קובץ קוד פייתון של רכיב קסטום ואכיפת חוקי שמות על משתני self."""
+        found_elements = []
+        file_name = widget_file.name
 
-    timestamps_pretty = json.dumps(current_timestamps, indent=4)
-    maps_pretty = json.dumps(full_widget_maps, indent=4)
+        try:
+            with open(widget_file, "r", encoding="utf-8") as f:
+                content = f.read()
 
-    final_mapping_content = (
-        "# =====================================================================\n"
-        "#  מפות הרכיבים וחתימת הזמן (נוצר אוטומטית על ידי Integrity System)\n"
-        "# =====================================================================\n\n"
-        f"UI_TIMESTAMPS = {timestamps_pretty}\n\n"
-        f"{generated_classes_code}"
-        f"WIDGET_MAPS = {maps_pretty}\n"
-    )
+            internal_widgets = re.findall(r"self\.([a-zA-Z0-9_]+)", content)
 
-    try:
-        with open(mapping_file, "w", encoding="utf-8") as f:
-            f.write(final_mapping_content)
-        log_integrity_msg("🎉 קובץ mapping.py שוכתב ועודכן בהצלחה! המערכת יציבה ומסונכרנת.")
-    except Exception as e:
-        print(f"\n❌ [שגיאה קריטית] נכשלה כתיבת קובץ המיפוי הסטטי אל {mapping_file}. שגיאה: {e}\n")
+            for obj_name in internal_widgets:
+                if "_" in obj_name:
+                    prefix = obj_name.split("_")[0]
+                    if prefix in APPROVED_PREFIXES:
+                        if validate_ui_element(obj_name, file_name):
+                            found_elements.append(obj_name)
+                        else:
+                            self.has_errors = True
+                    elif len(prefix) == 3 and prefix not in APPROVED_PREFIXES:
+                        validate_ui_element(obj_name, file_name)
+                        self.has_errors = True
+        except Exception as e:
+            print(f"\n[CRITICAL ERROR] Failed to analyze custom widget code for {file_name}. Details: {e}\n")
+            self.has_errors = True
+
+        return sorted(set(found_elements))
+
+    def _append_class_source_code(self, class_name: str, elements: list[str], description: str):
+        """מחוללת את מחרוזת קוד המקור עבור המחלקה הסטטית ומחברת אותה לפלט המרכזי."""
+        code = f"class {class_name}:\n"
+        code += f'    """{description}"""\n'
+        if not elements:
+            code += "    pass\n"
+        else:
+            for elem in elements:
+                code += f'    {elem.upper()} = "{elem}"\n'
+        code += "\n"
+        self.generated_classes_code += code
+
+    def compile(self):
+        """מנוע הסריקה המרכזי - הפונקציה המנהלת שמפעילה את כל שלבי הקומפילציה"""
+        log_integrity_msg("מתחיל סריקת שלמות ואכיפת חוקי עיצוב...")
+
+        # 1. איסוף קבצים
+        if self._collect_monitored_files():
+            return
+
+        # 2. ניהול חתימות זמן ושינויים
+        all_monitored_files = self.ui_files + self.custom_widgets
+        current_timestamps = {
+            f.name: datetime.datetime.fromtimestamp(os.path.getmtime(f)).strftime('%Y-%m-%d %H:%M:%S')
+            for f in all_monitored_files
+        }
+        changed_files = self._get_changed_files(all_monitored_files, current_timestamps)
+
+        # 3. עיבוד קובצי UI (XML)
+        for ui_file in self.ui_files:
+            class_name = "".join([part.capitalize() for part in ui_file.stem.split("_")]) + "Elements"
+            elements = self._parse_ui_xml_file(ui_file, class_name)
+
+            self.full_widget_maps[class_name] = elements
+            self._append_class_source_code(
+                class_name=class_name,
+                elements=elements,
+                description=f"רכיבים דינמיים עבור {ui_file.name}"
+            )
+
+        # 4. עיבוד קובצי רכיבים קסטום (Python)
+        for widget_file in self.custom_widgets:
+            class_name = "".join([part.capitalize() for part in widget_file.stem.split("_")]) + "Elements"
+            elements = self._parse_custom_widget_py_file(widget_file)
+
+            self.full_widget_maps[class_name] = elements
+            self._append_class_source_code(
+                class_name=class_name,
+                elements=elements,
+                description=f"רכיבים פנימיים מתוך קוד הרכיב הקסטום {widget_file.name}"
+            )
+
+        # 5. בדיקת חסימה וכתיבה סופית לדיסק
+        if self.has_errors:
+            print("\n[COMPILATION ABORTED] Integrity system blocked mapping.py rewrite due to architectural errors.\n")
+            return
+
+        if changed_files:
+            log_integrity_msg(f"זוהו שינויים ברכיבים עבור: {', '.join(changed_files)}")
+        else:
+            log_integrity_msg("לא זוהו שינויים חדשים ברכיבים.")
+
+        timestamps_pretty = json.dumps(current_timestamps, indent=4)
+        maps_pretty = json.dumps(self.full_widget_maps, indent=4)
+
+        final_mapping_content = (
+            "# =====================================================================\n"
+            "#  מפות הרכיבים וחתימת הזמן (נוצר אוטומטית על ידי Integrity System)\n"
+            "# =====================================================================\n\n"
+            f"UI_TIMESTAMPS = {timestamps_pretty}\n\n"
+            f"{self.generated_classes_code}"
+            f"WIDGET_MAPS = {maps_pretty}\n"
+        )
+
+        try:
+            with open(self.mapping_file, "w", encoding="utf-8") as f:
+                f.write(final_mapping_content)
+            log_integrity_msg("🎉 קובץ mapping.py שוכתב ועודכן בהצלחה! המערכת יציבה ומסונכרנת.")
+        except Exception as e:
+            print(f"\n[CRITICAL ERROR] Failed to write static mapping file to {self.mapping_file}. Error: {e}\n")
 
 
 if __name__ == "__main__":
-    compile_system_integrity()
+    compiler = SystemIntegrityCompiler()
+    compiler.compile()

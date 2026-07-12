@@ -1,5 +1,21 @@
+"""
+מטרת הקובץ: טעינה דינמית ומינימלית של מסכי האפליקציה לזיכרון.
+
+האפליקציה מחולקת לשני חלקים עצמאיים לחלוטין. זרימת העבודה של המשתמש מבוססת על הפרדה זו:
+1. המשתמש פותח את האפליקציה כדי לשמור או ליצור שליף (Snippet) לשימוש עתידי.
+2. בהמשך, המשתמש פועל בדרך כלל באחד משני אזורים נפרדים: חלק ניהול השליפים או חלק הקוד המוכן.
+
+כדי למנוע עומס מיותר על המחשב, קובץ זה דואג לטעון לזיכרון אך ורק את הרכיבים הרלוונטיים לחלק הפעיל,
+ללא טעינת החלק שאינו בשימוש.
+
+הערות ארכיטקטורה:
+- קובץ זה משמש ככלי עזר פנימי עבור מערכת האפליקציה, ומנוהל אך ורק על ידי מנהל המערכת (app_coordinator).
+- ההפרדה הלוגית הזו נועדה להבטיח תחזוקה קלה של הקוד, וסדר ויזואלי ברור.
+"""
+
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QStackedWidget
 from core.common.error_manager import AppDebugger, AppErrorHandler
+
 
 
 class ScreenManager(QWidget):
@@ -20,25 +36,25 @@ class ScreenManager(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
 
         # דיקשנרי שמחזיק את המסכים הרשומים
-        self._screens = {}
+        self.screens = {}
 
     def register_screen(self, name: str, screen_widget: QWidget):
         """
         רישום מסך חדש במערכת.
         הפונקציה נקראת מבחוץ (על ידי ה-Coordinator) ומזריקה את המסך לערימה.
         """
-        self._screens[name] = screen_widget
+        self.screens[name] = screen_widget
         self.stacked_widget.addWidget(screen_widget)
 
-        # הצמדת קישור אל המנהל למקרה הצורך
+        # הזרקת תלות: מאפשר למסך לקרוא למנהל שלו לצורך ניווט
         screen_widget.manager = self
         AppDebugger.log(f" ScreenManager: המסך '{name}' נרשם והוזרק בהצלחה לערימה.")
 
     def switch_to(self, name: str):
         """הפונקציה הטכנית שמבצעת את החלפת המסך בפועל"""
-        if name in self._screens:
+        if name in self.screens:
             AppDebugger.log(f" ScreenManager: מעביר פיזית למסך '{name}'")
-            target_widget = self._screens[name]
+            target_widget = self.screens[name]
             self.stacked_widget.setCurrentWidget(target_widget)
         else:
             AppErrorHandler.handle_error(
@@ -49,4 +65,4 @@ class ScreenManager(QWidget):
 
     # בשביל שהיה אפשר לגשת ולבדוק אם קיים מסך מסויים ברשימה
     def has_screen(self, name: str) -> bool:
-        return name in self._screens
+        return name in self.screens

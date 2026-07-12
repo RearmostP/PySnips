@@ -6,7 +6,8 @@ UI_TIMESTAMPS = {
     "create_snips_dialog.ui": "2026-06-23 14:25:25",
     "home_screen.ui": "2026-06-21 16:27:49",
     "ready_code_screen.ui": "2026-06-14 03:18:18",
-    "snippets_screen.ui": "2026-06-24 15:33:03"
+    "snippets_screen.ui": "2026-06-24 15:33:03",
+    "snippet_card.py": "2026-07-03 13:32:41"
 }
 
 class CreateSnipsDialogElements:
@@ -47,6 +48,10 @@ class SnippetsScreenElements:
     WDG_MAIN_CONTENT = "wdg_main_content"
     WDG_SIDEBAR = "wdg_sidebar"
 
+class SnippetCardElements:
+    """רכיבים פנימיים מתוך קוד הרכיב הקסטום snippet_card.py"""
+    BTN_CPY = "btn_cpy"
+
 WIDGET_MAPS = {
     "CreateSnipsDialogElements": [
         "btn_List",
@@ -81,5 +86,8 @@ WIDGET_MAPS = {
         "scl_snippets",
         "wdg_main_content",
         "wdg_sidebar"
+    ],
+    "SnippetCardElements": [
+        "btn_cpy"
     ]
 }

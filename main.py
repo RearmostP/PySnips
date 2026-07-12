@@ -26,9 +26,12 @@
 * core/boot.py    <- מנהל האתחול. בודק התאמת חתימות זמן של ה-UI מול הדיסק לפני הריצה.
 * core/common/
   ├── integrity.py    <- "הקומפיילר החכם". סורק את ה-UI, אוכף חוקי שמות ויוצר את המיפוי.
-  ├── mapping.py      <- קובץ נתונים סטטי ונקי. מכיל את חתימות הזמן, קבועי השמות ומפת ה-WIDGET_MAPS.
   ├── error_manager.py<- שומר הסף הגלובלי. חוטף קריסות, כותב לוגים ומקפיץ חלונות QMessageBox.
   └── dynamic_ui_loader.py     <- טוען קבצי ui דינאמחת בזמן ריצה
+
+* core/system_tools
+    └── mapping.py      <- קובץ נתונים סטטי ונקי. מכיל את חתימות הזמן, קבועי השמות ומפת ה-WIDGET_MAPS.
+
 
 📢 בקשה מהמתכנת:
 ----------------
@@ -39,23 +42,51 @@
 
 import sys
 from PySide6.QtWidgets import QApplication
+from PySide6.QtGui import QIcon
 
-from core.app_coordinator import AppCoordinator
+
+from core.common.screen_manager import ScreenManager # Corrected import
+from core.boot import run_startup_checks
 from core.common.error_manager import AppDebugger
+
+from core.screens.ui_logic.home.home_screen import HomeScreen
+from core.screens.ui_logic.snips.snippets_screen import SnippetsScreen
+
 
 
 def main():
     # 1. יצירת מופע האפליקציה של Qt
     app = QApplication(sys.argv)
 
-    # 2. הודעת דיבאג על העברת שליטה
-    AppDebugger.log("האתחול עבר בהצלחה. מעביר שליטה ל-AppCoordinator.")
+    # 2. הרצת בדיקות השלמות תחילה
+    if not run_startup_checks():
+        AppDebugger.log("בדיקות השלמות נכשלו. הריצה הסתיימה.")
+        sys.exit(1)
 
-    # 3. יצירת ה-Coordinator והפעלתו (הוא כבר ינהל את הבדיקות והטעינה)
-    coordinator = AppCoordinator()
-    coordinator.start()
+    AppDebugger.log("בדיקות השלמות עברו בהצלחה. מתחיל אתחול...")
 
-    # 4. לולאת האירועים המרכזית של Qt
+    # 3. יצירת מנהל המסכים
+    screen_manager = ScreenManager()
+    screen_manager.resize(1024, 768)  # הגדרת גודל החלון הראשי
+    screen_manager.setWindowTitle("PySnips")
+    screen_manager.setWindowIcon(QIcon("assets/icons/pysnips.ico"))
+
+    # 4. טעינת מסך הבית
+    home_screen = HomeScreen(screen_manager)
+    home_screen.setup_logic()
+    home_screen.load_home_screen()
+
+    # 5. טעינת מסך השליפים
+    snippets_screen = SnippetsScreen(parent=screen_manager)
+    snippets_screen.setup_events()
+    screen_manager.register_screen("snippets", snippets_screen)
+
+
+
+    # 6. הצגת מנהל המסכים (החלון הראשי של האפליקציה)
+    screen_manager.show()
+
+    # 7. לולאת האירועים המרכזית של Qt
     sys.exit(app.exec())
 
 

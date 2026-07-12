@@ -2,52 +2,6 @@
 PySnips Error & Debug Management System
 =======================================
 מערכת מרכזית לניהול שגיאות (Errors) וניפוי באגים (Debug) עבור אפליקציית PySnips.
-
-הוראות שימוש חיוניות:
---------------------
-
-1. שימוש בתוך בלוק תפיסת שגיאות (try/except):
-   במצב זה חובה להעביר את אובייקט השגיאה (e) כפרמטר `error_obj`.
-
-   >>> try:
-   >>>     res = 10 / 0
-   >>> except ZeroDivisionError as e:
-   >>>     AppErrorHandler.handle_error(
-   >>>         error_obj=e,
-   >>>         user_message="שגיאה בחישוב הנתונים הגרפיים.",
-   >>>         severity="ERROR"
-   >>>     )
-
-2. שימוש בתוך בדיקות תנאי לוגיות (if):
-   במצב זה אין אובייקט שגיאה, לכן משמיטים את הפרמטר `error_obj`. המערכת תזהה לבד
-   את מיקום ה-if ותתעד אותו כ-`LogicalError`.
-
-   >>> if not icon_path.exists():
-   >>>     AppErrorHandler.handle_error(
-   >>>         user_message="לא הצלחנו לטעון את האייקון של האפליקציה.",
-   >>>         dev_message=f"הקובץ חסר בנתיב: {icon_path}",
-   >>>         severity="WARNING"
-   >>>     )
-
-3. שליטה מתקדמת בערוצי הפלט (דגלים):
-   ניתן לכבות או להדליק באופן דינמי את ערוצי הפלט (טרמינל, לוג, חלון גרפי) באמצעות דגלים בוליאנים.
-
-   >>> AppErrorHandler.handle_error(
-   >>>     user_message="שגיאת רקע שקטה",
-   >>>     show_gui=False,       # לא יקפיץ חלון למשתמש
-   >>>     show_terminal=False   # לא ידפיס לטרמינל (יירשם רק בקובץ הלוג)
-   >>> )
-
-4. שימוש במערכת ה-Debug (ניפוי באגים):
-   הודעות אלו מיועדות למעקב פיתוח רגיל. הן יודפסו ויירשמו לקובץ הלוג המיוחד `pysnips_debug.log`
-   רק אם האפליקציה הורצה עם הדגל: `python main.py --debug`. ברצה רגילה הן יהיו רדומות לחלוטין.
-
-   >>> AppDebugger.log("מתחיל לטעון את רכיבי המערכת הדינמיים...")
-
-נתיבי קבצי הלוג:
---------------
-- שגיאות קריטיות:  logs/pysnips.log
-- הודעות דבאג:      logs/pysnips_debug.log
 """
 
 import sys
@@ -62,10 +16,8 @@ from PySide6.QtWidgets import QMessageBox, QApplication
 from core.common.app_paths import AppPaths
 
 # הגדרת נתיבי קבצי הלוג של האפליקציה
-
 ERROR_LOG_PATH = AppPaths.LOGS_DIR / "pysnips.log"
 DEBUG_LOG_PATH = AppPaths.LOGS_DIR / "pysnips_debug.log"
-
 
 
 class AppErrorHandler:
@@ -93,9 +45,8 @@ class AppErrorHandler:
             summary = traceback.extract_tb(tb)
             last_frame = summary[-1] if summary else None
         else:
-            # 💡 אם זו בדיקת if ידנית - נבדוק מי קרא ל-handle_error ברגע זה!
+            # אם זו בדיקת if ידנית - נבדוק מי קרא ל-handle_error ברגע זה
             summary = traceback.extract_stack()
-            # summary[-2] לוקח אותנו צעד אחד אחורה, אל השורה שבה כתבת את ה-if
             last_frame = summary[-2] if len(summary) >= 2 else None
 
         if last_frame:
@@ -107,14 +58,10 @@ class AppErrorHandler:
         else:
             error_context = {"filename": "Unknown", "line": 0, "function": "Unknown"}
 
-        # קביעת שם השגיאה הטכנית להצגה
-        error_name = type(error_obj).__name__ if error_obj else "LogicalError"
-        error_details = str(error_obj) if error_obj else "בדיקת תנאי ידנית בקוד (תנאי נכשל)"
-
-        # התיקון החסר: יצירת המשתנה עבור הודעת הפיתוח
+        # הגדרת הודעת הפיתוח הסופית
         final_dev_message = dev_message if dev_message else user_message
 
-        # 2. הפעלה מותנית (Conditional) של הערוצים לפי הדגלים
+        # 2. הפעלה מותנית של הערוצים לפי הדגלים (העברת final_dev_message במקום user_message)
         if show_terminal:
             cls._print_to_terminal(error_context, error_obj, final_dev_message, severity)
         if show_log:
@@ -123,90 +70,80 @@ class AppErrorHandler:
             cls._show_gui_dialog(user_message, error_obj, severity, solution_hint)
 
     @staticmethod
-    def _print_to_terminal(context: dict, error_obj: Exception, user_message: str, severity: str):
+    def _print_to_terminal(context: dict, error_obj: Exception, dev_message: str, severity: str):
         """מדפיסה תבנית מעוצבת לטרמינל - קווי קישוט אפורים, קידומות מודגשות"""
-
-        # 🎨 קודי עיצוב וצבעים
         RESET = "\033[0m"
         BOLD = "\033[1m"
-        GRAY = "\033[90m"  # צבע אפור עבור קווי הקישוט
+        GRAY = "\033[90m"
 
-        # התאמת אייקון וצבע רק עבור שורת החומרה (Severity)
         if severity == "CRITICAL":
-            COLOR_SEV = "\033[95m"  # סגול מודגש
+            COLOR_SEV = "\033[95m"
             icon = "🔥"
         elif severity == "ERROR":
-            COLOR_SEV = "\033[91m"  # אדום
+            COLOR_SEV = "\033[91m"
             icon = "❌"
         elif severity == "WARNING":
-            COLOR_SEV = "\033[93m"  # צהוב
+            COLOR_SEV = "\033[93m"
             icon = "⚠️"
         else:
-            COLOR_SEV = "\033[94m"  # כחול
+            COLOR_SEV = "\033[94m"
             icon = "ℹ️"
 
-        # קביעת שם השגיאה והפרטים להדפסה
         error_name = type(error_obj).__name__ if error_obj else "LogicalError"
-        error_details = str(error_obj) if error_obj else "None"
+        error_details = str(error_obj) if error_obj else "בדיקת תנאי ידנית בקוד (תנאי נכשל)"
 
-        # 🖨️ הדפסת הבלוק המעוצב שלך
         print(f"\n{icon} {GRAY}{'=' * 30} [App Error] {'=' * 30}{RESET} {icon}")
         print(f" {COLOR_SEV}{BOLD}[{severity}]{RESET}")
-        print(f" {BOLD}[SYSTEM MESSAGE]{RESET} {user_message}")
+        print(f" {BOLD}[SYSTEM MESSAGE]{RESET} {dev_message}")
         print(f" {BOLD}[The error]{RESET}  {error_name}: {error_details}")
-        print(
-            f" {BOLD}[Error location]{RESET} `{context['filename']}` -> line {context['line']} -> function `{context['function']}`")
+        print(f" {BOLD}[Error location]{RESET} `{context['filename']}` -> line {context['line']} -> function `{context['function']}`")
         print(f"{icon} {GRAY}{'=' * 73}{RESET} {icon}\n")
 
     @staticmethod
-    def _write_to_log(context: dict, error_obj: Exception, user_message: str, severity: str):
+    def _write_to_log(context: dict, error_obj: Exception, dev_message: str, severity: str):
         """כותבת את השגיאה בצורה מרווחת, קריאה ומיושרת לקובץ הלוג"""
-
-        # 1. השגת הזמן הנוכחי בפורמט נקי
         current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-        # 2. חילוץ פרטי השגיאה
         error_name = type(error_obj).__name__ if error_obj else "LogicalError"
         error_details = str(error_obj) if error_obj else "None"
 
-        # 3. בניית הבלוק המעוצב של הלוג (עם שורות חדשות \n)
         log_block = (
             f"============================== [App Error] ==============================\n"
             f" [{current_time}] [{severity}]\n"
-            f" [SYSTEM MESSAGE] {user_message}\n"
+            f" [SYSTEM MESSAGE] {dev_message}\n"
             f" [The error]      {error_name}: {error_details}\n"
             f" [Error location] `{context['filename']}` -> line {context['line']} -> function `{context['function']}`\n"
             f"=========================================================================\n\n"
         )
 
-        # 4. כתיבה (append) בפועל לקובץ הלוג
         try:
             with open(ERROR_LOG_PATH, "a", encoding="utf-8") as f:
                 f.write(log_block)
         except Exception as e:
-            # הגנה מפני קריסה במקרה שהקובץ נעול
             print(f"⚠️ לא ניתן לכתוב לקובץ הלוג: {e}")
 
     @staticmethod
     def _show_gui_dialog(user_message: str, error_obj: Exception, severity: str, solution_hint: str):
-        """מציגה חלון QMessageBox מעוצב למשתמש (רק אם הממשק הגרפי רץ)"""
+        """מציגה חלון QMessageBox מעוצב למשתמש (בטוח לשימוש גם ללא אובייקט שגיאה)"""
         if not QApplication.instance():
-            return  # מונע קריסה אם ה-GUI עוד לא באוויר
+            return
 
         msg_box = QMessageBox()
         msg_box.setWindowTitle("הודעת מערכת - PySnips")
         msg_box.setText(f"<h3>{user_message}</h3>")
 
-        # קביעת האייקון לפי רמת החומרה
         if severity == "WARNING":
             msg_box.setIcon(QMessageBox.Warning)
         else:
             msg_box.setIcon(QMessageBox.Critical)
 
-        # בניית הפירוט הטכני המורחב (המשתמש יראה בלחיצה על "Show Details")
+        # תיקון בטיחות: מניעת קריסה כאשר error_obj הוא None
+        error_name = type(error_obj).__name__ if error_obj else "LogicalError"
+        error_details = str(error_obj) if error_obj else "לא זוהה אובייקט חריגה פיזי (בדיקת תנאי לוגית)"
+
         detailed_text = (
-            f"סוג השגיאה: {type(error_obj).__name__}\n"
-            f"תיאור טכני: {error_obj}\n\n"
+            f"סוג השגיאה: {error_name}\n"
+            f"תיאור טכני: {error_details}\n\n"
         )
         if solution_hint:
             detailed_text += f"💡 כיצד לתקן:\n{solution_hint}\n\n"
@@ -221,15 +158,14 @@ class AppErrorHandler:
 class AppDebugger:
     @staticmethod
     def log(message: str):
+        # תיקון: הבדיקה מוקמת בראש הפונקציה למניעת הרצת קוד מיותרת
         if "--debug" not in sys.argv:
-            return  # אם לא ביקשו דיבאג, אל תדפיס כלום וצא מהפונקציה
-        """מדפיס לוג מעוצב, צבעוני ומיושר אנכית לטרמינל"""
-        # 1. חילוץ אוטומטי של שם הקובץ ומספר השורה
+            return
+
         frame = inspect.stack()[1]
         filename = os.path.basename(frame.filename)
         line_number = frame.lineno
 
-        # 2. הגדרת קודי צבעים (ANSI Escape Codes)
         GREEN = "\033[92m"
         YELLOW = "\033[93m"
         CYAN = "\033[96m"
@@ -237,19 +173,12 @@ class AppDebugger:
         WHITE = "\033[37m"
         RESET = "\033[0m"
 
-        # 3. ניקוי מרכאות והחלפה לפורמט root: עבור נתיבים
         path_pattern = r"['\"]([^'\"]+\.(?:ui|py))['\"]"
         if re.search(path_pattern, message):
             message = re.sub(path_pattern, r"root:\1", message)
             message = re.sub(r"(root:[^\s]+)", f"{CYAN}\\1{RESET}", message)
 
-        # 4. יצירת מחרוזת המיקום ויישור שלה לאורך קבוע (למשל 26 תווים)
-        # ה-ljust דואג להשלים ברווחים אם המחרוזת קצרה מהאורך שהוגדר
         raw_location = f"({filename}:{line_number})"
-        padded_location = raw_location.ljust(26)
-
-        # 5. הזרקת הצבעים לתוך המחרוזת המיושרת
-        # אנחנו צובעים את הסוגריים והתוכן בנפרד כדי שהרווחים של ה-ljust לא ישפיעו על הצבעים
         colored_location = (
             f"{GRAY}({YELLOW}{filename}:{line_number}{GRAY})"
             f"{RESET}{' ' * (26 - len(raw_location))}"
@@ -258,5 +187,4 @@ class AppDebugger:
         log_prefix = f"{GREEN}[DEBUG]{RESET}"
         arrow = f"{WHITE}->{RESET}"
 
-        # 6. הדפסת השורה הסופית המיושרת לחלוטין
         print(f"{log_prefix} {colored_location} {arrow} {message}")
