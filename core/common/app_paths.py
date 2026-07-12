@@ -39,8 +39,8 @@ class AppPaths:
     HOME_SCREEN = str(UI_DIR / "home" / "home_screen.ui")
     SNIPPETS_SCREEN = str(UI_DIR / "snips" / "snippets_screen.ui")
     CREATE_SNIPS_DIALOG = str(UI_DIR / "snips" / "create_snips_dialog.ui")
-    SNIPPET_CARD_WIDGET = str(UI_DIR / "snips" / "widgets" / "snippet_card.py")
-    EDIT_SNIPPET = str(UI_DIR / "snips" / "widgets" / "edit_snippet.ui")
+    SNIPPET_CARD_UI = str(UI_DIR / "snips" / "widgets" / "snippet_card.ui") # Updated to point to the .ui file
+    EDIT_CARD_WIDGET = str(UI_DIR / "snips" / "widgets" / "edit_card.ui")
 
     READY_CODE_SCREEN = str(UI_DIR / "ready_code" / "ready_code_screen.ui")
 
@@ -77,8 +77,8 @@ class AppPaths:
         # ------ ui -------------
         UI_DIR: True,
 
-        SNIPPET_CARD_WIDGET: True,
-        EDIT_SNIPPET: False,
+        SNIPPET_CARD_UI: True, # Updated name
+        EDIT_CARD_WIDGET: False,
 
         # ------ screens --------
         HOME_SCREEN: True,

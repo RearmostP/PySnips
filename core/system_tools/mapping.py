@@ -7,7 +7,6 @@ UI_TIMESTAMPS = {
     "home_screen.ui": "2026-06-21 16:27:49",
     "ready_code_screen.ui": "2026-06-14 03:18:18",
     "snippets_screen.ui": "2026-06-24 15:33:03",
-    "snippet_card.py": "2026-07-03 13:32:41"
 }
 
 class CreateSnipsDialogElements:
@@ -49,7 +48,7 @@ class SnippetsScreenElements:
     WDG_SIDEBAR = "wdg_sidebar"
 
 class SnippetCardElements:
-    """רכיבים פנימיים מתוך קוד הרכיב הקסטום snippet_card.py"""
+    """רכיבים פנימיים מתוך קוד הרכיב הקסטום .py"""
     BTN_CPY = "btn_cpy"
 
 WIDGET_MAPS = {

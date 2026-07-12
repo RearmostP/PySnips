@@ -146,8 +146,8 @@ class SystemIntegrityCompiler:
                 if path_obj.exists():
                     if path_obj.suffix == ".ui" and path_obj not in self.ui_files:
                         self.ui_files.append(path_obj)
-                    elif path_obj.name == "snippet_card.py" and path_obj not in self.custom_widgets:
-                        self.custom_widgets.append(path_obj)
+                    #elif path_obj.name == "nippet_card.py" and path_obj not in self.custom_widgets:
+                        #self.custom_widgets.append(path_obj)
                 elif str(attr_value).endswith((".ui", ".py")) and attr_name.isupper():
                     print(f"\n[CRITICAL ERROR] AppPaths.{attr_name} points to a missing path: {path_obj}\n")
                     return True
