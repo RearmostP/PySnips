@@ -3,10 +3,13 @@
 # =====================================================================
 
 UI_TIMESTAMPS = {
-    "create_snips_dialog.ui": "2026-06-23 14:25:25",
+    "create_snips_dialog.ui": "2026-07-12 12:11:59",
+    "edit_card.ui": "2026-07-12 06:12:07",
     "home_screen.ui": "2026-06-21 16:27:49",
     "ready_code_screen.ui": "2026-06-14 03:18:18",
     "snippets_screen.ui": "2026-06-24 15:33:03",
+    "snippet_card.ui": "2026-07-12 17:01:50",
+    "snippet_search_widget.ui": "2026-07-13 10:24:08"
 }
 
 class CreateSnipsDialogElements:
@@ -23,6 +26,12 @@ class CreateSnipsDialogElements:
     INP_TITLE_INPUT = "inp_title_input"
     LBL_CONTENT_PREVIEW = "lbl_content_preview"
     TXT_CONTENT_INPUT = "txt_content_input"
+
+class EditCardElements:
+    """רכיבים דינמיים עבור edit_card.ui"""
+    BTN_CANCEL_EDIT = "btn_cancel_edit"
+    BTN_SAVE_EDIT = "btn_save_edit"
+    TXT_SNIPPET_CONTENT = "txt_snippet_content"
 
 class HomeScreenElements:
     """רכיבים דינמיים עבור home_screen.ui"""
@@ -48,8 +57,16 @@ class SnippetsScreenElements:
     WDG_SIDEBAR = "wdg_sidebar"
 
 class SnippetCardElements:
-    """רכיבים פנימיים מתוך קוד הרכיב הקסטום .py"""
-    BTN_CPY = "btn_cpy"
+    """רכיבים דינמיים עבור snippet_card.ui"""
+    BTN_DETAILS = "btn_details"
+    BTN_EDIT = "btn_edit"
+    LBL_TITLE_LABEL = "lbl_title_label"
+    TXT_CONTENT_PREVIEW = "txt_content_preview"
+
+class SnippetSearchWidgetElements:
+    """רכיבים דינמיים עבור snippet_search_widget.ui"""
+    BTN_LOAD_MORE = "btn_load_more"
+    LBL_STATUS = "lbl_status"
 
 WIDGET_MAPS = {
     "CreateSnipsDialogElements": [
@@ -65,6 +82,11 @@ WIDGET_MAPS = {
         "inp_title_input",
         "lbl_content_preview",
         "txt_content_input"
+    ],
+    "EditCardElements": [
+        "btn_cancel_edit",
+        "btn_save_edit",
+        "txt_snippet_content"
     ],
     "HomeScreenElements": [
         "btn_go_ready_code",
@@ -87,6 +109,13 @@ WIDGET_MAPS = {
         "wdg_sidebar"
     ],
     "SnippetCardElements": [
-        "btn_cpy"
+        "btn_details",
+        "btn_edit",
+        "lbl_title_label",
+        "txt_content_preview"
+    ],
+    "SnippetSearchWidgetElements": [
+        "btn_load_more",
+        "lbl_status"
     ]
 }

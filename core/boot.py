@@ -35,6 +35,7 @@ from PySide6.QtGui import QFontDatabase
 
 from core.tools.common.app_paths import AppPaths
 from core.tools.common.error_manager import AppDebugger, AppErrorHandler
+from core.tools.search.snippet_search_engine import SnippetSearchEngine
 
 
 def _sanitize(name: str) -> str:
@@ -165,6 +166,25 @@ def ensure_category_files_exist(categories: list | None = None) -> None:
         )
 
 
+def rebuild_search_index() -> bool:
+    """Builds the Whoosh search index from the current snippets files on disk."""
+    try:
+        AppDebugger.log("Boot: rebuilding snippet search index from disk...")
+        search_engine = SnippetSearchEngine()
+        search_engine.rebuild_index_from_disk()
+        AppDebugger.log("Boot: snippet search index rebuilt successfully.")
+        return True
+    except Exception as e:
+        AppErrorHandler.handle_error(
+            error_obj=e,
+            user_message="שגיאה בעדכון אינדקס החיפוש",
+            dev_message=f"Boot: failed rebuilding search index: {str(e)}",
+            severity="WARNING",
+            show_gui=False,
+        )
+        return False
+
+
 def run_startup_checks() -> bool:
     """
     מנהל האתחול - סורק את מפת המערכת, אוכף נתיבים וטוען משאבי מערכת (פונטים).
@@ -215,6 +235,8 @@ def run_startup_checks() -> bool:
             ensure_category_files_exist()
         except Exception:
             pass
+
+        rebuild_search_index()
 
         # סריקה וטעינה אוטומטית של פונטים מותאמים אישית
         try:

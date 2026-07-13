@@ -125,7 +125,7 @@ class SystemIntegrityCompiler:
     """קומפיילר ומנהל שלמות מערכת האוכף חוקי ארכיטקטורה ומסנכרן את mapping.py"""
 
     def __init__(self):
-        self.mapping_file = AppPaths.COMMON_DIR / "mapping.py"
+        self.mapping_file = AppPaths.SYSTEM_TOOLS_DIR / "mapping.py"
         self.ui_files = []
         self.custom_widgets = []
 
