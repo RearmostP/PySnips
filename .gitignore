@@ -17,3 +17,13 @@ pysnips.log
 
 # Whoosh search index files
 core/tools/search/index/
+
+# User trash content
+data/user_data/trash/*
+!data/user_data/trash/.gitkeep
+!data/user_data/trash/snips/
+!data/user_data/trash/ready_code/
+data/user_data/trash/snips/*
+data/user_data/trash/ready_code/*
+!data/user_data/trash/snips/.gitkeep
+!data/user_data/trash/ready_code/.gitkeep
