@@ -14,3 +14,6 @@ pysnips.log
 
 # קיצורי דרך של ווינדוס
 *.lnk
+
+# Whoosh search index files
+core/tools/search/index/
