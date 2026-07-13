@@ -42,9 +42,11 @@ from core.screens.ui_logic.snips.create_snips_dialog import CreateSnipsDialog
 from core.screens.ui_logic.snips.widget.snippet_card import SnippetCard
 from core.screens.ui_logic.snips.widget.edit_card import EditCardWidget
 from core.screens.ui_logic.snips.widget.snippet_search_widget import SnippetSearchWidget
+from core.screens.ui_logic.settings.settings_dialog import SettingsDialog
 from core.tools.common.dynamic_ui_loader import create_dynamic_ui_loader
 from core.tools.common.error_manager import AppDebugger, AppErrorHandler
-from core.boot import get_categories, update_categories_file
+from core.boot import get_categories, rebuild_search_index, update_categories_file
+from core.tools.snips import move_snippet_to_trash
 
 
 def _sanitize(name: str) -> str:
@@ -127,6 +129,7 @@ class SnippetsScreen(create_dynamic_ui_loader(AppPaths.SNIPPETS_SCREEN)):
         category_layout.setSpacing(12)
 
         self.search_widget = SnippetSearchWidget(parent=self.content_stack)
+        self.search_widget.delete_requested.connect(self._handle_delete_snippet_request)
 
         self.content_stack.addWidget(self.category_content_widget)
         self.content_stack.addWidget(self.search_widget.get_view())
@@ -326,6 +329,7 @@ class SnippetsScreen(create_dynamic_ui_loader(AppPaths.SNIPPETS_SCREEN)):
         """פונקציית עזר לייצור מופע חדש של כרטיסיית שליף"""
         snippet_card_connector = SnippetCard(snippet_meta=snippet_meta)
         snippet_card_connector.edit_requested.connect(lambda meta=snippet_meta, card_connector=snippet_card_connector: self._handle_edit_snippet_request(meta, card_connector))
+        snippet_card_connector.delete_requested.connect(self._handle_delete_snippet_request)
         return snippet_card_connector
 
     def _handle_edit_snippet_request(self, snippet_meta: dict, old_snippet_card: SnippetCard):
@@ -352,6 +356,34 @@ class SnippetsScreen(create_dynamic_ui_loader(AppPaths.SNIPPETS_SCREEN)):
 
         # החלפת הכרטיס הישן עם ווידג'ט העריכה
         LayoutHelper.replace_widget_in_grid_layout(grid_snippets_layout, old_snippet_card.get_view(), edit_widget.get_view())
+
+    def _handle_delete_snippet_request(self, snippet_meta: dict):
+        title = str(snippet_meta.get("title") or "ללא כותרת")
+        answer = QMessageBox.question(
+            self,
+            "מחיקת שליף",
+            f"האם להעביר את השליף '{title}' לאשפה?",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No,
+        )
+        if answer != QMessageBox.StandardButton.Yes:
+            return
+
+        if not move_snippet_to_trash(snippet_meta):
+            QMessageBox.warning(self, "מחיקת שליף", "לא ניתן היה להעביר את השליף לאשפה.")
+            return
+
+        rebuild_search_index()
+        self._refresh_after_snippet_delete()
+
+    def _refresh_after_snippet_delete(self):
+        query = self.inp_search_snips.text().strip()
+        if query and self.search_widget:
+            self.search_widget.clear()
+            self._set_content_mode("search", query)
+            return
+
+        self._set_content_mode("category", self._current_category)
 
     def _on_edit_save(self, updated_snippet_meta: dict):
         """
@@ -458,12 +490,13 @@ class SnippetsScreen(create_dynamic_ui_loader(AppPaths.SNIPPETS_SCREEN)):
     def go_back_home(self):
         """חזרה למסך הבית באמצעות מנהל המסכים"""
         if hasattr(self, 'manager') and self.manager:
-            AppDebugger.log("SnippetsScreen: Returning to home screen...")
             self.manager.switch_to("home")
 
     def open_settings(self):
         """פתיחת חלון הגדרות"""
-        AppDebugger.log("SnippetsScreen: Opening settings...")
+        dialog = SettingsDialog(parent=self)
+        dialog.resize(900, 600)
+        dialog.exec()
 
     def show_about(self):
         """הצגת מידע אודות היישום"""

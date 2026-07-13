@@ -322,6 +322,8 @@ class SystemIntegrityCompiler:
         try:
             with open(self.mapping_file, "w", encoding="utf-8") as f:
                 f.write(final_mapping_content)
+                log_integrity_msg("קובץ mapping.py שוכתב ועודכן בהצלחה. המערכת יציבה ומסונכרנת.")
+                return
             log_integrity_msg("🎉 קובץ mapping.py שוכתב ועודכן בהצלחה! המערכת יציבה ומסונכרנת.")
         except Exception as e:
             print(f"\n[CRITICAL ERROR] Failed to write static mapping file to {self.mapping_file}. Error: {e}\n")

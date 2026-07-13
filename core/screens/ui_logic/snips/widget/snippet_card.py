@@ -48,6 +48,7 @@ class SnippetCard(create_dynamic_ui_loader(AppPaths.SNIPPET_CARD_UI)): # Inherit
     # Signals to be emitted by this widget
     edit_requested = Signal(dict)
     details_requested = Signal(dict)
+    delete_requested = Signal(dict)
 
     def __init__(self, snippet_meta: dict, parent: QWidget | None = None):
         super().__init__(parent) # Pass parent to the base class (QWidget loaded from UI)
@@ -77,6 +78,7 @@ class SnippetCard(create_dynamic_ui_loader(AppPaths.SNIPPET_CARD_UI)): # Inherit
         AppDebugger.log("SnippetCard: מחבר אירועים ורכיבי ממשק...")
         self.btn_edit.clicked.connect(self._on_edit_button_clicked) # Direct connect
         self.btn_details.clicked.connect(self._on_details_button_clicked) # Direct connect
+        self.btn_delete.clicked.connect(self._on_delete_button_clicked)
 
     def _get_snippet_title(self, snippet_meta: Mapping[str, object]) -> str:
         title = snippet_meta.get("title", DEFAULT_TITLE)
@@ -104,6 +106,9 @@ class SnippetCard(create_dynamic_ui_loader(AppPaths.SNIPPET_CARD_UI)): # Inherit
     def _on_details_button_clicked(self):
         """מתודה הנקראת בלחיצה על כפתור הפרטים, ומשדרת את הסיגנל."""
         self.details_requested.emit(self.snippet_meta)
+
+    def _on_delete_button_clicked(self):
+        self.delete_requested.emit(self.snippet_meta)
 
     def _setup_styles(self):
         """הגדרת עיצוב כהה מורחב התומך באלמנטים של Markdown וגופן קוד מותאם אישית."""
@@ -170,6 +175,21 @@ class SnippetCard(create_dynamic_ui_loader(AppPaths.SNIPPET_CARD_UI)): # Inherit
             }
             QPushButton#btn_details:pressed {
                 background-color: #495057; /* אפור כהה בלחיצה */
+            }
+            QPushButton#btn_delete {
+                background-color: #8c1d18;
+                color: white;
+                border: none;
+                border-radius: 4px;
+                padding: 4px 8px;
+                font-size: 12px;
+                font-weight: bold;
+            }
+            QPushButton#btn_delete:hover {
+                background-color: #b3261e;
+            }
+            QPushButton#btn_delete:pressed {
+                background-color: #6f1713;
             }
         """)
 

@@ -17,6 +17,7 @@ class AppPaths:
     COMMON_DIR = TOOLS_DIR / "common"
     SYSTEM_TOOLS_DIR = TOOLS_DIR / "system_tools"
     SEARCH_TOOL_DIR = TOOLS_DIR / "search"
+    SETTINGS_TOOL_DIR = TOOLS_DIR / "settings"
 
     SEARCH_INDEX_DIR = SEARCH_TOOL_DIR / "index"
 
@@ -27,6 +28,18 @@ class AppPaths:
     # ----------------- user_data -------------------------
     USERS_DATA_DIR = DATA_DIR / "user_data"
 
+    # ----------------- system_data ------------------------
+    SYSTEM_DATA_DIR = DATA_DIR / "system_data"
+    SETTINGS_DATA_DIR = SYSTEM_DATA_DIR / "settings"
+    GENERAL_SETTINGS_JSON = SETTINGS_DATA_DIR / "general_settings.json"
+    SNIPS_SETTINGS_JSON = SETTINGS_DATA_DIR / "snips_settings.json"
+    READY_CODE_SETTINGS_JSON = SETTINGS_DATA_DIR / "ready_code_settings.json"
+
+    # ----------------- trash_data ------------------------
+    USER_TRASH_DIR = USERS_DATA_DIR / "trash"
+    SNIPS_TRASH_DIR = USER_TRASH_DIR / "snips"
+    READY_CODE_TRASH_DIR = USER_TRASH_DIR / "ready_code"
+
     # ----------------- snips_data -------------------------
     SNIPS_DATA_DIR = USERS_DATA_DIR / "snips"
     SNIPS_FILES = SNIPS_DATA_DIR / "snips_files"
@@ -35,16 +48,24 @@ class AppPaths:
     # ----------------- ready_code_data --------------------
     READY_CODE_DATA_DIR = DATA_DIR / "ready_code"
 
-    # ----------------- system_data ------------------------
-    SYSTEM_DATA_DIR = DATA_DIR / "system_data"
-
     # ----------------- ui -------------------------------
     UI_DIR = PROJECT_DIR / "core" / "screens" / "ui"
     UI_LOGIC_DIR = CORE_DIR / "screens" / "ui_logic"
+    SETTINGS_UI_DIR = UI_DIR / "settings"
+    SETTINGS_PAGES_UI_DIR = SETTINGS_UI_DIR / "pages"
+    SETTINGS_GENERAL_UI_DIR = SETTINGS_PAGES_UI_DIR / "general"
+    SETTINGS_SNIPS_UI_DIR = SETTINGS_PAGES_UI_DIR / "snips"
+    SETTINGS_READY_CODE_UI_DIR = SETTINGS_PAGES_UI_DIR / "ready_code"
 
     # ----------------- screens ---------------------------
     HOME_SCREEN = str(UI_DIR / "home" / "home_screen.ui")
     SNIPPETS_SCREEN = str(UI_DIR / "snips" / "snippets_screen.ui")
+    SETTINGS_DIALOG = str(SETTINGS_UI_DIR / "settings_dialog.ui")
+    GENERAL_SETTINGS_PAGE = str(SETTINGS_GENERAL_UI_DIR / "general_settings_page.ui")
+    SNIPS_OVERVIEW_PAGE = str(SETTINGS_SNIPS_UI_DIR / "snips_overview_page.ui")
+    SNIPS_RESTORE_PAGE = str(SETTINGS_SNIPS_UI_DIR / "snips_restore_page.ui")
+    SNIPS_CATEGORIES_PAGE = str(SETTINGS_SNIPS_UI_DIR / "snips_categories_page.ui")
+    READY_CODE_SETTINGS_PAGE = str(SETTINGS_READY_CODE_UI_DIR / "ready_code_settings_page.ui")
     CREATE_SNIPS_DIALOG = str(UI_DIR / "snips" / "create_snips_dialog.ui")
     SNIPPET_CARD_UI = str(UI_DIR / "snips" / "widgets" / "snippet_card.ui") # Updated to point to the .ui file
     EDIT_CARD_WIDGET = str(UI_DIR / "snips" / "widgets" / "edit_card.ui")
@@ -69,21 +90,34 @@ class AppPaths:
         CORE_DIR: True,
         COMMON_DIR: True,
         SYSTEM_TOOLS_DIR: True,
+        SETTINGS_TOOL_DIR: False,
 
         # ------ data -----------
         DATA_DIR: True,
 
         # ------ user_data ------
         USERS_DATA_DIR: True,
+        USER_TRASH_DIR: False,
+        SNIPS_TRASH_DIR: False,
+        READY_CODE_TRASH_DIR: False,
         SNIPS_DATA_DIR: True,
         CATEGORYS_JSON: True,
         READY_CODE_DATA_DIR: False,
 
         # ------ system_data ----
         SYSTEM_DATA_DIR: False,
+        SETTINGS_DATA_DIR: False,
+        GENERAL_SETTINGS_JSON: False,
+        SNIPS_SETTINGS_JSON: False,
+        READY_CODE_SETTINGS_JSON: False,
 
         # ------ ui -------------
         UI_DIR: True,
+        SETTINGS_UI_DIR: False,
+        SETTINGS_PAGES_UI_DIR: False,
+        SETTINGS_GENERAL_UI_DIR: False,
+        SETTINGS_SNIPS_UI_DIR: False,
+        SETTINGS_READY_CODE_UI_DIR: False,
 
         SNIPPET_CARD_UI: True, # Updated name
         EDIT_CARD_WIDGET: False,
@@ -92,6 +126,12 @@ class AppPaths:
         # ------ screens --------
         HOME_SCREEN: True,
         SNIPPETS_SCREEN: True,
+        SETTINGS_DIALOG: False,
+        GENERAL_SETTINGS_PAGE: False,
+        SNIPS_OVERVIEW_PAGE: False,
+        SNIPS_RESTORE_PAGE: False,
+        SNIPS_CATEGORIES_PAGE: False,
+        READY_CODE_SETTINGS_PAGE: False,
         CREATE_SNIPS_DIALOG: True,
         READY_CODE_SCREEN: False,
 

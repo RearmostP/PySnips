@@ -110,6 +110,25 @@
        </property>
       </widget>
      </item>
+     <item>
+      <widget class="QPushButton" name="btn_delete">
+       <property name="minimumSize">
+        <size>
+         <width>60</width>
+         <height>25</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>60</width>
+         <height>25</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>מחק</string>
+       </property>
+      </widget>
+     </item>
     </layout>
    </item>
    <item>

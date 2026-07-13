@@ -36,6 +36,8 @@ from PySide6.QtGui import QFontDatabase
 from core.tools.common.app_paths import AppPaths
 from core.tools.common.error_manager import AppDebugger, AppErrorHandler
 from core.tools.search.snippet_search_engine import SnippetSearchEngine
+from core.tools.settings import ensure_settings_files_exist
+from core.tools.snips import cleanup_old_trash_items
 
 
 def _sanitize(name: str) -> str:
@@ -112,7 +114,7 @@ def rebuild_category_index() -> list:
         dir_path.mkdir(parents=True, exist_ok=True)
 
         categories = []
-        for p in dir_path.glob('*/snips.json'): # Changed glob pattern to look for snips.json in subdirectories
+        for p in dir_path.glob('*/snips.json'): #תבנית glob תלויה כדי לחפש snips.json בתת-ספריות
             try:
                 # Extract category name from parent directory
                 cat_name = p.parent.name
@@ -148,8 +150,7 @@ def rebuild_category_index() -> list:
 def ensure_category_files_exist(categories: list | None = None) -> None:
     """
     פונקציה זו נועדה במקור לוודא שקובץ JSON לכל קטגוריה קיים.
-    בהתאם לבקשה, לוגיקת יצירת קבצי ה-JSON הנפרדים הוסרה.
-    כעת, היא רק מוודאת שתיקיית SNIPS_DATA_DIR קיימת.
+     היא רק מוודאת שתיקיית SNIPS_DATA_DIR קיימת
     """
     try:
         AppDebugger.log("בודק אם תיקיית נתוני השליפים קיימת...")
@@ -167,22 +168,30 @@ def ensure_category_files_exist(categories: list | None = None) -> None:
 
 
 def rebuild_search_index() -> bool:
-    """Builds the Whoosh search index from the current snippets files on disk."""
+    """בונה את אינדקס החיפוש של Whoosh מקבצי הקודקודים הנוכחיים בדיסק."""
     try:
-        AppDebugger.log("Boot: rebuilding snippet search index from disk...")
+        AppDebugger.log("Boot: בנייה מחדש של אינדקס חיפוש קטעי טקסט מהדיסק...")
         search_engine = SnippetSearchEngine()
         search_engine.rebuild_index_from_disk()
-        AppDebugger.log("Boot: snippet search index rebuilt successfully.")
+        AppDebugger.log("Boot: אינדקס חיפוש נבנה מחדש בהצלחה.")
         return True
     except Exception as e:
         AppErrorHandler.handle_error(
             error_obj=e,
             user_message="שגיאה בעדכון אינדקס החיפוש",
-            dev_message=f"Boot: failed rebuilding search index: {str(e)}",
+            dev_message=f"Boot: שגיאה בבניית אינדקס חיפוש: {str(e)}",
             severity="WARNING",
             show_gui=False,
         )
         return False
+
+
+def cleanup_old_snips_trash() -> int:
+    """מוחק קבצי (שליפים) אשפה שעבר עליהם הזמן הקצוב """
+    deleted_count = cleanup_old_trash_items()
+    if deleted_count:
+        AppDebugger.log(f"Boot: cleaned {deleted_count} old snippet trash items.")
+    return deleted_count
 
 
 def run_startup_checks() -> bool:
@@ -236,6 +245,8 @@ def run_startup_checks() -> bool:
         except Exception:
             pass
 
+        ensure_settings_files_exist()
+        cleanup_old_snips_trash()
         rebuild_search_index()
 
         # סריקה וטעינה אוטומטית של פונטים מותאמים אישית

@@ -11,6 +11,7 @@ from core.tools.search.snippet_search_engine import SnippetSearchEngine
 class SnippetSearchWidget(create_dynamic_ui_loader(AppPaths.SNIPPET_SEARCH_WIDGET)):
     edit_requested = Signal(dict)
     details_requested = Signal(dict)
+    delete_requested = Signal(dict)
 
     PAGE_SIZE = 8
     MIN_QUERY_LENGTH = 1
@@ -96,6 +97,7 @@ class SnippetSearchWidget(create_dynamic_ui_loader(AppPaths.SNIPPET_SEARCH_WIDGE
         snippet_card = SnippetCard(snippet_meta=snippet_meta)
         snippet_card.edit_requested.connect(self.edit_requested.emit)
         snippet_card.details_requested.connect(self.details_requested.emit)
+        snippet_card.delete_requested.connect(self.delete_requested.emit)
         return snippet_card
 
     def _clear_cards(self):
