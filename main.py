@@ -45,9 +45,9 @@ from PySide6.QtWidgets import QApplication
 from PySide6.QtGui import QIcon
 
 
-from core.common.screen_manager import ScreenManager # Corrected import
+from core.tools.common.screen_manager import ScreenManager # Corrected import
 from core.boot import run_startup_checks
-from core.common.error_manager import AppDebugger
+from core.tools.common.error_manager import AppDebugger
 
 from core.screens.ui_logic.home.home_screen import HomeScreen
 from core.screens.ui_logic.snips.snippets_screen import SnippetsScreen

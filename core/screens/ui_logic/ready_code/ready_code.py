@@ -1,4 +1,4 @@
-from core.common.error_manager import AppDebugger
+from core.tools.common import AppDebugger
 
 class ReadyCodeFlow:
     """מחלקה עצמאית שמנהלת את סדר הפעולות והלוגיקה של מסך קוד מוכן"""

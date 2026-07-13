@@ -33,8 +33,8 @@ import json
 from pathlib import Path
 from PySide6.QtGui import QFontDatabase
 
-from core.common.app_paths import AppPaths
-from core.common.error_manager import AppDebugger, AppErrorHandler
+from core.tools.common.app_paths import AppPaths
+from core.tools.common.error_manager import AppDebugger, AppErrorHandler
 
 
 def _sanitize(name: str) -> str:

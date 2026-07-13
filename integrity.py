@@ -11,7 +11,7 @@ if __name__ == "__main__" and "--debug" not in sys.argv:
     sys.argv.append("--debug")
 
 # ייבוא נתיבי המערכת של האפליקציה
-from core.common.app_paths import AppPaths
+from core.tools.common import AppPaths
 
 # קבועי מערכת האכיפה הארכיטקטונית
 APPROVED_PREFIXES = {
@@ -159,7 +159,7 @@ class SystemIntegrityCompiler:
         changed_files = []
         old_timestamps = {}
         try:
-            import core.system_tools.mapping as current_mapping
+            import core.tools.system_tools.mapping as current_mapping
             old_timestamps = getattr(current_mapping, "UI_TIMESTAMPS", {})
         except Exception:
             pass
@@ -191,7 +191,7 @@ class SystemIntegrityCompiler:
 
             # בדיקת רכיבים שנמחקו/שונו אך עדיין נמצאים בשימוש בקוד פייתון
             try:
-                import core.system_tools.mapping as old_mapping
+                import core.tools.system_tools.mapping as old_mapping
                 old_class = getattr(old_mapping, class_name, None)
                 if old_class:
                     old_variables = [attr for attr in dir(old_class) if attr.isupper()]

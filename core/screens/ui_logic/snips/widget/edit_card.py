@@ -3,11 +3,10 @@ from pathlib import Path
 import re
 
 from PySide6.QtWidgets import QWidget, QMessageBox
-from PySide6.QtCore import Qt, Signal
 
-from core.common.app_paths import AppPaths
-from core.common.error_manager import AppDebugger, AppErrorHandler
-from core.common.dynamic_ui_loader import create_dynamic_ui_loader # Use dynamic_ui_loader directly
+from core.tools.common.app_paths import AppPaths
+from core.tools.common.error_manager import AppDebugger, AppErrorHandler
+from core.tools.common.dynamic_ui_loader import create_dynamic_ui_loader # Use dynamic_ui_loader directly
 
 
 # Helper function from SnippetManager, might be moved to a common utility later

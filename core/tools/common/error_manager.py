@@ -13,7 +13,7 @@ from pathlib import Path
 import datetime
 from PySide6.QtWidgets import QMessageBox, QApplication
 
-from core.common.app_paths import AppPaths
+from core.tools.common.app_paths import AppPaths
 
 # הגדרת נתיבי קבצי הלוג של האפליקציה
 ERROR_LOG_PATH = AppPaths.LOGS_DIR / "pysnips.log"

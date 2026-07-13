@@ -1,6 +1,6 @@
-from core.common.dynamic_ui_loader import create_dynamic_ui_loader
-from core.common.error_manager import AppDebugger
-from core.common.app_paths import AppPaths
+from core.tools.common.dynamic_ui_loader import create_dynamic_ui_loader
+from core.tools.common.error_manager import AppDebugger
+from core.tools.common.app_paths import AppPaths
 from PySide6.QtWidgets import QWidget # For type hinting
 
 

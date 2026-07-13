@@ -32,9 +32,9 @@ import uuid
 import re
 from pathlib import Path
 
-from core.common.app_paths import AppPaths
-from core.common.dynamic_ui_loader import create_dynamic_ui_loader
-from core.common.error_manager import AppDebugger, AppErrorHandler
+from core.tools.common.app_paths import AppPaths
+from core.tools.common.dynamic_ui_loader import create_dynamic_ui_loader
+from core.tools.common.error_manager import AppDebugger, AppErrorHandler
 
 
 def _sanitize(name: str) -> str:

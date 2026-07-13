@@ -33,16 +33,17 @@
 """
 
 import json
-from PySide6.QtWidgets import QMenu, QPushButton, QLabel, QSpacerItem, QSizePolicy, QInputDialog, QMessageBox, QGridLayout, QWidget, QLayoutItem
-from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QMenu, QPushButton, QLabel, QSpacerItem, QSizePolicy, QInputDialog, QMessageBox, QGridLayout, QWidget, QLayoutItem, QStackedWidget
+from PySide6.QtCore import Qt, QSignalBlocker
 
-from core.common.app_paths import AppPaths
+from core.tools.common.app_paths import AppPaths
 from core.screens.ui_logic.snips.create_snips_dialog import CreateSnipsDialog
 
-from core.screens.ui_logic.snips.widget.snippet_card import SnippetCard # Corrected import
-from core.screens.ui_logic.snips.widget.edit_card import EditCardWidget # Import the new edit widget
-from core.common.dynamic_ui_loader import create_dynamic_ui_loader
-from core.common.error_manager import AppDebugger, AppErrorHandler
+from core.screens.ui_logic.snips.widget.snippet_card import SnippetCard
+from core.screens.ui_logic.snips.widget.edit_card import EditCardWidget
+from core.screens.ui_logic.snips.widget.snippet_search_widget import SnippetSearchWidget
+from core.tools.common.dynamic_ui_loader import create_dynamic_ui_loader
+from core.tools.common.error_manager import AppDebugger, AppErrorHandler
 from core.boot import get_categories, update_categories_file
 
 
@@ -52,57 +53,128 @@ def _sanitize(name: str) -> str:
     if not safe:
         return 'uncategorized'
     return safe.replace(' ', '_')
+
 #----------------------------------------------------------------
-# --- פונקציית עזר כללית להחלפת ווידג'טים ב-QGridLayout ---
+# --- מחלקת עזר לפעולות על Layouts ---
 #----------------------------------------------------------------
-def replace_widget_in_grid_layout(layout: QGridLayout, old_widget: QWidget, new_widget: QWidget) -> bool:
-    """
-    מחליף ווידג'ט קיים בווידג'ט חדש בתוך QGridLayout, תוך שמירה על המיקום המקורי.
+class LayoutHelper:
+    @staticmethod
+    def replace_widget_in_grid_layout(layout: QGridLayout, old_widget: QWidget, new_widget: QWidget) -> bool:
+        """
+        מחליף ווידג'ט קיים בווידג'ט חדש בתוך QGridLayout, תוך שמירה על המיקום המקורי.
 
-    Args:
-        layout (QGridLayout): ה-layout שבו מתבצעת ההחלפה.
-        old_widget (QWidget): הווידג'ט שיש להסיר.
-        new_widget (QWidget): הווידג'ט שיש להוסיף.
+        Args:
+            layout (QGridLayout): ה-layout שבו מתבצעת ההחלפה.
+            old_widget (QWidget): הווידג'ט שיש להסיר.
+            new_widget (QWidget): הווידג'ט שיש להוסיף.
 
-    Returns:
-        bool: True אם ההחלפה בוצעה בהצלחה, False אחרת.
-    """
-    if not layout or not old_widget or not new_widget:
-        AppDebugger.log("Error: ארגומנטים לא חוקיים עבור replace_widget_in_grid_layout.")
-        return False
+        Returns:
+            bool: True אם ההחלפה בוצעה בהצלחה, False אחרת.
+        """
+        if not layout or not old_widget or not new_widget:
+            AppDebugger.log("Error: ארגומנטים לא חוקיים עבור replace_widget_in_grid_layout.")
+            return False
 
-    # מצא את המיקום של הווידג'ט הישן ב-layout
-    row, col, rowspan, colspan = -1, -1, -1, -1
-    item_to_remove: QLayoutItem | None = None
+        # מצא את המיקום של הווידג'ט הישן ב-layout
+        row, col, rowspan, colspan = -1, -1, -1, -1
+        item_to_remove: QLayoutItem | None = None
 
-    for i in range(layout.count()):
-        item = layout.itemAt(i)
-        if item and item.widget() == old_widget:
-            row, col, rowspan, colspan = layout.getItemPosition(i)
-            item_to_remove = item
-            break
+        for i in range(layout.count()):
+            item = layout.itemAt(i)
+            if item and item.widget() == old_widget:
+                row, col, rowspan, colspan = layout.getItemPosition(i)
+                item_to_remove = item
+                break
 
-    if row == -1:  # הווידג'ט הישן לא נמצא ב-layout
-        AppDebugger.log(f"Error: old_widget {old_widget} not found in layout for replacement.")
-        return False
+        if row == -1:  # הווידג'ט הישן לא נמצא ב-layout
+            AppDebugger.log(f"Error: old_widget {old_widget} not found in layout for replacement.")
+            return False
 
-    # הסר את הווידג'ט הישן
-    if item_to_remove:
-        layout.removeItem(item_to_remove)  # הסר את ה-item מה-layout
-    layout.removeWidget(old_widget)  # הסר את הווידג'ט עצמו
-    old_widget.deleteLater()  # נקה את הווידג'ט הישן מהזיכרון
+        # הסר את הווידג'ט הישן
+        if item_to_remove:
+            layout.removeItem(item_to_remove)  # הסר את ה-item מה-layout
+        layout.removeWidget(old_widget)  # הסר את הווידג'ט עצמו
+        old_widget.deleteLater()  # נקה את הווידג'ט הישן מהזיכרון
 
-    # הוסף את הווידג'ט החדש באותו מיקום
-    layout.addWidget(new_widget, row, col, rowspan, colspan)
-    return True
-# --- סוף פונקציית עזר ---
+        # הוסף את הווידג'ט החדש באותו מיקום
+        layout.addWidget(new_widget, row, col, rowspan, colspan)
+        return True
+# --- סוף מחלקת עזר ---
 
 #-----------------------------------------------------------------
 class SnippetsScreen(create_dynamic_ui_loader(AppPaths.SNIPPETS_SCREEN)):
     def __init__(self, parent=None):
         super().__init__(parent)
         self._active_editor_widget: EditCardWidget | None = None
-        self._active_editor_original_card: SnippetCard | None = None # Corrected type hint
+        self._active_editor_original_card: SnippetCard | None = None
+        self._current_category = "Recent Snippets"
+        self.content_stack: QStackedWidget | None = None
+        self.category_content_widget: QWidget | None = None
+        self.search_widget: SnippetSearchWidget | None = None
+
+    def setup_content_stack(self):
+        """Creates the internal content stack used by the snippets area."""
+        host_layout = self.grid_snippets_layout
+        if not host_layout:
+            AppDebugger.log("Error: grid_snippets_layout not found for content stack setup.")
+            return
+
+        self.content_stack = QStackedWidget(self)
+
+        self.category_content_widget = QWidget(self.content_stack)
+        category_layout = QGridLayout(self.category_content_widget)
+        category_layout.setContentsMargins(0, 0, 0, 0)
+        category_layout.setSpacing(12)
+
+        self.search_widget = SnippetSearchWidget(parent=self.content_stack)
+
+        self.content_stack.addWidget(self.category_content_widget)
+        self.content_stack.addWidget(self.search_widget.get_view())
+
+        while host_layout.count():
+            item = host_layout.takeAt(0)
+            widget = item.widget()
+            if widget:
+                widget.deleteLater()
+            elif item.spacerItem():
+                del item
+
+        host_layout.addWidget(self.content_stack, 0, 0)
+        self.grid_snippets_layout = category_layout
+
+    def _set_content_mode(self, mode: str, payload: str | None = None):
+        """Switches the snippets content area and passes the required data."""
+        if not self.content_stack:
+            AppDebugger.log("Error: content_stack is not initialized.")
+            return
+
+        if mode == "search":
+            if not self.search_widget:
+                AppDebugger.log("Error: search_widget is not initialized.")
+                return
+            self.lbl_category_title.setText("Search")
+            self.content_stack.setCurrentWidget(self.search_widget.get_view())
+            self.search_widget.set_query(payload or "")
+            return
+
+        if mode == "category":
+            if not self.category_content_widget:
+                AppDebugger.log("Error: category_content_widget is not initialized.")
+                return
+            category = payload or self._current_category
+            self.lbl_category_title.setText(f"Folder: {category}")
+            self.content_stack.setCurrentWidget(self.category_content_widget)
+            self._load_snips_to_content_box(category)
+            return
+
+        AppDebugger.log(f"SnippetsScreen: Unknown content mode: {mode}")
+
+    def _on_search_text_changed(self, text: str):
+        query = (text or "").strip()
+        if query:
+            self._set_content_mode("search", query)
+        else:
+            self._set_content_mode("category", self._current_category)
 
     def setup_events(self):
         """
@@ -110,6 +182,7 @@ class SnippetsScreen(create_dynamic_ui_loader(AppPaths.SNIPPETS_SCREEN)):
         נקראת רק לאחר שקובץ ה-UI נטען במלואו לזיכרון.
         """
         AppDebugger.log("SnippetsScreen: חיבור אירועי ואלמנטים של ממשק משתמש...")
+        self.setup_content_stack()
         # בניית תפריט ההמבורגר
         self.setup_hamburger_menu()
         # טעינת כפתורי קטגוריות דינמיים
@@ -118,6 +191,7 @@ class SnippetsScreen(create_dynamic_ui_loader(AppPaths.SNIPPETS_SCREEN)):
         self.btn_add_category.clicked.connect(self._add_new_category)
         # חיבור כפתור הוספת שליף
         self.btn_new_snippet.clicked.connect(self.open_create_snips_dialog)
+        self.inp_search_snips.textChanged.connect(self._on_search_text_changed)
 
         # טעינת שליפים אחרונים או קטגוריה ראשונה כברירת מחדל
         self.on_category_selected("Recent Snippets")
@@ -175,8 +249,11 @@ class SnippetsScreen(create_dynamic_ui_loader(AppPaths.SNIPPETS_SCREEN)):
     def on_category_selected(self, category: str):
         """קריאה כאשר משתמש לוחץ על כפתור קטגוריה"""
         AppDebugger.log(f"SnippetsScreen: Category selected: {category}")
-        self.lbl_category_title.setText(f"Folder: {category}")
-        self._load_snips_to_content_box(category)
+        self._current_category = category
+        blocker = QSignalBlocker(self.inp_search_snips)
+        self.inp_search_snips.clear()
+        del blocker
+        self._set_content_mode("category", category)
 
     def _load_snips_to_content_box(self, category: str):
         """טוען את הקודים הקצרים (snippets) של קטגוריה מסוימת לתוך תיבת התוכן"""
@@ -198,19 +275,16 @@ class SnippetsScreen(create_dynamic_ui_loader(AppPaths.SNIPPETS_SCREEN)):
                 del item
 
         # --- מצבים מיוחדים ---
-#--------------------------------------------------------------------------
         if category == "Recent Snippets":
             placeholder_label = QLabel("הצגת שליפים אחרונים (בפיתוח)")
             placeholder_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
             layout.addWidget(placeholder_label, 0, 0)
             return
-# --------------------------------------------------------------------------
         if category == "Search":
             placeholder_label = QLabel("הצגת שליפים עם התאגים בתצוגה מקדימה (בפיתוח)")
             placeholder_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
             layout.addWidget(placeholder_label, 0, 0)
             return
-# --------------------------------------------------------------------------
 
         safe_cat = _sanitize(category)
         category_dir = AppPaths.SNIPS_FILES / safe_cat
@@ -230,7 +304,7 @@ class SnippetsScreen(create_dynamic_ui_loader(AppPaths.SNIPPETS_SCREEN)):
             row = 0
             for snippet_meta in snippets_metadata:
                 snippet_card_connector = self._create_snippet_widget(snippet_meta)
-                layout.addWidget(snippet_card_connector.get_view(), row, 0) # Use get_view()
+                layout.addWidget(snippet_card_connector.get_view(), row, 0)
                 row += 1
 
             # הוספת spacer בסוף כדי למנוע מתיחה אנכית של הכרטיסיות
@@ -248,13 +322,13 @@ class SnippetsScreen(create_dynamic_ui_loader(AppPaths.SNIPPETS_SCREEN)):
             error_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
             layout.addWidget(error_label, 0, 0)
 
-    def _create_snippet_widget(self, snippet_meta: dict) -> SnippetCard: # Corrected type hint
+    def _create_snippet_widget(self, snippet_meta: dict) -> SnippetCard:
         """פונקציית עזר לייצור מופע חדש של כרטיסיית שליף"""
-        snippet_card_connector = SnippetCard(snippet_meta=snippet_meta) # Use SnippetCard
+        snippet_card_connector = SnippetCard(snippet_meta=snippet_meta)
         snippet_card_connector.edit_requested.connect(lambda meta=snippet_meta, card_connector=snippet_card_connector: self._handle_edit_snippet_request(meta, card_connector))
         return snippet_card_connector
 
-    def _handle_edit_snippet_request(self, snippet_meta: dict, old_snippet_card: SnippetCard): # Corrected type hint
+    def _handle_edit_snippet_request(self, snippet_meta: dict, old_snippet_card: SnippetCard):
         """
         מטפל בבקשת עריכה של שליף: מחליף את כרטיסיית השליף בווידג'ט עריכה.
         """
@@ -277,8 +351,7 @@ class SnippetsScreen(create_dynamic_ui_loader(AppPaths.SNIPPETS_SCREEN)):
         self._active_editor_widget = edit_widget
 
         # החלפת הכרטיס הישן עם ווידג'ט העריכה
-        replace_widget_in_grid_layout(grid_snippets_layout, old_snippet_card.get_view(), edit_widget.get_view()) # Use get_view()
-
+        LayoutHelper.replace_widget_in_grid_layout(grid_snippets_layout, old_snippet_card.get_view(), edit_widget.get_view())
 
     def _on_edit_save(self, updated_snippet_meta: dict):
         """
@@ -295,7 +368,7 @@ class SnippetsScreen(create_dynamic_ui_loader(AppPaths.SNIPPETS_SCREEN)):
         new_snippet_card = self._create_snippet_widget(updated_snippet_meta)
 
         # מחליף את העורך בכרטיס החדש
-        replace_widget_in_grid_layout(grid_snippets_layout, self._active_editor_widget.get_view(), new_snippet_card.get_view()) # Use get_view()
+        LayoutHelper.replace_widget_in_grid_layout(grid_snippets_layout, self._active_editor_widget.get_view(), new_snippet_card.get_view())
 
         # ניקוי מצב העורך הפעיל
         self._active_editor_widget = None
@@ -320,12 +393,11 @@ class SnippetsScreen(create_dynamic_ui_loader(AppPaths.SNIPPETS_SCREEN)):
         new_snippet_card = self._create_snippet_widget(self._active_editor_original_card.snippet_meta)
 
         # מחליף את העורך בכרטיס החדש
-        replace_widget_in_grid_layout(grid_snippets_layout, self._active_editor_widget.get_view(), new_snippet_card.get_view())
+        LayoutHelper.replace_widget_in_grid_layout(grid_snippets_layout, self._active_editor_widget.get_view(), new_snippet_card.get_view())
 
         # ניקוי מצב העורך הפעיל
         self._active_editor_widget = None
         self._active_editor_original_card = None
-
 
     def _add_new_category(self):
         """פתיחת דיאלוג ליצירת קטגוריה חדשה ושמירתה."""
@@ -376,7 +448,7 @@ class SnippetsScreen(create_dynamic_ui_loader(AppPaths.SNIPPETS_SCREEN)):
         AppDebugger.log("SnippetsScreen: פתיחת create snippets dialog...")
 
         dialog = CreateSnipsDialog(parent=self)
-        dialog.setup_events() # Call setup_events here
+        dialog.setup_events()
         screen = self.screen()
         screen_center = screen.availableGeometry().center()
         dialog.move(screen_center - dialog.rect().center())

@@ -2,7 +2,7 @@ from pathlib import Path
 
 
 class AppPaths:
-    PROJECT_DIR = Path(__file__).resolve().parent.parent.parent
+    PROJECT_DIR = Path(__file__).resolve().parent.parent.parent.parent
 
     # ----------------- assets --------------------------
     ASSETS_DIR = PROJECT_DIR / "assets"
@@ -11,8 +11,15 @@ class AppPaths:
 
     # ----------------- core -----------------------------
     CORE_DIR = PROJECT_DIR / "core"
-    COMMON_DIR = CORE_DIR / "common"
-    SYSTEM_TOOLS_DIR = CORE_DIR / "system_tools"
+    TOOLS_DIR = CORE_DIR / "tools"
+
+    #------------------ tools ----------------------------
+    COMMON_DIR = TOOLS_DIR / "common"
+    SYSTEM_TOOLS_DIR = TOOLS_DIR / "system_tools"
+    SEARCH_TOOL_DIR = TOOLS_DIR / "search"
+
+    SEARCH_INDEX_DIR = SEARCH_TOOL_DIR / "index"
+
 
     # ----------------- data -----------------------------
     DATA_DIR = PROJECT_DIR / "data"
@@ -41,6 +48,7 @@ class AppPaths:
     CREATE_SNIPS_DIALOG = str(UI_DIR / "snips" / "create_snips_dialog.ui")
     SNIPPET_CARD_UI = str(UI_DIR / "snips" / "widgets" / "snippet_card.ui") # Updated to point to the .ui file
     EDIT_CARD_WIDGET = str(UI_DIR / "snips" / "widgets" / "edit_card.ui")
+    SNIPPET_SEARCH_WIDGET = str(UI_DIR / "snips" / "widgets" / "snippet_search_widget.ui")
 
     READY_CODE_SCREEN = str(UI_DIR / "ready_code" / "ready_code_screen.ui")
 
@@ -79,6 +87,7 @@ class AppPaths:
 
         SNIPPET_CARD_UI: True, # Updated name
         EDIT_CARD_WIDGET: False,
+        SNIPPET_SEARCH_WIDGET: False,
 
         # ------ screens --------
         HOME_SCREEN: True,

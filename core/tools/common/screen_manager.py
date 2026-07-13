@@ -14,7 +14,7 @@
 """
 
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QStackedWidget
-from core.common.error_manager import AppDebugger, AppErrorHandler
+from core.tools.common.error_manager import AppDebugger, AppErrorHandler
 
 
 

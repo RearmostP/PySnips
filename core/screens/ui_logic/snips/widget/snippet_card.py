@@ -26,12 +26,11 @@ from pathlib import Path
 from typing import Mapping
 
 from PySide6.QtWidgets import QWidget
-from PySide6.QtGui import QFont
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import Signal
 
-from core.common.app_paths import AppPaths
-from core.common.error_manager import AppDebugger, AppErrorHandler
-from core.common.dynamic_ui_loader import create_dynamic_ui_loader # Use dynamic_ui_loader directly
+from core.tools.common.app_paths import AppPaths
+from core.tools.common.error_manager import AppDebugger
+from core.tools.common.dynamic_ui_loader import create_dynamic_ui_loader # Use dynamic_ui_loader directly
 
 
 DEFAULT_TITLE = "ללא כותרת"

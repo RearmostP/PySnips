@@ -1,12 +1,11 @@
 import sys
 import xml.etree.ElementTree as ET
-from pathlib import Path
 from PySide6.QtWidgets import QWidget, QDialog
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtCore import QFile, QIODevice
 
-from core.common.error_manager import AppErrorHandler, AppDebugger
-from core.common.app_paths import AppPaths
+from core.tools.common.error_manager import AppErrorHandler, AppDebugger
+from core.tools.common.app_paths import AppPaths
 
 
 class UiLoader(QUiLoader):
