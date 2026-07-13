@@ -11,7 +11,7 @@ if __name__ == "__main__" and "--debug" not in sys.argv:
     sys.argv.append("--debug")
 
 # ייבוא נתיבי המערכת של האפליקציה
-from core.tools.common import AppPaths
+from core.tools.common.app_paths import AppPaths
 
 # קבועי מערכת האכיפה הארכיטקטונית
 APPROVED_PREFIXES = {
