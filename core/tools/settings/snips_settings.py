@@ -21,14 +21,23 @@ class SnipsTrashSettings:
 
 
 @dataclass
+class SnipsCategorySettings:
+    pinned_category: str = ""
+
+
+@dataclass
 class SnipsSettings:
     trash: SnipsTrashSettings
+    categories: SnipsCategorySettings
 
 
 DEFAULT_SNIPS_SETTINGS = {
     "trash": {
         "retention_days": DEFAULT_TRASH_RETENTION_DAYS,
         "delete_permanently": False,
+    },
+    "categories": {
+        "pinned_category": "",
     }
 }
 
@@ -37,11 +46,15 @@ def load_snips_settings() -> SnipsSettings:
     raw_settings = load_json_settings(AppPaths.SNIPS_SETTINGS_JSON, DEFAULT_SNIPS_SETTINGS)
     raw_settings = _load_legacy_trash_settings(raw_settings)
     trash_settings = raw_settings.get("trash") or {}
+    category_settings = raw_settings.get("categories") or {}
     return SnipsSettings(
         trash=SnipsTrashSettings(
             retention_days=_normalize_retention_days(trash_settings.get("retention_days")),
             delete_permanently=bool(trash_settings.get("delete_permanently", False)),
-        )
+        ),
+        categories=SnipsCategorySettings(
+            pinned_category=str(category_settings.get("pinned_category") or ""),
+        ),
     )
 
 
@@ -50,7 +63,10 @@ def save_snips_settings(settings: SnipsSettings) -> bool:
         trash=SnipsTrashSettings(
             retention_days=_normalize_retention_days(settings.trash.retention_days),
             delete_permanently=bool(settings.trash.delete_permanently),
-        )
+        ),
+        categories=SnipsCategorySettings(
+            pinned_category=str(settings.categories.pinned_category or ""),
+        ),
     )
 
     if save_json_settings(AppPaths.SNIPS_SETTINGS_JSON, asdict(normalized_settings)):
@@ -64,7 +80,19 @@ def load_snips_trash_settings() -> SnipsTrashSettings:
 
 
 def save_snips_trash_settings(settings: SnipsTrashSettings) -> bool:
-    return save_snips_settings(SnipsSettings(trash=settings))
+    current_settings = load_snips_settings()
+    current_settings.trash = settings
+    return save_snips_settings(current_settings)
+
+
+def load_pinned_snips_category() -> str:
+    return load_snips_settings().categories.pinned_category
+
+
+def save_pinned_snips_category(category: str) -> bool:
+    current_settings = load_snips_settings()
+    current_settings.categories.pinned_category = str(category or "")
+    return save_snips_settings(current_settings)
 
 
 def _load_legacy_trash_settings(raw_settings: dict) -> dict:

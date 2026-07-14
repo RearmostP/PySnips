@@ -28,6 +28,7 @@
 from PySide6.QtCore import Qt
 
 import json
+from datetime import datetime
 import uuid
 import re
 from pathlib import Path
@@ -98,6 +99,7 @@ class SnippetManager:
                 'title': title,
                 'category': category,
                 'tags': self.tags_list,
+                'created_at': datetime.now().isoformat(timespec="seconds"),
                 'content_file': str(file_path),
             }
 
