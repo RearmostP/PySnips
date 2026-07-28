@@ -50,6 +50,7 @@ from core.boot import run_startup_checks
 from core.tools.common.error_manager import AppDebugger
 
 from core.screens.ui_logic.home.home_screen import HomeScreen
+from core.screens.ui_logic.ready_code.ready_code import ReadyCodeScreen
 from core.screens.ui_logic.snips.snippets_screen import SnippetsScreen
 
 
@@ -73,7 +74,6 @@ def main():
 
     # 4. טעינת מסך הבית
     home_screen = HomeScreen(screen_manager)
-    home_screen.setup_logic()
     home_screen.load_home_screen()
 
     # 5. טעינת מסך השליפים
@@ -81,12 +81,14 @@ def main():
     snippets_screen.setup_events()
     screen_manager.register_screen("snippets", snippets_screen)
 
+    # 6. טעינת מסך הקוד המוכן
+    ready_code_screen = ReadyCodeScreen(parent=screen_manager)
+    screen_manager.register_screen("ready_code", ready_code_screen)
 
-
-    # 6. הצגת מנהל המסכים (החלון הראשי של האפליקציה)
+    # 7. הצגת מנהל המסכים (החלון הראשי של האפליקציה)
     screen_manager.show()
 
-    # 7. לולאת האירועים המרכזית של Qt
+    # 8. לולאת האירועים המרכזית של Qt
     sys.exit(app.exec())
 
 

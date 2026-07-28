@@ -8,11 +8,15 @@ class HomeScreen(create_dynamic_ui_loader(AppPaths.HOME_SCREEN)):
     def __init__(self, screen_manager: QWidget | None = None): # Parent is now screen_manager
         super().__init__(screen_manager) # Pass screen_manager as parent
         self.screen_manager = screen_manager
+        self._logic_initialized = False
         
         # Initialize logic
         self.setup_logic()
 
     def setup_logic(self):
+        if self._logic_initialized:
+            return
+        self._logic_initialized = True
         # חיבור ישיר לרכיבי ממשק המשתמש
         self.btn_go_snippets.clicked.connect(self._route_to_snippets)
         self.btn_go_ready_code.clicked.connect(self._route_to_ready_code)

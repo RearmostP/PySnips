@@ -9,6 +9,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 from core.tools.common.app_paths import AppPaths
+from core.tools.common.atomic_json import write_json_atomic
 from core.tools.common.error_manager import AppDebugger, AppErrorHandler
 from core.tools.settings.snips_settings import DEFAULT_TRASH_RETENTION_DAYS, load_snips_trash_settings
 
@@ -29,6 +30,10 @@ class SnippetTrashManager:
     # פעולות ציבוריות על שליף יחיד
     # ------------------------------------------------------------------
     def move_to_trash(self, snippet_meta: dict) -> bool:
+        content_file: Path | None = None
+        trash_dir: Path | None = None
+        trash_content_file: Path | None = None
+        content_moved = False
         try:
             snippet_id = str(snippet_meta.get("id") or "").strip()
             if not snippet_id:
@@ -51,7 +56,6 @@ class SnippetTrashManager:
             trash_meta_file = trash_dir / "snippet.json"
 
             trash_dir.mkdir(parents=True, exist_ok=False)
-            shutil.move(str(content_file), str(trash_content_file))
 
             trash_record = {
                 "type": "snippet",
@@ -66,15 +70,22 @@ class SnippetTrashManager:
             }
 
             self._write_json(trash_meta_file, trash_record)
+            shutil.move(str(content_file), str(trash_content_file))
+            content_moved = True
 
             if not self._remove_snippet_from_category_index(snippet_meta):
-                AppDebugger.log(f"מנהל אשפת שליפים: התוכן הועבר, אבל עדכון snips.json נכשל עבור {snippet_id}")
+                self._rollback_trash_move(content_file, trash_content_file, trash_dir)
+                AppDebugger.log(f"מנהל אשפת שליפים: עדכון snips.json נכשל; העברת {snippet_id} בוטלה.")
                 return False
 
             AppDebugger.log(f"מנהל אשפת שליפים: השליף הועבר לאשפה: {snippet_id}")
             return True
 
         except Exception as e:
+            if content_moved and content_file and trash_content_file and trash_dir:
+                self._rollback_trash_move(content_file, trash_content_file, trash_dir)
+            elif trash_dir and trash_dir.exists():
+                shutil.rmtree(trash_dir, ignore_errors=True)
             AppErrorHandler.handle_error(
                 error_obj=e,
                 user_message="שגיאה בהעברת השליף לאשפה",
@@ -89,6 +100,9 @@ class SnippetTrashManager:
         if not trash_record or trash_record.get("type", "snippet") != "snippet":
             return False
 
+        restore_target: Path | None = None
+        trash_content_file: Path | None = None
+        content_moved = False
         try:
             snippet_meta = dict(trash_record.get("snippet") or {})
             original_content_file = Path(str(trash_record.get("original_content_file") or ""))
@@ -100,19 +114,26 @@ class SnippetTrashManager:
             restore_target = self._resolve_restore_target(original_content_file)
             restore_target.parent.mkdir(parents=True, exist_ok=True)
             shutil.move(str(trash_content_file), str(restore_target))
+            content_moved = True
 
             snippet_meta["content_file"] = str(restore_target)
             snippet_meta["category"] = str(trash_record.get("original_category") or snippet_meta.get("category") or "")
 
             if not self._add_snippet_to_category_index(snippet_meta):
-                AppDebugger.log(f"מנהל אשפת שליפים: התוכן שוחזר, אבל עדכון snips.json נכשל: {trash_item_path}")
+                self._rollback_restore_move(restore_target, trash_content_file)
+                AppDebugger.log(f"מנהל אשפת שליפים: עדכון snips.json נכשל; השחזור בוטל: {trash_item_path}")
                 return False
 
-            shutil.rmtree(trash_item_path)
+            try:
+                shutil.rmtree(trash_item_path)
+            except OSError as cleanup_error:
+                AppDebugger.log(f"מנהל אשפת שליפים: השחזור הצליח, אך ניקוי רשומת האשפה נכשל: {cleanup_error}")
             AppDebugger.log(f"מנהל אשפת שליפים: פריט אשפה שוחזר: {trash_item_path}")
             return True
 
         except Exception as e:
+            if content_moved and restore_target and trash_content_file:
+                self._rollback_restore_move(restore_target, trash_content_file)
             AppErrorHandler.handle_error(
                 error_obj=e,
                 user_message="שגיאה בשחזור השליף",
@@ -185,12 +206,23 @@ class SnippetTrashManager:
     def delete_snippet_permanently(self, snippet_meta: dict, content_file: Path) -> bool:
         snippet_id = str(snippet_meta.get("id") or "").strip()
         try:
+            if not self._remove_snippet_from_category_index(snippet_meta):
+                AppDebugger.log(f"מנהל אשפת שליפים: עדכון snips.json נכשל; {snippet_id} לא נמחק.")
+                return False
             content_file.unlink()
         except FileNotFoundError:
             pass
-
-        if not self._remove_snippet_from_category_index(snippet_meta):
-            AppDebugger.log(f"מנהל אשפת שליפים: התוכן נמחק, אבל עדכון snips.json נכשל עבור {snippet_id}")
+        except Exception as error:
+            try:
+                self._add_snippet_to_category_index(snippet_meta)
+            except Exception as rollback_error:
+                AppDebugger.log(f"מנהל אשפת שליפים: rollback של מחיקה לצמיתות נכשל: {rollback_error}")
+            AppErrorHandler.handle_error(
+                error_obj=error,
+                user_message="שגיאה במחיקת השליף לצמיתות",
+                dev_message=f"מנהל אשפת שליפים: המחיקה לצמיתות נכשלה: {error}",
+                severity="ERROR",
+            )
             return False
 
         AppDebugger.log(f"מנהל אשפת שליפים: השליף נמחק לצמיתות: {snippet_id}")
@@ -312,6 +344,30 @@ class SnippetTrashManager:
             return None
         return snippets
 
+    def _rollback_trash_move(
+        self,
+        content_file: Path,
+        trash_content_file: Path,
+        trash_dir: Path,
+    ) -> None:
+        try:
+            if trash_content_file.exists() and not content_file.exists():
+                content_file.parent.mkdir(parents=True, exist_ok=True)
+                shutil.move(str(trash_content_file), str(content_file))
+        except OSError as rollback_error:
+            AppDebugger.log(f"מנהל אשפת שליפים: rollback של העברה לאשפה נכשל: {rollback_error}")
+
+        if not trash_content_file.exists() and trash_dir.exists():
+            shutil.rmtree(trash_dir, ignore_errors=True)
+
+    def _rollback_restore_move(self, restore_target: Path, trash_content_file: Path) -> None:
+        try:
+            if restore_target.exists() and not trash_content_file.exists():
+                trash_content_file.parent.mkdir(parents=True, exist_ok=True)
+                shutil.move(str(restore_target), str(trash_content_file))
+        except OSError as rollback_error:
+            AppDebugger.log(f"מנהל אשפת שליפים: rollback של שחזור נכשל: {rollback_error}")
+
     # ------------------------------------------------------------------
     # שחזור נתיבים ומיון רשומות
     # ------------------------------------------------------------------
@@ -351,9 +407,7 @@ class SnippetTrashManager:
         self._write_json(AppPaths.CATEGORYS_JSON, categories)
 
     def _write_json(self, path: Path, data: object) -> None:
-        path.parent.mkdir(parents=True, exist_ok=True)
-        with open(path, "w", encoding="utf-8") as f:
-            json.dump(data, f, ensure_ascii=False, indent=2)
+        write_json_atomic(path, data)
 
     def _sanitize(self, name: str) -> str:
         safe = "".join(c for c in (name or "") if c.isalnum() or c in (" ", "_", "-")).strip()
@@ -372,6 +426,10 @@ class CategoryTrashManager(SnippetTrashManager):
     # פעולות ציבוריות על קטגוריה
     # ------------------------------------------------------------------
     def move_category_to_trash(self, category_name: str) -> bool:
+        category_dir: Path | None = None
+        trash_dir: Path | None = None
+        trash_category_dir: Path | None = None
+        category_moved = False
         try:
             category_name = str(category_name or "").strip()
             if not category_name:
@@ -394,7 +452,6 @@ class CategoryTrashManager(SnippetTrashManager):
             snippets = self._read_snippets_file(category_dir / "snips.json") or []
 
             trash_dir.mkdir(parents=True, exist_ok=False)
-            shutil.move(str(category_dir), str(trash_category_dir))
 
             trash_record = {
                 "type": "category",
@@ -405,12 +462,25 @@ class CategoryTrashManager(SnippetTrashManager):
                 "snippets": snippets,
             }
             self._write_json(trash_record_path, trash_record)
+            shutil.move(str(category_dir), str(trash_category_dir))
+            category_moved = True
             self._remove_category_from_index(category_name)
 
             AppDebugger.log(f"מנהל אשפת קטגוריות: הקטגוריה הועברה לאשפה: {category_name}")
             return True
 
         except Exception as e:
+            if category_moved and category_dir and trash_category_dir:
+                try:
+                    self._rollback_category_trash_move(category_dir, trash_category_dir)
+                except OSError as rollback_error:
+                    AppDebugger.log(f"מנהל אשפת קטגוריות: rollback של העברה לאשפה נכשל: {rollback_error}")
+            if (
+                trash_dir
+                and trash_dir.exists()
+                and (trash_category_dir is None or not trash_category_dir.exists())
+            ):
+                shutil.rmtree(trash_dir, ignore_errors=True)
             AppErrorHandler.handle_error(
                 error_obj=e,
                 user_message="שגיאה בהעברת הקטגוריה לאשפה",
@@ -425,6 +495,9 @@ class CategoryTrashManager(SnippetTrashManager):
         if not trash_record or trash_record.get("type") != "category":
             return False
 
+        restore_target: Path | None = None
+        trash_category_dir: Path | None = None
+        category_moved = False
         try:
             original_category = str(trash_record.get("original_category") or "").strip()
             trash_category_dir = Path(str(trash_record.get("trash_category_dir") or ""))
@@ -435,14 +508,26 @@ class CategoryTrashManager(SnippetTrashManager):
             restored_category_name, restore_target = self._resolve_category_restore_target(original_category)
             restore_target.parent.mkdir(parents=True, exist_ok=True)
             shutil.move(str(trash_category_dir), str(restore_target))
+            category_moved = True
             self._normalize_restored_category_files(restore_target, restored_category_name)
             self._add_category_to_index(restored_category_name)
 
-            shutil.rmtree(trash_item_path)
+            try:
+                shutil.rmtree(trash_item_path)
+            except OSError as cleanup_error:
+                AppDebugger.log(f"מנהל אשפת קטגוריות: השחזור הצליח, אך ניקוי רשומת האשפה נכשל: {cleanup_error}")
             AppDebugger.log(f"מנהל אשפת קטגוריות: הקטגוריה שוחזרה: {restored_category_name}")
             return True
 
         except Exception as e:
+            if category_moved and restore_target and trash_category_dir:
+                try:
+                    original_snippets = trash_record.get("snippets")
+                    if isinstance(original_snippets, list):
+                        self._write_json(restore_target / "snips.json", original_snippets)
+                    self._rollback_category_trash_move(trash_category_dir, restore_target)
+                except OSError as rollback_error:
+                    AppDebugger.log(f"מנהל אשפת קטגוריות: rollback של שחזור נכשל: {rollback_error}")
             AppErrorHandler.handle_error(
                 error_obj=e,
                 user_message="שגיאה בשחזור הקטגוריה",
@@ -475,9 +560,25 @@ class CategoryTrashManager(SnippetTrashManager):
             return False
 
         category_dir = AppPaths.SNIPS_FILES / self._sanitize(category_name)
-        if category_dir.exists() and category_dir.is_dir():
-            shutil.rmtree(category_dir)
-        self._remove_category_from_index(category_name)
+        index_updated = False
+        try:
+            self._remove_category_from_index(category_name)
+            index_updated = True
+            if category_dir.exists() and category_dir.is_dir():
+                shutil.rmtree(category_dir)
+        except Exception as error:
+            if index_updated:
+                try:
+                    self._add_category_to_index(category_name)
+                except Exception as rollback_error:
+                    AppDebugger.log(f"מנהל אשפת קטגוריות: rollback של מחיקה לצמיתות נכשל: {rollback_error}")
+            AppErrorHandler.handle_error(
+                error_obj=error,
+                user_message="שגיאה במחיקת הקטגוריה לצמיתות",
+                dev_message=f"מנהל אשפת קטגוריות: המחיקה לצמיתות נכשלה: {error}",
+                severity="ERROR",
+            )
+            return False
         AppDebugger.log(f"מנהל אשפת קטגוריות: הקטגוריה נמחקה לצמיתות: {category_name}")
         return True
 
@@ -532,6 +633,11 @@ class CategoryTrashManager(SnippetTrashManager):
             normalized_snippets.append(updated_snippet)
 
         self._write_json(snips_json_path, normalized_snippets)
+
+    def _rollback_category_trash_move(self, target_dir: Path, moved_dir: Path) -> None:
+        if moved_dir.exists() and not target_dir.exists():
+            target_dir.parent.mkdir(parents=True, exist_ok=True)
+            shutil.move(str(moved_dir), str(target_dir))
 
 
 # ----------------------------------------------------------------------

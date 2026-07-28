@@ -4,7 +4,7 @@ from pathlib import Path
 
 from whoosh.fields import ID, KEYWORD, TEXT, Schema
 from whoosh.index import create_in, open_dir
-from whoosh.qparser import PrefixPlugin, QueryParser
+from whoosh.qparser import MultifieldParser, OrGroup, PrefixPlugin
 
 from core.tools.common.app_paths import AppPaths
 
@@ -22,7 +22,11 @@ class SnippetSearchEngine:
             content_file=ID(stored=True),
         )
         self.ix = self._get_or_create_index()
-        self.query_parser = QueryParser("tags", schema=self.schema)
+        self.query_parser = MultifieldParser(
+            ["title", "tags"],
+            schema=self.schema,
+            group=OrGroup,
+        )
         self.query_parser.add_plugin(PrefixPlugin())
 
     def _get_or_create_index(self):

@@ -290,6 +290,10 @@ class SnippetsScreen(create_dynamic_ui_loader(AppPaths.SNIPPETS_SCREEN)):
             AppDebugger.log("שגיאה: grid_snippets_layout לא נמצא לטעינת שליפים.")
             return
 
+        # טעינת קטגוריה חדשה מבטלת עורך ישן שכבר אינו נמצא בפריסה.
+        self._active_editor_widget = None
+        self._active_editor_original_card = None
+
         # ניקוי יסודי של הפריסה כולל מרווחים ישנים למניעת זליגת זיכרון
         while layout.count():
             item = layout.takeAt(0)
@@ -370,8 +374,9 @@ class SnippetsScreen(create_dynamic_ui_loader(AppPaths.SNIPPETS_SCREEN)):
             AppDebugger.log("שגיאה: grid_snippets_layout לא נמצא לעריכת שליף.")
             return
 
-        # אחסון הפניות לעורך הפעיל ולכרטיס המקורי שלו
-        self._active_editor_original_card = old_snippet_card
+        if self._active_editor_widget is not None:
+            QMessageBox.information(self, "עריכת שליף", "יש לסיים או לבטל את העריכה הפעילה תחילה.")
+            return
 
         # יצירת ווידג'ט עריכה חדש
         edit_widget = EditCardWidget(
@@ -379,10 +384,17 @@ class SnippetsScreen(create_dynamic_ui_loader(AppPaths.SNIPPETS_SCREEN)):
             on_save_callback=self._on_edit_save,
             on_cancel_callback=self._on_edit_cancel
         )
-        self._active_editor_widget = edit_widget
-
         # החלפת הכרטיס הישן עם ווידג'ט העריכה
-        LayoutHelper.replace_widget_in_grid_layout(grid_snippets_layout, old_snippet_card.get_view(), edit_widget.get_view())
+        if not LayoutHelper.replace_widget_in_grid_layout(
+            grid_snippets_layout,
+            old_snippet_card.get_view(),
+            edit_widget.get_view(),
+        ):
+            edit_widget.deleteLater()
+            return
+
+        self._active_editor_original_card = old_snippet_card
+        self._active_editor_widget = edit_widget
 
     def _handle_search_edit_snippet_request(self, snippet_meta: dict):
         category = str(snippet_meta.get("category") or "").strip()
@@ -442,7 +454,12 @@ class SnippetsScreen(create_dynamic_ui_loader(AppPaths.SNIPPETS_SCREEN)):
         self._set_content_mode("category", self._current_category)
 
     def _handle_delete_snippet_request(self, snippet_meta: dict):
-        title = str(snippet_meta.get("title") or "ללא כותרת")
+        current_meta = self.snippet_metadata_manager.load_current(snippet_meta)
+        if current_meta is None:
+            QMessageBox.warning(self, "מחיקת שליף", "לא ניתן היה לטעון את נתוני השליף העדכניים.")
+            return
+
+        title = str(current_meta.get("title") or "ללא כותרת")
         answer = QMessageBox.question(
             self,
             "מחיקת שליף",
@@ -453,7 +470,7 @@ class SnippetsScreen(create_dynamic_ui_loader(AppPaths.SNIPPETS_SCREEN)):
         if answer != QMessageBox.StandardButton.Yes:
             return
 
-        if not move_snippet_to_trash(snippet_meta):
+        if not move_snippet_to_trash(current_meta):
             QMessageBox.warning(self, "מחיקת שליף", "לא ניתן היה להעביר את השליף לאשפה.")
             return
 

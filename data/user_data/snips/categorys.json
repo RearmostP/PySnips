@@ -1,4 +1,6 @@
 [
   "python",
-  " kivy"
+  " kivy",
+  "FiveM_server",
+  "lua"
 ]

@@ -34,16 +34,15 @@ import re
 from pathlib import Path
 
 from core.tools.common.app_paths import AppPaths
+from core.tools.common.atomic_json import write_json_atomic
 from core.tools.common.dynamic_ui_loader import create_dynamic_ui_loader
 from core.tools.common.error_manager import AppDebugger, AppErrorHandler
+from core.tools.snips.snippet_name_utils import sanitize_snippet_name
 
 
 def _sanitize(name: str) -> str:
     """הפוך שם קטגוריה לשם קובץ בטוח לשימוש במערכת קבצים."""
-    safe = ''.join(c for c in (name or '') if c.isalnum() or c in (' ', '_', '-')).strip()
-    if not safe:
-        return 'שם לא ידוע'
-    return safe.replace(' ', '_')
+    return sanitize_snippet_name(name)
 
 
 class SnippetManager:
@@ -66,9 +65,9 @@ class SnippetManager:
             bool: האם השמירה הצליחה
         """
         try:
-            if not title or not content:
+            if not title or not content or not category:
                 AppErrorHandler.handle_error(
-                    user_message="שם ותוכן הם שדות חובה",
+                    user_message="שם, קטגוריה ותוכן הם שדות חובה",
                     severity="INFO",
                     show_terminal=False,
                     show_log=False,
@@ -108,7 +107,16 @@ class SnippetManager:
                 return False
 
             # עדכון ה-snips.json של הקטגוריה
-            self._save_snippets_json(snippet_data, category)
+            if not self._save_snippets_json(snippet_data, category):
+                try:
+                    file_path.unlink()
+                except FileNotFoundError:
+                    pass
+                except OSError as rollback_error:
+                    AppDebugger.log(
+                        f"SnippetManager: ניקוי קובץ תוכן לאחר כשל בשמירת המטא־דאטה נכשל: {rollback_error}"
+                    )
+                return False
 
             AppDebugger.log(f"✅ SnippetManager: שמר snippet חדש בהצלחה: {title}")
             return True
@@ -188,20 +196,17 @@ class SnippetManager:
             if snippets_file.exists():
                 AppDebugger.log(f"🔄 טוען אינדקס snippets מהזיכרון: {snippets_file}")
                 with open(snippets_file, 'r', encoding='utf-8') as f:
-                    try:
-                        snippets = json.load(f)
-                        AppDebugger.log(f"✅ טען {len(snippets)} snippets קיימים")
-                    except Exception as e:
-                        AppDebugger.log(f"⚠️ נכשל בפענוח snippets.json: {str(e)}, מתחיל מחדש")
-                        snippets = []
+                    snippets = json.load(f)
+                    if not isinstance(snippets, list):
+                        raise ValueError(f"קובץ האינדקס אינו מכיל רשימה: {snippets_file}")
+                    AppDebugger.log(f"✅ טען {len(snippets)} snippets קיימים")
             else:
                 AppDebugger.log(f"📄 יוצר קובץ אינדקס snippets חדש: {snippets_file}")
 
             snippets.append(snippet_data)
 
             AppDebugger.log(f"💾 שומר {len(snippets)} snippets לדיסק: {snippets_file}")
-            with open(snippets_file, 'w', encoding='utf-8') as f:
-                json.dump(snippets, f, ensure_ascii=False, indent=2)
+            write_json_atomic(snippets_file, snippets)
             AppDebugger.log(f"✅ אינדקס snippets שומר בהצלחה")
 
             return True

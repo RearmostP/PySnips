@@ -3,6 +3,7 @@ from datetime import datetime
 from pathlib import Path
 
 from core.tools.common.app_paths import AppPaths
+from core.tools.common.atomic_json import write_json_atomic
 from core.tools.snips.snippet_name_utils import sanitize_snippet_name
 
 
@@ -67,42 +68,61 @@ class SnippetMetadataManager:
         original_snips_json_path = AppPaths.SNIPS_FILES / sanitize_snippet_name(original_category) / "snips.json"
         target_snips_json_path = AppPaths.SNIPS_FILES / sanitize_snippet_name(category) / "snips.json"
         try:
-            with open(original_snips_json_path, "r", encoding="utf-8") as f:
-                snippets = json.load(f)
-
-            if not isinstance(snippets, list):
+            original_snippets = self._read_snippets_list(original_snips_json_path)
+            if original_snippets is None:
                 return False
 
-            found = False
-            for index, item in enumerate(snippets):
+            source_index = None
+            for index, item in enumerate(original_snippets):
                 if isinstance(item, dict) and str(item.get("id") or "") == snippet_id:
-                    found = True
-                    if original_category == category:
-                        updated_meta = self.move_content_file(updated_meta, category)
-                        snippets[index] = updated_meta
-                    else:
-                        snippets.pop(index)
+                    source_index = index
                     break
 
-            if not found:
+            if source_index is None:
                 return False
 
-            with open(original_snips_json_path, "w", encoding="utf-8") as f:
-                json.dump(snippets, f, ensure_ascii=False, indent=2)
+            if original_snips_json_path.resolve() == target_snips_json_path.resolve():
+                updated_snippets = list(original_snippets)
+                updated_snippets[source_index] = updated_meta
+                write_json_atomic(original_snips_json_path, updated_snippets)
+                return True
 
-            if original_category != category:
-                updated_meta = self.move_content_file(updated_meta, category)
-                target_snips_json_path.parent.mkdir(parents=True, exist_ok=True)
-                target_snippets = self._read_snippets_list(target_snips_json_path)
-                target_snippets = [
-                    item for item in target_snippets
-                    if not (isinstance(item, dict) and str(item.get("id") or "") == snippet_id)
-                ]
-                target_snippets.append(updated_meta)
-                with open(target_snips_json_path, "w", encoding="utf-8") as f:
-                    json.dump(target_snippets, f, ensure_ascii=False, indent=2)
+            target_existed = target_snips_json_path.exists()
+            target_snippets = self._read_snippets_list(target_snips_json_path)
+            if target_snippets is None:
+                return False
+
+            original_content_file = Path(str(updated_meta.get("content_file") or ""))
+            if not original_content_file.is_file():
+                return False
+
+            moved_meta = self.move_content_file(updated_meta, category)
+            moved_content_file = Path(str(moved_meta.get("content_file") or ""))
+            if moved_content_file.resolve() == original_content_file.resolve():
+                return False
+
+            updated_original_snippets = list(original_snippets)
+            updated_original_snippets.pop(source_index)
+            updated_target_snippets = [
+                item for item in target_snippets
+                if not (isinstance(item, dict) and str(item.get("id") or "") == snippet_id)
+            ]
+            updated_target_snippets.append(moved_meta)
+
+            try:
+                write_json_atomic(target_snips_json_path, updated_target_snippets)
+                write_json_atomic(original_snips_json_path, updated_original_snippets)
+            except OSError:
+                self._rollback_category_move(
+                    original_content_file=original_content_file,
+                    moved_content_file=moved_content_file,
+                    target_snips_json_path=target_snips_json_path,
+                    target_snippets=target_snippets,
+                    target_existed=target_existed,
+                )
+                return False
             return True
-        except (OSError, json.JSONDecodeError):
+        except (OSError, json.JSONDecodeError, ValueError):
             return False
 
     def move_content_file(self, snippet_meta: dict, category: str) -> dict:
@@ -130,9 +150,32 @@ class SnippetMetadataManager:
             "content_file": str(target_file),
         }
 
-    def _read_snippets_list(self, snips_json_path: Path) -> list[dict]:
+    def _read_snippets_list(self, snips_json_path: Path) -> list[dict] | None:
         if not snips_json_path.exists():
             return []
         with open(snips_json_path, "r", encoding="utf-8") as f:
             snippets = json.load(f)
-        return snippets if isinstance(snippets, list) else []
+        return snippets if isinstance(snippets, list) else None
+
+    def _rollback_category_move(
+        self,
+        original_content_file: Path,
+        moved_content_file: Path,
+        target_snips_json_path: Path,
+        target_snippets: list[dict],
+        target_existed: bool,
+    ) -> None:
+        try:
+            if moved_content_file.exists() and not original_content_file.exists():
+                original_content_file.parent.mkdir(parents=True, exist_ok=True)
+                moved_content_file.rename(original_content_file)
+        except OSError:
+            pass
+
+        try:
+            if target_existed:
+                write_json_atomic(target_snips_json_path, target_snippets)
+            else:
+                target_snips_json_path.unlink(missing_ok=True)
+        except OSError:
+            pass

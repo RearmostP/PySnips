@@ -20,6 +20,16 @@ ERROR_LOG_PATH = AppPaths.LOGS_DIR / "pysnips.log"
 DEBUG_LOG_PATH = AppPaths.LOGS_DIR / "pysnips_debug.log"
 
 
+def _safe_terminal_print(message: str) -> None:
+    """Print without allowing a legacy Windows console encoding to mask errors."""
+    try:
+        print(message)
+    except UnicodeEncodeError:
+        encoding = getattr(sys.stdout, "encoding", None) or "utf-8"
+        safe_message = message.encode(encoding, errors="replace").decode(encoding, errors="replace")
+        print(safe_message)
+
+
 class AppErrorHandler:
     """M1: מערכת לניהול שגיאות גמישה - מאפשרת כיבוי/הדלקה של ערוצים והודעות מופרדות"""
 
@@ -92,12 +102,15 @@ class AppErrorHandler:
         error_name = type(error_obj).__name__ if error_obj else "LogicalError"
         error_details = str(error_obj) if error_obj else "בדיקת תנאי ידנית בקוד (תנאי נכשל)"
 
-        print(f"\n{icon} {GRAY}{'=' * 30} [App Error] {'=' * 30}{RESET} {icon}")
-        print(f" {COLOR_SEV}{BOLD}[{severity}]{RESET}")
-        print(f" {BOLD}[SYSTEM MESSAGE]{RESET} {dev_message}")
-        print(f" {BOLD}[The error]{RESET}  {error_name}: {error_details}")
-        print(f" {BOLD}[Error location]{RESET} `{context['filename']}` -> line {context['line']} -> function `{context['function']}`")
-        print(f"{icon} {GRAY}{'=' * 73}{RESET} {icon}\n")
+        _safe_terminal_print(f"\n{icon} {GRAY}{'=' * 30} [App Error] {'=' * 30}{RESET} {icon}")
+        _safe_terminal_print(f" {COLOR_SEV}{BOLD}[{severity}]{RESET}")
+        _safe_terminal_print(f" {BOLD}[SYSTEM MESSAGE]{RESET} {dev_message}")
+        _safe_terminal_print(f" {BOLD}[The error]{RESET}  {error_name}: {error_details}")
+        _safe_terminal_print(
+            f" {BOLD}[Error location]{RESET} `{context['filename']}` -> "
+            f"line {context['line']} -> function `{context['function']}`"
+        )
+        _safe_terminal_print(f"{icon} {GRAY}{'=' * 73}{RESET} {icon}\n")
 
     @staticmethod
     def _write_to_log(context: dict, error_obj: Exception, dev_message: str, severity: str):
@@ -120,7 +133,7 @@ class AppErrorHandler:
             with open(ERROR_LOG_PATH, "a", encoding="utf-8") as f:
                 f.write(log_block)
         except Exception as e:
-            print(f"⚠️ לא ניתן לכתוב לקובץ הלוג: {e}")
+            _safe_terminal_print(f"⚠️ לא ניתן לכתוב לקובץ הלוג: {e}")
 
     @staticmethod
     def _show_gui_dialog(user_message: str, error_obj: Exception, severity: str, solution_hint: str):
@@ -187,4 +200,4 @@ class AppDebugger:
         log_prefix = f"{GREEN}[DEBUG]{RESET}"
         arrow = f"{WHITE}->{RESET}"
 
-        print(f"{log_prefix} {colored_location} {arrow} {message}")
+        _safe_terminal_print(f"{log_prefix} {colored_location} {arrow} {message}")
