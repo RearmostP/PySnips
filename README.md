@@ -35,8 +35,10 @@ PySnips מספקת סביבה שולחנית יציבה, חסינת קריסות
 `git clone https://github.com/RearmostP/PySnips
 `
 
-`python -m venv .venv
 `
+python -m venv .venv
+`
+
 `
 .venv\Scripts\activate
 `
