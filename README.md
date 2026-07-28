@@ -36,6 +36,8 @@ PySnips מספקת סביבה שולחנית יציבה, חסינת קריסות
 `
 
 `python -m venv .venv
+`
+`
 .venv\Scripts\activate
 `
 
