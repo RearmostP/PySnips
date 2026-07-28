@@ -8,6 +8,11 @@ from pathlib import Path
 
 from core.tools.common.app_paths import AppPaths
 from core.tools.common.error_manager import AppDebugger
+from core.tools.markdown.settings import (
+    DEFAULT_MARKDOWN_SETTINGS,
+    MarkdownRenderSettings,
+    normalize_markdown_render_settings,
+)
 from core.tools.settings.settings_store import load_json_settings, save_json_settings
 
 
@@ -26,9 +31,16 @@ class SnipsCategorySettings:
 
 
 @dataclass
+class SnipsDisplaySettings:
+    snippet_card_height: int = 600
+
+
+@dataclass
 class SnipsSettings:
     trash: SnipsTrashSettings
     categories: SnipsCategorySettings
+    display: SnipsDisplaySettings
+    markdown: MarkdownRenderSettings
 
 
 DEFAULT_SNIPS_SETTINGS = {
@@ -38,7 +50,11 @@ DEFAULT_SNIPS_SETTINGS = {
     },
     "categories": {
         "pinned_category": "",
-    }
+    },
+    "display": {
+        "snippet_card_height": 600,
+    },
+    "markdown": DEFAULT_MARKDOWN_SETTINGS,
 }
 
 
@@ -47,6 +63,8 @@ def load_snips_settings() -> SnipsSettings:
     raw_settings = _load_legacy_trash_settings(raw_settings)
     trash_settings = raw_settings.get("trash") or {}
     category_settings = raw_settings.get("categories") or {}
+    display_settings = raw_settings.get("display") or {}
+    markdown_settings = raw_settings.get("markdown") or {}
     return SnipsSettings(
         trash=SnipsTrashSettings(
             retention_days=_normalize_retention_days(trash_settings.get("retention_days")),
@@ -55,6 +73,12 @@ def load_snips_settings() -> SnipsSettings:
         categories=SnipsCategorySettings(
             pinned_category=str(category_settings.get("pinned_category") or ""),
         ),
+        display=SnipsDisplaySettings(
+            snippet_card_height=_normalize_snippet_card_height(
+                display_settings.get("snippet_card_height")
+            ),
+        ),
+        markdown=normalize_markdown_render_settings(markdown_settings),
     )
 
 
@@ -67,6 +91,12 @@ def save_snips_settings(settings: SnipsSettings) -> bool:
         categories=SnipsCategorySettings(
             pinned_category=str(settings.categories.pinned_category or ""),
         ),
+        display=SnipsDisplaySettings(
+            snippet_card_height=_normalize_snippet_card_height(
+                settings.display.snippet_card_height
+            ),
+        ),
+        markdown=normalize_markdown_render_settings(asdict(settings.markdown)),
     )
 
     if save_json_settings(AppPaths.SNIPS_SETTINGS_JSON, asdict(normalized_settings)):
@@ -122,3 +152,11 @@ def _normalize_retention_days(value: object) -> int:
         retention_days = DEFAULT_TRASH_RETENTION_DAYS
 
     return max(1, min(retention_days, 365))
+
+
+def _normalize_snippet_card_height(value: object) -> int:
+    try:
+        height = int(value)
+    except (TypeError, ValueError):
+        height = 600
+    return max(300, min(height, 900))

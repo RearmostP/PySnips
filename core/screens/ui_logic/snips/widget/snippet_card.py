@@ -21,27 +21,24 @@
 ומאפשר ניהול קל יותר של כל אחד מהרכיבים.
 """
 
-from dataclasses import dataclass
+from math import ceil
 from pathlib import Path
 from typing import Mapping
 
 from PySide6.QtWidgets import QWidget
-from PySide6.QtCore import Signal
+from PySide6.QtCore import QTimer, Signal
 
 from core.tools.common.app_paths import AppPaths
 from core.tools.common.error_manager import AppDebugger
 from core.tools.common.dynamic_ui_loader import create_dynamic_ui_loader # Use dynamic_ui_loader directly
+from core.tools.markdown import MarkdownService
+from core.tools.settings.snips_settings import load_snips_settings
 
 
 DEFAULT_TITLE = "ללא כותרת"
-CONTENT_READ_ERROR = "שגיאה בקריאת תוכן השליף."
 CONTENT_FILE_MISSING = "קובץ התוכן לא נמצא."
-
-
-@dataclass(frozen=True)
-class SnippetContent:
-    text: str
-    is_markdown: bool
+MINIMUM_CARD_HEIGHT = 170
+CONTENT_HEIGHT_PADDING = 12
 
 
 class SnippetCard(create_dynamic_ui_loader(AppPaths.SNIPPET_CARD_UI)): # Inherit directly
@@ -50,9 +47,29 @@ class SnippetCard(create_dynamic_ui_loader(AppPaths.SNIPPET_CARD_UI)): # Inherit
     details_requested = Signal(dict)
     delete_requested = Signal(dict)
 
-    def __init__(self, snippet_meta: dict, parent: QWidget | None = None):
+    def __init__(
+        self,
+        snippet_meta: dict,
+        parent: QWidget | None = None,
+        markdown_service: MarkdownService | None = None,
+        card_height: int | None = None,
+    ):
         super().__init__(parent) # Pass parent to the base class (QWidget loaded from UI)
         self.snippet_meta = snippet_meta
+        self.markdown_service = markdown_service or MarkdownService()
+        self.markdown_warnings: list[str] = []
+        self.markdown_repairs: list[str] = []
+        self._height_update_pending = False
+        self._maximum_card_height = 600
+        configured_height = (
+            card_height
+            if card_height is not None
+            else load_snips_settings().display.snippet_card_height
+        )
+        self.set_card_height(configured_height)
+        self.txt_content_preview.document().documentLayout().documentSizeChanged.connect(
+            self._schedule_card_height_update
+        )
         
         # Initialize UI and logic
         self.init_data()
@@ -66,12 +83,7 @@ class SnippetCard(create_dynamic_ui_loader(AppPaths.SNIPPET_CARD_UI)): # Inherit
         # Set title
         self.lbl_title_label.setText(self._get_snippet_title(self.snippet_meta)) # Direct access to UI element
 
-        # Load and set content
-        snippet_content = self._read_snippet_content(self.snippet_meta)
-        if snippet_content.is_markdown:
-            self.txt_content_preview.setMarkdown(snippet_content.text) # Direct access to UI element
-        else:
-            self.txt_content_preview.setPlainText(snippet_content.text) # Direct access to UI element
+        self._render_snippet_content(self.snippet_meta)
 
     def setup_logic(self):
         """מחבר את כפתורי ה-UI לפונקציות הלוגיות."""
@@ -84,20 +96,73 @@ class SnippetCard(create_dynamic_ui_loader(AppPaths.SNIPPET_CARD_UI)): # Inherit
         title = snippet_meta.get("title", DEFAULT_TITLE)
         return str(title) if title else DEFAULT_TITLE
 
-    def _read_snippet_content(self, snippet_meta: Mapping[str, object]) -> SnippetContent:
+    def set_card_height(self, height: int) -> None:
+        self._maximum_card_height = max(300, min(int(height), 900))
+        self._schedule_card_height_update()
+
+    def _schedule_card_height_update(self, *_args) -> None:
+        if self._height_update_pending:
+            return
+        self._height_update_pending = True
+        QTimer.singleShot(0, self._apply_content_aware_height)
+
+    def _apply_content_aware_height(self) -> None:
+        self._height_update_pending = False
+        document_layout = self.txt_content_preview.document().documentLayout()
+        document_height = ceil(document_layout.documentSize().height())
+        preview_height = (
+            document_height
+            + self.txt_content_preview.frameWidth() * 2
+            + CONTENT_HEIGHT_PADDING
+        )
+
+        margins = self.main_layout.contentsMargins()
+        header_height = (
+            margins.top()
+            + margins.bottom()
+            + self.lbl_title_label.sizeHint().height()
+            + self.details_edit_layout.sizeHint().height()
+            + self.main_layout.spacing() * 2
+        )
+        desired_height = header_height + preview_height
+        target_height = max(
+            MINIMUM_CARD_HEIGHT,
+            min(desired_height, self._maximum_card_height),
+        )
+        if self.minimumHeight() != target_height or self.maximumHeight() != target_height:
+            self.setFixedHeight(target_height)
+
+    def resizeEvent(self, event) -> None:
+        super().resizeEvent(event)
+        if hasattr(self, "_height_update_pending"):
+            self._schedule_card_height_update()
+
+    def _render_snippet_content(self, snippet_meta: Mapping[str, object]) -> None:
         content_file = snippet_meta.get("content_file", "")
         content_file_path = Path(str(content_file))
 
-        if not content_file_path.exists():
-            return SnippetContent(CONTENT_FILE_MISSING, is_markdown=False)
+        if not content_file_path.is_file():
+            self.txt_content_preview.setPlainText(CONTENT_FILE_MISSING)
+            return
 
         try:
-            return SnippetContent(
-                content_file_path.read_text(encoding="utf-8"),
-                is_markdown=True,
+            snippet_id = str(snippet_meta.get("id") or content_file_path.resolve())
+            result = self.markdown_service.load_or_render(
+                snippet_id=snippet_id,
+                source_path=content_file_path,
             )
-        except OSError:
-            return SnippetContent(CONTENT_READ_ERROR, is_markdown=False)
+            self.txt_content_preview.setHtml(result.html)
+            self.markdown_warnings = result.warnings
+            self.markdown_repairs = result.repairs
+            for diagnostic in self.markdown_warnings:
+                AppDebugger.log(f"SnippetCard Markdown diagnostic: {diagnostic}")
+            for repair in self.markdown_repairs:
+                AppDebugger.log(f"SnippetCard Markdown repair: {repair}")
+        except Exception as error:
+            AppDebugger.log(f"SnippetCard: רינדור Markdown נכשל: {error}")
+            self.txt_content_preview.setPlainText(
+                f"שגיאה ברינדור תוכן השליף: {error}"
+            )
 
     def _on_edit_button_clicked(self):
         """מתודה הנקראת בלחיצה על כפתור העריכה, ומשדרת את הסיגנל."""
@@ -126,7 +191,7 @@ class SnippetCard(create_dynamic_ui_loader(AppPaths.SNIPPET_CARD_UI)): # Inherit
                 color: #ffffff;
                 font-family: 'Segoe UI', Arial, sans-serif;
             }
-            QTextEdit#txt_content_preview { /* Use the objectName from the .ui file */
+            QTextBrowser#txt_content_preview {
                 background-color: #181818;
                 color: #d4d4d4;
                 border: 1px solid #2d2d2d;
@@ -134,17 +199,6 @@ class SnippetCard(create_dynamic_ui_loader(AppPaths.SNIPPET_CARD_UI)): # Inherit
                 padding: 8px;
                 font-size: 13px;
                 font-family: 'Segoe UI', Arial, sans-serif;
-            }
-            QTextEdit h1 { color: #ffffff; font-weight: bold; font-size: 1.6em; margin-top: 6px; margin-bottom: 4px; }
-            QTextEdit h2 { color: #eeeeee; font-weight: bold; font-size: 1.4em; margin-top: 5px; margin-bottom: 3px; }
-            QTextEdit h3 { color: #e0e0e0; font-weight: bold; font-size: 1.2em; margin-top: 4px; margin-bottom: 2px; }
-            QTextEdit h4 { color: #d0d0d0; font-weight: bold; font-size: 1.05em; margin-top: 4px; margin-bottom: 2px; }
-            QTextEdit code, QTextEdit pre {
-                background-color: #282828;
-                color: #f8f8f2;
-                font-family: 'JetBrains Mono', monospace; 
-                font-size: 12px;
-                border-radius: 3px;
             }
             QPushButton#btn_edit { /* Use the objectName from the .ui file */
                 background-color: #007bff; /* כחול */

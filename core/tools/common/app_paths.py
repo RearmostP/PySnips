@@ -31,6 +31,8 @@ class AppPaths:
     # ----------------- system_data ------------------------
     SYSTEM_DATA_DIR = DATA_DIR / "system_data"
     SETTINGS_DATA_DIR = SYSTEM_DATA_DIR / "settings"
+    CACHE_DATA_DIR = SYSTEM_DATA_DIR / "cache"
+    SNIPPET_HTML_CACHE_DIR = CACHE_DATA_DIR / "snippets_html"
     GENERAL_SETTINGS_JSON = SETTINGS_DATA_DIR / "general_settings.json"
     SNIPS_SETTINGS_JSON = SETTINGS_DATA_DIR / "snips_settings.json"
     READY_CODE_SETTINGS_JSON = SETTINGS_DATA_DIR / "ready_code_settings.json"
@@ -107,6 +109,8 @@ class AppPaths:
         # ------ system_data ----
         SYSTEM_DATA_DIR: False,
         SETTINGS_DATA_DIR: False,
+        CACHE_DATA_DIR: False,
+        SNIPPET_HTML_CACHE_DIR: False,
         GENERAL_SETTINGS_JSON: False,
         SNIPS_SETTINGS_JSON: False,
         READY_CODE_SETTINGS_JSON: False,

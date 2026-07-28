@@ -17,6 +17,7 @@ from core.tools.snips.snippet_trash_manager import (
     restore_trash_item,
 )
 from core.tools.snips.snippet_metadata_manager import SnippetMetadataManager
+from core.tools.snips.snippet_content_store import SnippetContentStore
 from core.tools.snips.snippet_name_utils import sanitize_snippet_name
 from core.tools.settings.snips_settings import (
     SnipsTrashSettings,
@@ -28,6 +29,7 @@ __all__ = [
     "CategoryTrashManager",
     "SnippetTrashManager",
     "SnippetMetadataManager",
+    "SnippetContentStore",
     "cleanup_old_trash_items",
     "list_deleted_categories",
     "list_deleted_snippets",

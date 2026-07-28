@@ -52,6 +52,7 @@ from core.tools.snips import move_snippet_to_trash
 from core.tools.snips.snippet_metadata_manager import SnippetMetadataManager
 from core.tools.snips.snippet_name_utils import sanitize_snippet_name
 from core.tools.settings.snips_settings import load_pinned_snips_category, save_pinned_snips_category
+from core.tools.markdown import MarkdownService
 
 
 # ----------------------------------------------------------------------
@@ -474,6 +475,7 @@ class SnippetsScreen(create_dynamic_ui_loader(AppPaths.SNIPPETS_SCREEN)):
             QMessageBox.warning(self, "מחיקת שליף", "לא ניתן היה להעביר את השליף לאשפה.")
             return
 
+        MarkdownService().invalidate(str(current_meta.get("id") or ""))
         rebuild_search_index()
         self._refresh_after_snippet_delete()
 
@@ -609,6 +611,10 @@ class SnippetsScreen(create_dynamic_ui_loader(AppPaths.SNIPPETS_SCREEN)):
         dialog = SettingsDialog(parent=self)
         dialog.resize(900, 600)
         dialog.exec()
+        if self.inp_search_snips.text().strip() and self.search_widget:
+            self.search_widget.refresh()
+        else:
+            self._set_content_mode("category", self._current_category)
 
     def show_about(self):
         """הצגת מידע אודות היישום"""

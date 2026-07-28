@@ -38,6 +38,7 @@ from core.tools.common.atomic_json import write_json_atomic
 from core.tools.common.dynamic_ui_loader import create_dynamic_ui_loader
 from core.tools.common.error_manager import AppDebugger, AppErrorHandler
 from core.tools.snips.snippet_name_utils import sanitize_snippet_name
+from core.tools.snips.snippet_content_store import SnippetContentStore
 
 
 def _sanitize(name: str) -> str:
@@ -169,8 +170,7 @@ class SnippetManager:
 
             file_path = dir_path / fname
             AppDebugger.log(f"💾 שומר תוכן snippet לדיסק: {file_path}")
-            with open(file_path, 'w', encoding='utf-8') as f:
-                f.write(content)
+            SnippetContentStore().write(file_path, content)
             AppDebugger.log(f"✅ תוכן snippet שומר בהצלחה: {file_path}")
             return True
         except Exception as e:

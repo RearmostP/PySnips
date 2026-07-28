@@ -77,6 +77,11 @@ class SnippetSearchWidget(create_dynamic_ui_loader(AppPaths.SNIPPET_SEARCH_WIDGE
         self._set_status("")
         self.btn_load_more.hide()
 
+    def refresh(self):
+        query = self._query
+        self._query = ""
+        self.set_query(query)
+
     def load_next_page(self):
         if self._visible_count >= len(self._results):
             self.btn_load_more.hide()

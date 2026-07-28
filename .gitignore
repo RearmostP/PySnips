@@ -18,6 +18,9 @@ pysnips.log
 # Whoosh search index files
 core/tools/search/index/
 
+# Generated Markdown/HTML preview cache
+data/system_data/cache/
+
 # User trash content
 data/user_data/trash/*
 !data/user_data/trash/.gitkeep

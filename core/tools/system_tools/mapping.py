@@ -11,10 +11,10 @@ UI_TIMESTAMPS = {
     "ready_code_settings_page.ui": "2026-07-13 13:07:03",
     "settings_dialog.ui": "2026-07-13 14:23:26",
     "snippets_screen.ui": "2026-06-24 15:33:03",
-    "snippet_card.ui": "2026-07-13 11:37:16",
+    "snippet_card.ui": "2026-07-28 16:38:39",
     "snippet_search_widget.ui": "2026-07-13 10:24:08",
     "snips_categories_page.ui": "2026-07-13 13:07:03",
-    "snips_overview_page.ui": "2026-07-13 13:07:03",
+    "snips_overview_page.ui": "2026-07-28 18:30:54",
     "snips_restore_page.ui": "2026-07-13 14:23:26"
 }
 
@@ -110,6 +110,8 @@ class SnipsOverviewPageElements:
     """רכיבים דינמיים עבור snips_overview_page.ui"""
     BTN_CATEGORIES_LINK = "btn_categories_link"
     BTN_RESTORE_LINK = "btn_restore_link"
+    CMB_SNIPPET_CARD_HEIGHT = "cmb_snippet_card_height"
+    LBL_SNIPPET_CARD_HEIGHT = "lbl_snippet_card_height"
     LBL_TITLE = "lbl_title"
 
 class SnipsRestorePageElements:
@@ -213,6 +215,8 @@ WIDGET_MAPS = {
     "SnipsOverviewPageElements": [
         "btn_categories_link",
         "btn_restore_link",
+        "cmb_snippet_card_height",
+        "lbl_snippet_card_height",
         "lbl_title"
     ],
     "SnipsRestorePageElements": [

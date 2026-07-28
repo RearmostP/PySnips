@@ -14,6 +14,18 @@
     </widget>
    </item>
    <item>
+    <layout class="QHBoxLayout" name="snippet_card_height_layout">
+     <item>
+      <widget class="QLabel" name="lbl_snippet_card_height">
+       <property name="text"><string>גובה מרבי לכרטיס השליף</string></property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="cmb_snippet_card_height"/>
+     </item>
+    </layout>
+   </item>
+   <item>
     <widget class="QPushButton" name="btn_restore_link">
      <property name="cursor"><cursorShape>PointingHandCursor</cursorShape></property>
      <property name="text"><string>שחזור</string></property>

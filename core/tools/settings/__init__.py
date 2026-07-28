@@ -6,6 +6,7 @@ from core.tools.settings.snips_settings import (
     DEFAULT_TRASH_RETENTION_DAYS,
     SnipsSettings,
     SnipsCategorySettings,
+    SnipsDisplaySettings,
     SnipsTrashSettings,
     load_pinned_snips_category,
     load_snips_settings,

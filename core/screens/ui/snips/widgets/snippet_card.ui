@@ -132,7 +132,7 @@
     </layout>
    </item>
    <item>
-    <widget class="QTextEdit" name="txt_content_preview">
+     <widget class="QTextBrowser" name="txt_content_preview">
      <property name="readOnly">
       <bool>true</bool>
      </property>
