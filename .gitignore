@@ -22,8 +22,8 @@ core/tools/search/index/
 data/system_data/cache/
 
 
-data/user_data/snips
-data/user_data/ready_code
+data/user_data/snips/
+data/user_data/ready_code/
 # User trash content
 data/user_data/trash/*
 !data/user_data/trash/.gitkeep
