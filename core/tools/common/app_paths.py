@@ -8,6 +8,7 @@ class AppPaths:
     ASSETS_DIR = PROJECT_DIR / "assets"
     FONTS_DIR = ASSETS_DIR / "fonts"
     ICONS_DIR = ASSETS_DIR / "icons"
+    APP_ICON = ICONS_DIR / "pysnips-multisize.ico"
 
     # ----------------- core -----------------------------
     CORE_DIR = PROJECT_DIR / "core"

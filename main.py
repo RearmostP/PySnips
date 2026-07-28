@@ -40,6 +40,7 @@
 אנא בקר בשאר הקבצים וקרא את התיאור שלהם כדי להכיר את המערכת לעומק!
 """
 
+import ctypes
 import sys
 from PySide6.QtWidgets import QApplication
 from PySide6.QtGui import QIcon
@@ -48,6 +49,7 @@ from PySide6.QtGui import QIcon
 from core.tools.common.screen_manager import ScreenManager # Corrected import
 from core.boot import run_startup_checks
 from core.tools.common.error_manager import AppDebugger
+from core.tools.common.app_paths import AppPaths
 
 from core.screens.ui_logic.home.home_screen import HomeScreen
 from core.screens.ui_logic.ready_code.ready_code import ReadyCodeScreen
@@ -56,8 +58,15 @@ from core.screens.ui_logic.snips.snippets_screen import SnippetsScreen
 
 
 def main():
+    if sys.platform == "win32":
+        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(
+            "Rearmost.PySnips"
+        )
+
     # 1. יצירת מופע האפליקציה של Qt
     app = QApplication(sys.argv)
+    app_icon = QIcon(str(AppPaths.APP_ICON))
+    app.setWindowIcon(app_icon)
 
     # 2. הרצת בדיקות השלמות תחילה
     if not run_startup_checks():
@@ -70,7 +79,8 @@ def main():
     screen_manager = ScreenManager()
     screen_manager.resize(1024, 768)  # הגדרת גודל החלון הראשי
     screen_manager.setWindowTitle("PySnips")
-    screen_manager.setWindowIcon(QIcon("assets/icons/pysnips.ico"))
+    screen_manager.setWindowIcon(app_icon)
+
 
     # 4. טעינת מסך הבית
     home_screen = HomeScreen(screen_manager)
