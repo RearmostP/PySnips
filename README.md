@@ -48,4 +48,4 @@ python -m venv .venv
 
 והפעלת האפליקצייה 
 
-`pthon main.py`
+`python main.py`
