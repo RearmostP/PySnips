@@ -9,6 +9,7 @@ from core.ui.snips.widgets.snippet_search import SnippetSearch
 from core.ui.snips.widgets.snippet_card import SnippetCard
 from core.ui.snips.dialogs.create_snippet import CreateSnippet
 from core.ui.snips.dialogs.snippet_details import SnippetDetails
+from core.ui.dialogs.about_dialog import AboutDialog
 
 
 class SnipsScreen(QWidget):
@@ -73,7 +74,7 @@ class SnipsScreen(QWidget):
             self.menu.addAction(self.localization.text('nav.home'), self.open_home.emit)
             self.menu.addAction(self.localization.text('nav.settings'), self.open_settings.emit)
             self.menu.addAction(self.localization.text('settings.about'),
-                                lambda: self.messages.info(self.localization.text('settings.about_text')))
+                                lambda: AboutDialog(self.localization, self).exec())
             self.refresh()
         except (LibraryError, OSError) as error:
             self.messages.error_key('errors.' + (str(error) if isinstance(error, LibraryError) else 'io'))

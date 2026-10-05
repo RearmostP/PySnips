@@ -1,22 +1,11 @@
 <?xml version='1.0' encoding='utf-8'?>
 <ui version="4.0">
- <class>SettingsDialog</class>
+ <class>SettingsScreen</class>
  <widget class="QWidget" name="SettingsScreen">
-  <property name="geometry">
-   <rect>
-    <x>0</x>
-    <y>0</y>
-    <width>760</width>
-    <height>520</height>
-   </rect>
-  </property>
   <property name="windowTitle">
    <string>Settings</string>
   </property>
-  <layout class="QVBoxLayout" name="dialog_layout">
-   <property name="spacing">
-    <number>0</number>
-   </property>
+  <layout class="QVBoxLayout" name="main_layout">
    <property name="leftMargin">
     <number>0</number>
    </property>
@@ -30,171 +19,904 @@
     <number>0</number>
    </property>
    <item>
-    <layout class="QHBoxLayout" name="content_layout">
-     <property name="spacing">
-      <number>0</number>
+    <widget class="QScrollArea" name="settings_scroll">
+     <property name="widgetResizable">
+      <bool>true</bool>
      </property>
-     <item>
-      <widget class="QWidget" name="wdg_settings_sidebar">
-       <property name="minimumSize">
-        <size>
-         <width>210</width>
-         <height>0</height>
-        </size>
-       </property>
-       <property name="maximumSize">
-        <size>
-         <width>260</width>
-         <height>16777215</height>
-        </size>
-       </property>
-       <layout class="QVBoxLayout" name="sidebar_layout">
-        <property name="spacing">
-         <number>6</number>
-        </property>
-        <property name="leftMargin">
-         <number>12</number>
-        </property>
-        <property name="topMargin">
-         <number>12</number>
-        </property>
-        <property name="rightMargin">
-         <number>12</number>
-        </property>
-        <property name="bottomMargin">
-         <number>12</number>
-        </property>
-        <item>
-         <widget class="QPushButton" name="general_button">
-          <property name="minimumSize">
-           <size>
-            <width>0</width>
-            <height>34</height>
-           </size>
-          </property>
-          <property name="text">
-           <string>General</string>
-          </property>
-          <property name="i18nKey" stdset="0">
-           <string>settings.general</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="snips_button">
-          <property name="minimumSize">
-           <size>
-            <width>0</width>
-            <height>34</height>
-           </size>
-          </property>
-          <property name="text">
-           <string>Snippets</string>
-          </property>
-          <property name="i18nKey" stdset="0">
-           <string>nav.snips</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QWidget" name="wdg_snips_submenu">
-          <layout class="QVBoxLayout" name="snips_submenu_layout">
-           <property name="spacing">
-            <number>4</number>
-           </property>
-           <property name="leftMargin">
-            <number>18</number>
-           </property>
-           <property name="topMargin">
-            <number>0</number>
-           </property>
-           <property name="rightMargin">
-            <number>0</number>
-           </property>
-           <property name="bottomMargin">
-            <number>0</number>
-           </property>
-           <item>
-            <widget class="QPushButton" name="deleted">
-             <property name="minimumSize">
-              <size>
-               <width>0</width>
-               <height>30</height>
-              </size>
-             </property>
-             <property name="text">
-              <string>Restore</string>
-             </property>
-             <property name="i18nKey" stdset="0">
-              <string>trash.restore</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-        </item>
-        <item>
-         <spacer name="sidebar_vertical_spacer">
-          <property name="orientation">
-           <enum>Qt::Orientation::Vertical</enum>
-          </property>
-          <property name="sizeType">
-           <enum>QSizePolicy::Policy::Expanding</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>20</width>
-            <height>40</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-        <item>
-         <widget class="QPushButton" name="home">
-          <property name="text">
-           <string>Home</string>
-          </property>
-          <property name="i18nKey" stdset="0">
-           <string>nav.home</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="snips">
-          <property name="text">
-           <string>Snippets</string>
-          </property>
-          <property name="i18nKey" stdset="0">
-           <string>nav.snips</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="about">
-          <property name="text">
-           <string>About</string>
-          </property>
-          <property name="i18nKey" stdset="0">
-           <string>settings.about</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </widget>
-     </item>
-     <item>
-      <widget class="QStackedWidget" name="wdg_settings_pages">
-       <property name="currentIndex">
+     <property name="frameShape">
+      <enum>QFrame::NoFrame</enum>
+     </property>
+     <widget class="QWidget" name="settings_content">
+      <layout class="QHBoxLayout" name="viewport_layout">
+       <property name="leftMargin">
         <number>0</number>
        </property>
-      </widget>
-     </item>
-    </layout>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <item>
+        <widget class="QWidget" name="settings_body">
+         <property name="maximumSize">
+          <size>
+           <width>780</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <layout class="QVBoxLayout" name="page_layout">
+          <property name="spacing">
+           <number>16</number>
+          </property>
+          <property name="leftMargin">
+           <number>20</number>
+          </property>
+          <property name="topMargin">
+           <number>16</number>
+          </property>
+          <property name="rightMargin">
+           <number>20</number>
+          </property>
+          <property name="bottomMargin">
+           <number>20</number>
+          </property>
+          <item>
+           <layout class="QHBoxLayout" name="back_layout">
+            <item>
+             <widget class="QPushButton" name="back">
+              <property name="text">
+               <string>← Back</string>
+              </property>
+              <property name="i18nKey" stdset="0">
+               <string>common.back</string>
+              </property>
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="back_spacer">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <widget class="QWidget" name="page_header">
+            <layout class="QVBoxLayout" name="header_layout">
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
+             <property name="spacing">
+              <number>6</number>
+             </property>
+             <item>
+              <widget class="QLabel" name="page_title">
+               <property name="text">
+                <string>Settings</string>
+               </property>
+               <property name="wordWrap">
+                <bool>true</bool>
+               </property>
+               <property name="i18nKey" stdset="0">
+                <string>settings.title</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="page_subtitle">
+               <property name="text">
+                <string>Manage PySnips appearance and behavior</string>
+               </property>
+               <property name="wordWrap">
+                <bool>true</bool>
+               </property>
+               <property name="i18nKey" stdset="0">
+                <string>settings.subtitle</string>
+               </property>
+               <property name="settingsDescription" stdset="0">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item>
+           <widget class="QWidget" name="appearance_section">
+            <layout class="QVBoxLayout" name="appearance_layout">
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
+             <property name="spacing">
+              <number>10</number>
+             </property>
+             <item>
+              <widget class="QLabel" name="appearance_heading">
+               <property name="text">
+                <string>Appearance &amp; Language</string>
+               </property>
+               <property name="wordWrap">
+                <bool>true</bool>
+               </property>
+               <property name="i18nKey" stdset="0">
+                <string>settings.section.appearance</string>
+               </property>
+               <property name="settingsSection" stdset="0">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QWidget" name="language_row">
+               <layout class="QHBoxLayout" name="language_row_layout" stretch="1,0">
+                <property name="leftMargin">
+                 <number>0</number>
+                </property>
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="rightMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
+                <property name="spacing">
+                 <number>18</number>
+                </property>
+                <item>
+                 <widget class="QWidget" name="language_text">
+                  <layout class="QVBoxLayout" name="language_text_layout">
+                   <property name="leftMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="topMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="rightMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="bottomMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="spacing">
+                    <number>3</number>
+                   </property>
+                   <item>
+                    <widget class="QLabel" name="language_title">
+                     <property name="text">
+                      <string>Language</string>
+                     </property>
+                     <property name="wordWrap">
+                      <bool>true</bool>
+                     </property>
+                     <property name="i18nKey" stdset="0">
+                      <string>settings.language</string>
+                     </property>
+                     <property name="settingsRowTitle" stdset="0">
+                      <bool>true</bool>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QLabel" name="language_description">
+                     <property name="text">
+                      <string>Choose the interface language</string>
+                     </property>
+                     <property name="wordWrap">
+                      <bool>true</bool>
+                     </property>
+                     <property name="i18nKey" stdset="0">
+                      <string>settings.language_description</string>
+                     </property>
+                     <property name="settingsDescription" stdset="0">
+                      <bool>true</bool>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QComboBox" name="language">
+                  <property name="settingsControl" stdset="0">
+                   <bool>true</bool>
+                  </property>
+                  <property name="minimumSize">
+                   <size>
+                    <width>160</width>
+                    <height>36</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>180</width>
+                    <height>36</height>
+                   </size>
+                  </property>
+                  <property name="i18nTooltipKey" stdset="0">
+                   <string>settings.language</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+             <item>
+              <widget class="QWidget" name="theme_row">
+               <layout class="QHBoxLayout" name="theme_row_layout" stretch="1,0">
+                <property name="leftMargin">
+                 <number>0</number>
+                </property>
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="rightMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
+                <property name="spacing">
+                 <number>18</number>
+                </property>
+                <item>
+                 <widget class="QWidget" name="theme_text">
+                  <layout class="QVBoxLayout" name="theme_text_layout">
+                   <property name="leftMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="topMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="rightMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="bottomMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="spacing">
+                    <number>3</number>
+                   </property>
+                   <item>
+                    <widget class="QLabel" name="theme_title">
+                     <property name="text">
+                      <string>Theme</string>
+                     </property>
+                     <property name="wordWrap">
+                      <bool>true</bool>
+                     </property>
+                     <property name="i18nKey" stdset="0">
+                      <string>settings.theme</string>
+                     </property>
+                     <property name="settingsRowTitle" stdset="0">
+                      <bool>true</bool>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QLabel" name="theme_description">
+                     <property name="text">
+                      <string>Choose the application appearance</string>
+                     </property>
+                     <property name="wordWrap">
+                      <bool>true</bool>
+                     </property>
+                     <property name="i18nKey" stdset="0">
+                      <string>settings.theme_description</string>
+                     </property>
+                     <property name="settingsDescription" stdset="0">
+                      <bool>true</bool>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QComboBox" name="theme">
+                  <property name="settingsControl" stdset="0">
+                   <bool>true</bool>
+                  </property>
+                  <property name="minimumSize">
+                   <size>
+                    <width>160</width>
+                    <height>36</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>180</width>
+                    <height>36</height>
+                   </size>
+                  </property>
+                  <property name="i18nTooltipKey" stdset="0">
+                   <string>settings.theme</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item>
+           <widget class="QWidget" name="startup_section">
+            <layout class="QVBoxLayout" name="startup_layout">
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
+             <property name="spacing">
+              <number>10</number>
+             </property>
+             <item>
+              <widget class="QLabel" name="startup_heading">
+               <property name="text">
+                <string>Startup</string>
+               </property>
+               <property name="wordWrap">
+                <bool>true</bool>
+               </property>
+               <property name="i18nKey" stdset="0">
+                <string>settings.section.startup</string>
+               </property>
+               <property name="settingsSection" stdset="0">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QWidget" name="start_on_snips_row">
+               <layout class="QHBoxLayout" name="start_on_snips_row_layout" stretch="1,0">
+                <property name="leftMargin">
+                 <number>0</number>
+                </property>
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="rightMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
+                <property name="spacing">
+                 <number>18</number>
+                </property>
+                <item>
+                 <widget class="QWidget" name="start_on_snips_text">
+                  <layout class="QVBoxLayout" name="start_on_snips_text_layout">
+                   <property name="leftMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="topMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="rightMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="bottomMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="spacing">
+                    <number>3</number>
+                   </property>
+                   <item>
+                    <widget class="QLabel" name="start_on_snips_title">
+                     <property name="text">
+                      <string>Start directly on Snippets</string>
+                     </property>
+                     <property name="wordWrap">
+                      <bool>true</bool>
+                     </property>
+                     <property name="i18nKey" stdset="0">
+                      <string>settings.start_snips</string>
+                     </property>
+                     <property name="settingsRowTitle" stdset="0">
+                      <bool>true</bool>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QLabel" name="start_on_snips_description">
+                     <property name="text">
+                      <string>Skip the Home screen when PySnips starts</string>
+                     </property>
+                     <property name="wordWrap">
+                      <bool>true</bool>
+                     </property>
+                     <property name="i18nKey" stdset="0">
+                      <string>settings.start_snips_description</string>
+                     </property>
+                     <property name="settingsDescription" stdset="0">
+                      <bool>true</bool>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QWidget" name="startup_control_holder">
+                  <property name="minimumSize">
+                   <size>
+                    <width>160</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>180</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                  <layout class="QHBoxLayout" name="startup_control_layout">
+                   <property name="leftMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="topMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="rightMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="bottomMargin">
+                    <number>0</number>
+                   </property>
+                   <item>
+                    <widget class="QCheckBox" name="start_on_snips">
+                     <property name="settingsControl" stdset="0">
+                      <bool>true</bool>
+                     </property>
+                     <property name="text">
+                      <string />
+                     </property>
+                     <property name="i18nTooltipKey" stdset="0">
+                      <string>settings.start_snips</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <spacer name="startup_control_spacer">
+                     <property name="orientation">
+                      <enum>Qt::Horizontal</enum>
+                     </property>
+                    </spacer>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item>
+           <widget class="QWidget" name="data_section">
+            <layout class="QVBoxLayout" name="data_layout">
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
+             <property name="spacing">
+              <number>10</number>
+             </property>
+             <item>
+              <widget class="QLabel" name="data_heading">
+               <property name="text">
+                <string>Snippets &amp; Data</string>
+               </property>
+               <property name="wordWrap">
+                <bool>true</bool>
+               </property>
+               <property name="i18nKey" stdset="0">
+                <string>settings.section.data</string>
+               </property>
+               <property name="settingsSection" stdset="0">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QWidget" name="deleted_row">
+               <layout class="QHBoxLayout" name="deleted_row_layout" stretch="1,0">
+                <property name="leftMargin">
+                 <number>0</number>
+                </property>
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="rightMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
+                <property name="spacing">
+                 <number>18</number>
+                </property>
+                <item>
+                 <widget class="QWidget" name="deleted_text">
+                  <layout class="QVBoxLayout" name="deleted_text_layout">
+                   <property name="leftMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="topMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="rightMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="bottomMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="spacing">
+                    <number>3</number>
+                   </property>
+                   <item>
+                    <widget class="QLabel" name="deleted_title">
+                     <property name="text">
+                      <string>Deleted snippets</string>
+                     </property>
+                     <property name="wordWrap">
+                      <bool>true</bool>
+                     </property>
+                     <property name="i18nKey" stdset="0">
+                      <string>settings.deleted_title</string>
+                     </property>
+                     <property name="settingsRowTitle" stdset="0">
+                      <bool>true</bool>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QLabel" name="deleted_description">
+                     <property name="text">
+                      <string>View and restore deleted snippets</string>
+                     </property>
+                     <property name="wordWrap">
+                      <bool>true</bool>
+                     </property>
+                     <property name="i18nKey" stdset="0">
+                      <string>settings.deleted_description</string>
+                     </property>
+                     <property name="settingsDescription" stdset="0">
+                      <bool>true</bool>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="deleted">
+                  <property name="settingsControl" stdset="0">
+                   <bool>true</bool>
+                  </property>
+                  <property name="minimumSize">
+                   <size>
+                    <width>100</width>
+                    <height>36</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>Open</string>
+                  </property>
+                  <property name="i18nKey" stdset="0">
+                   <string>settings.open</string>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>120</width>
+                    <height>36</height>
+                   </size>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+             <item>
+              <widget class="QWidget" name="rebuild_row">
+               <layout class="QHBoxLayout" name="rebuild_row_layout" stretch="1,0">
+                <property name="leftMargin">
+                 <number>0</number>
+                </property>
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="rightMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
+                <property name="spacing">
+                 <number>18</number>
+                </property>
+                <item>
+                 <widget class="QWidget" name="rebuild_text">
+                  <layout class="QVBoxLayout" name="rebuild_text_layout">
+                   <property name="leftMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="topMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="rightMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="bottomMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="spacing">
+                    <number>3</number>
+                   </property>
+                   <item>
+                    <widget class="QLabel" name="rebuild_title">
+                     <property name="text">
+                      <string>Search index</string>
+                     </property>
+                     <property name="wordWrap">
+                      <bool>true</bool>
+                     </property>
+                     <property name="i18nKey" stdset="0">
+                      <string>settings.search_index</string>
+                     </property>
+                     <property name="settingsRowTitle" stdset="0">
+                      <bool>true</bool>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QLabel" name="rebuild_description">
+                     <property name="text">
+                      <string>Rebuild the search index from the snippet files</string>
+                     </property>
+                     <property name="wordWrap">
+                      <bool>true</bool>
+                     </property>
+                     <property name="i18nKey" stdset="0">
+                      <string>settings.rebuild_description</string>
+                     </property>
+                     <property name="settingsDescription" stdset="0">
+                      <bool>true</bool>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="rebuild">
+                  <property name="settingsControl" stdset="0">
+                   <bool>true</bool>
+                  </property>
+                  <property name="minimumSize">
+                   <size>
+                    <width>100</width>
+                    <height>36</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>Rebuild</string>
+                  </property>
+                  <property name="i18nKey" stdset="0">
+                   <string>settings.rebuild_action</string>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>120</width>
+                    <height>36</height>
+                   </size>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item>
+           <widget class="QWidget" name="about_section">
+            <layout class="QVBoxLayout" name="about_layout">
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
+             <property name="spacing">
+              <number>10</number>
+             </property>
+             <item>
+              <widget class="QLabel" name="about_heading">
+               <property name="text">
+                <string>About</string>
+               </property>
+               <property name="wordWrap">
+                <bool>true</bool>
+               </property>
+               <property name="i18nKey" stdset="0">
+                <string>settings.section.about</string>
+               </property>
+               <property name="settingsSection" stdset="0">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QWidget" name="about_row">
+               <layout class="QHBoxLayout" name="about_row_layout" stretch="1,0">
+                <property name="leftMargin">
+                 <number>0</number>
+                </property>
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="rightMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
+                <property name="spacing">
+                 <number>18</number>
+                </property>
+                <item>
+                 <widget class="QWidget" name="about_text">
+                  <layout class="QVBoxLayout" name="about_text_layout">
+                   <property name="leftMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="topMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="rightMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="bottomMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="spacing">
+                    <number>3</number>
+                   </property>
+                   <item>
+                    <widget class="QLabel" name="about_title">
+                     <property name="text">
+                      <string>PySnips V2</string>
+                     </property>
+                     <property name="wordWrap">
+                      <bool>true</bool>
+                     </property>
+                     <property name="settingsRowTitle" stdset="0">
+                      <bool>true</bool>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QLabel" name="about_description">
+                     <property name="text">
+                      <string>Application information and links</string>
+                     </property>
+                     <property name="wordWrap">
+                      <bool>true</bool>
+                     </property>
+                     <property name="i18nKey" stdset="0">
+                      <string>settings.about_description</string>
+                     </property>
+                     <property name="settingsDescription" stdset="0">
+                      <bool>true</bool>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="about">
+                  <property name="settingsControl" stdset="0">
+                   <bool>true</bool>
+                  </property>
+                  <property name="minimumSize">
+                   <size>
+                    <width>100</width>
+                    <height>36</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>About</string>
+                  </property>
+                  <property name="i18nKey" stdset="0">
+                   <string>settings.about</string>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>120</width>
+                    <height>36</height>
+                   </size>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item>
+           <spacer name="bottom_spacer">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeType">
+             <enum>QSizePolicy::Expanding</enum>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </widget>
    </item>
   </layout>
-  <property name="layoutDirection">
-   <enum>Qt::LeftToRight</enum>
-  </property>
  </widget>
  <resources />
  <connections />

@@ -79,6 +79,88 @@ class UiTests(unittest.TestCase):
         self.assertEqual(self.window.home.ui.findChild(QPushButton, 'open_snips').text(), self.localization.text('nav.snips'))
         self.assertEqual(self.themes.current, 'light')
 
+    def test_settings_controls_save_immediately(self):
+        from core.settings.settings import save_settings, load_settings
+        path = Path(self.temp.name) / 'preferences.json'
+        screen = self.window.settings_screen
+        with patch('core.ui.main_window.save_settings', side_effect=lambda value: save_settings(value, path)) as saved:
+            screen.language.setCurrentIndex(screen.language.findData('en'))
+            self.assertEqual(saved.call_count, 1)
+            self.assertEqual(self.localization.language, 'en')
+            screen.theme.setCurrentIndex(screen.theme.findData('light'))
+            self.assertEqual(saved.call_count, 2)
+            self.assertEqual(self.themes.current, 'light')
+            screen.start.setChecked(True)
+            self.assertEqual(saved.call_count, 3)
+            self.assertEqual(load_settings(path), Settings('en', 'light', True))
+            screen.retranslate(self.window.settings)
+            self.assertEqual(saved.call_count, 3)
+        restarted = MainWindow(self.library, load_settings(path), self.localization, self.themes)
+        self.addCleanup(restarted.close)
+        self.assertIs(restarted.stack.currentWidget(), restarted.snips)
+
+    def test_settings_save_failure_restores_controls(self):
+        screen = self.window.settings_screen
+        with patch('core.ui.main_window.save_settings', side_effect=OSError('unwritable')) as saved:
+            with patch.object(self.window.messages, 'error_key') as error:
+                screen.theme.setCurrentIndex(screen.theme.findData('light'))
+                saved.assert_called_once()
+                error.assert_called_once_with('errors.io')
+        self.assertEqual(screen.theme.currentData(), 'dark')
+        self.assertEqual(self.themes.current, 'dark')
+
+    def test_settings_back_returns_to_previous_screen(self):
+        back = self.window.settings_screen.ui.findChild(QPushButton, 'back')
+        self.assertIsNone(self.window.menuWidget())
+        for show, target in [(self.window.show_home, self.window.home),
+                             (self.window.show_snips, self.window.snips)]:
+            show()
+            self.window.show_settings()
+            self.window.show_settings()
+            self.assertIs(self.window.stack.currentWidget(), self.window.settings_screen)
+            back.click()
+            self.assertIs(self.window.stack.currentWidget(), target)
+
+    def test_settings_width_and_direction(self):
+        from PySide6.QtWidgets import QWidget
+        screen = self.window.settings_screen
+        body = screen.ui.findChild(QWidget, 'settings_body')
+        self.window.show_settings()
+        self.window.show()
+        with patch('core.ui.main_window.save_settings'):
+            for language in ('en', 'he'):
+                screen.language.setCurrentIndex(screen.language.findData(language))
+                self.app.processEvents()
+                self.assertLessEqual(body.width(), 780)
+                self.assertGreaterEqual(body.width(), 720)
+                title = screen.ui.findChild(QLabel, 'language_title')
+                title_x = title.mapTo(screen, title.rect().center()).x()
+                control_x = screen.language.mapTo(screen, screen.language.rect().center()).x()
+                self.assertEqual(control_x > title_x, language == 'en')
+                self.assertEqual(screen.ui.findChild(QPushButton, 'back').text(), self.localization.text('common.back'))
+        self.window.resize(640, 480)
+        self.app.processEvents()
+        self.assertLess(body.width(), 640)
+
+    def test_settings_data_actions_and_single_page(self):
+        from PySide6.QtWidgets import QStackedWidget, QScrollArea
+        screen = self.window.settings_screen
+        self.assertIsNone(screen.ui.findChild(QStackedWidget))
+        for name in ('general_button', 'snips_button', 'home', 'snips', 'save'):
+            self.assertIsNone(screen.ui.findChild(QPushButton, name))
+        self.assertTrue(screen.ui.findChild(QScrollArea, 'settings_scroll').widgetResizable())
+        with patch('core.ui.settings.settings_screen.DeletedSnippets') as dialog:
+            screen.ui.findChild(QPushButton, 'deleted').click()
+            dialog.assert_called_once_with(self.library, self.localization, self.window.messages, screen)
+            dialog.return_value.exec.assert_called_once()
+        snippet = self.library.create('Index test', 'Python', 'settings_search_word')
+        with patch.object(self.library, 'rebuild_search', wraps=self.library.rebuild_search) as rebuild:
+            with patch.object(self.window.messages, 'info') as info:
+                screen.ui.findChild(QPushButton, 'rebuild').click()
+                rebuild.assert_called_once()
+                info.assert_called_once_with(self.localization.text('settings.rebuilt'))
+        self.assertEqual(self.library.search('settings_search_word')[0].id, snippet.id)
+
     def test_designer_translation_keys_resolve(self):
         import xml.etree.ElementTree as ET
         for path in (PROJECT_ROOT / 'core' / 'ui').rglob('*.ui'):

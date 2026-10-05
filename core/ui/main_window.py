@@ -29,9 +29,9 @@ class MainWindow(QMainWindow):
         self.home.open_settings.connect(self.show_settings)
         self.snips.open_home.connect(self.show_home)
         self.snips.open_settings.connect(self.show_settings)
-        self.settings_screen.open_home.connect(self.show_home)
-        self.settings_screen.open_snips.connect(self.show_snips)
         self.settings_screen.save_requested.connect(self.apply_settings)
+        self.settings_previous_screen = self.home
+        self.settings_screen.back_requested.connect(self.back_from_settings)
         translate_ui(self, localization)
         self.show_snips() if settings.start_on_snips else self.show_home()
 
@@ -46,7 +46,12 @@ class MainWindow(QMainWindow):
             self.messages.error_key('errors.' + (str(error) if isinstance(error, LibraryError) else 'io'))
 
     def show_settings(self):
+        if self.stack.currentWidget() is not self.settings_screen:
+            self.settings_previous_screen = self.stack.currentWidget()
         self.stack.setCurrentWidget(self.settings_screen)
+
+    def back_from_settings(self):
+        self.stack.setCurrentWidget(self.settings_previous_screen)
 
     def apply_settings(self, settings):
         try:
@@ -55,7 +60,8 @@ class MainWindow(QMainWindow):
             self.localization.set_language(settings.language)
             self.settings = settings
             translate_ui(self, self.localization)
-            self.settings_screen.general.retranslate()
+            self.settings_screen.retranslate(settings)
             self.snips.refresh_categories()
         except OSError:
+            self.settings_screen.retranslate(self.settings)
             self.messages.error_key('errors.io')

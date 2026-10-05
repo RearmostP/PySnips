@@ -2,7 +2,7 @@ from math import ceil
 from pathlib import Path
 from PySide6.QtCore import Qt, Signal, QTimer
 from PySide6.QtUiTools import QUiLoader
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel, QPushButton, QTextBrowser
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QGridLayout, QLabel, QPushButton, QTextBrowser, QSizePolicy
 from core.localization.ui_translator import translate_ui
 from core.markdown.renderer import render_markdown
 
@@ -24,6 +24,20 @@ class SnippetCard(QWidget):
         self.preview = self.ui.findChild(QTextBrowser, 'content')
         self.snippet = snippet
         self.localization = localization
+        self.header = self.ui.findChild(QWidget, 'cardHeader')
+        self.tags = self.ui.findChild(QWidget, 'cardTags')
+        tags_layout = self.tags.findChild(QGridLayout, 'tagsLayout')
+        tags_layout.setAlignment(Qt.AlignmentFlag.AlignLeading | Qt.AlignmentFlag.AlignTop)
+        for index, tag in enumerate(snippet.tags):
+            badge = QLabel(self.tags)
+            badge.setTextFormat(Qt.TextFormat.PlainText)
+            badge.setProperty('tagBadge', True)
+            badge.setSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Preferred)
+            badge.setToolTip(tag)
+            tags_layout.addWidget(badge, index // 3, index % 3)
+            badge.ensurePolished()
+            badge.setText(badge.fontMetrics().elidedText(tag, Qt.TextElideMode.ElideRight, 80))
+        self.tags.setVisible(bool(snippet.tags))
         self.preview.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.preview.customContextMenuRequested.connect(self.show_context_menu)
         for name, signal in [('details', self.details_requested),
@@ -43,13 +57,18 @@ class SnippetCard(QWidget):
 
     def update_height(self):
         self._height_pending = False
-        # Same content-aware 170..600px card bounds as the reference.
+        # Include the horizontal header, optional badges and preview padding.
         document_height = ceil(self.preview.document().size().height())
         layout = self.ui.layout()
         margins = layout.contentsMargins()
-        header = (margins.top() + margins.bottom() + self.title.sizeHint().height()
-                  + self.ui.findChild(QPushButton, 'details').height() + layout.spacing() * 2)
-        self.setFixedHeight(max(170, min(600, header + document_height + 12)))
+        header_height = self.header.heightForWidth(self.header.width())
+        if header_height < 0:
+            header_height = self.header.sizeHint().height()
+        tags_height = 0 if self.tags.isHidden() else self.tags.sizeHint().height() + layout.spacing()
+        preview_chrome = self.preview.height() - self.preview.viewport().height()
+        height = (margins.top() + margins.bottom() + header_height + tags_height
+                  + layout.spacing() + document_height + preview_chrome)
+        self.setFixedHeight(max(140, min(600, height)))
 
     def show_context_menu(self, position):
         from PySide6.QtWidgets import QApplication
