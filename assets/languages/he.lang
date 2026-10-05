@@ -1,4 +1,5 @@
-language.name = עברית
+﻿language.name = עברית
+language.direction = rtl
 home.intro = ספריית השליפים המקומית שלך
 home.open_snips = פתח שליפים
 nav.home = בית
@@ -60,7 +61,7 @@ snips.folder = תיקייה: {category}
 snips.no_results = לא נמצאו שליפים
 snips.search_title = חיפוש
 snips.details_button = פרטים
-settings.general = general
+settings.general = כללי
 snips.tags_hint = תגיות: python,kivy,layout
 snips.disk_hint = שם תיקייה (השאר ריק לשם אוטומטי)
 editor.bold = מודגש
