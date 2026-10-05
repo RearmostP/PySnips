@@ -19,6 +19,7 @@ class SnipsScreen(QWidget):
         super().__init__(parent)
         self.library, self.localization, self.messages = library, localization, messages
         self.current_category = None
+        self.category_buttons = []
         self.cards = []
         self.ui = QUiLoader().load(str(Path(__file__).with_suffix('.ui')), self)
         layout = QVBoxLayout(self)
@@ -38,7 +39,7 @@ class SnipsScreen(QWidget):
         self.ui.findChild(QPushButton, 'create').clicked.connect(self.create)
         self.ui.findChild(QPushButton, 'add_category').clicked.connect(self.add_category)
         self.search.changed.connect(self.refresh)
-        self.ui.findChild(QSplitter, 'frm_splitter').setSizes([236, 764])
+        self.ui.findChild(QSplitter, 'frm_splitter').setSizes([205, 795])
 
     @staticmethod
     def clear_layout(layout):
@@ -59,7 +60,8 @@ class SnipsScreen(QWidget):
                 title = (self.localization.text('snips.folder', category=category)
                          if category else self.localization.text('snips.recent'))
                 button = QPushButton(title, self.ui)
-                button.setMinimumHeight(35)
+                button.setProperty('categoryNav', True)
+                button.setMinimumHeight(38)
                 button.setCheckable(True)
                 button.setChecked(category == self.current_category)
                 button.setCursor(Qt.CursorShape.PointingHandCursor)
@@ -103,9 +105,17 @@ class SnipsScreen(QWidget):
                 self.cards.append(card)
             if not snippets:
                 empty = QLabel(self.localization.text('snips.no_results'), self.ui)
+                empty.setObjectName('snippets_empty')
                 empty.setAlignment(Qt.AlignmentFlag.AlignCenter)
                 self.card_layout.addWidget(empty, 0, 0)
             self.card_layout.setRowStretch(len(snippets) + 1, 1)
+            for button in [self.ui.findChild(QPushButton, 'menu'),
+                           self.ui.findChild(QPushButton, 'add_category'),
+                           *(button for _, button in self.category_buttons)]:
+                if button.property('navRtl') != self.localization.rtl:
+                    button.setProperty('navRtl', self.localization.rtl)
+                    button.style().unpolish(button)
+                    button.style().polish(button)
             translate_ui(self, self.localization)
             title = (self.localization.text('snips.search_title') if query else
                      self.localization.text('snips.folder', category=self.current_category)

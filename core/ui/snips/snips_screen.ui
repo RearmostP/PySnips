@@ -31,6 +31,9 @@
    </property>
    <item>
     <widget class="QSplitter" name="frm_splitter">
+     <property name="handleWidth">
+      <number>1</number>
+     </property>
      <property name="layoutDirection">
       <enum>Qt::LayoutDirection::LeftToRight</enum>
      </property>
@@ -52,13 +55,13 @@
       </property>
       <layout class="QVBoxLayout" name="sidebar_layout">
        <property name="spacing">
-        <number>8</number>
+        <number>6</number>
        </property>
        <property name="leftMargin">
         <number>12</number>
        </property>
        <property name="topMargin">
-        <number>16</number>
+        <number>20</number>
        </property>
        <property name="rightMargin">
         <number>12</number>
@@ -68,12 +71,6 @@
        </property>
        <item>
         <widget class="QLabel" name="lbl_app_name">
-         <property name="font">
-          <font>
-           <pointsize>14</pointsize>
-           <bold>true</bold>
-          </font>
-         </property>
          <property name="text">
           <string>PySnips</string>
          </property>
@@ -81,10 +78,13 @@
        </item>
        <item>
         <widget class="QPushButton" name="menu">
+         <property name="sidebarNav" stdset="0">
+          <bool>true</bool>
+         </property>
          <property name="minimumSize">
           <size>
            <width>0</width>
-           <height>35</height>
+           <height>38</height>
           </size>
          </property>
          <property name="text">
@@ -97,10 +97,13 @@
        </item>
        <item>
         <widget class="QPushButton" name="add_category">
+         <property name="sidebarNav" stdset="0">
+          <bool>true</bool>
+         </property>
          <property name="minimumSize">
           <size>
            <width>0</width>
-           <height>35</height>
+           <height>38</height>
           </size>
          </property>
          <property name="text">
@@ -119,7 +122,7 @@
          <property name="widgetResizable">
           <bool>true</bool>
          </property>
-         <widget class="QWidget" name="scrollAreaWidgetContents">
+         <widget class="QWidget" name="categories_content">
           <property name="geometry">
            <rect>
             <x>0</x>
@@ -130,13 +133,13 @@
           </property>
           <layout class="QVBoxLayout" name="categories_dynamic_layout">
            <property name="spacing">
-            <number>6</number>
+            <number>4</number>
            </property>
            <property name="leftMargin">
             <number>0</number>
            </property>
            <property name="topMargin">
-            <number>0</number>
+            <number>12</number>
            </property>
            <property name="rightMargin">
             <number>0</number>
@@ -167,24 +170,30 @@
       </layout>
      </widget>
      <widget class="QWidget" name="wdg_main_content">
-      <layout class="QVBoxLayout" name="main_content_layout">
+      <layout class="QVBoxLayout" name="main_content_layout" stretch="0,0,1">
        <property name="spacing">
         <number>16</number>
        </property>
        <property name="leftMargin">
-        <number>24</number>
+        <number>20</number>
        </property>
        <property name="topMargin">
         <number>20</number>
        </property>
        <property name="rightMargin">
-        <number>24</number>
+        <number>20</number>
        </property>
        <property name="bottomMargin">
         <number>20</number>
        </property>
        <item>
         <widget class="QWidget" name="search_holder" native="true">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
          <property name="minimumSize">
           <size>
            <width>0</width>
@@ -195,13 +204,13 @@
        </item>
        <item>
         <layout class="QHBoxLayout" name="actions_layout">
+         <property name="spacing">
+          <number>12</number>
+         </property>
          <item>
           <widget class="QLabel" name="category_title">
-           <property name="font">
-            <font>
-             <pointsize>16</pointsize>
-             <bold>true</bold>
-            </font>
+           <property name="wordWrap">
+            <bool>true</bool>
            </property>
            <property name="text">
             <string>Recent snippets</string>
@@ -232,7 +241,7 @@
            <property name="minimumSize">
             <size>
              <width>120</width>
-             <height>35</height>
+             <height>40</height>
             </size>
            </property>
            <property name="text">
@@ -253,7 +262,7 @@
          <property name="widgetResizable">
           <bool>true</bool>
          </property>
-         <widget class="QWidget" name="scrollAreaWidgetContents2">
+         <widget class="QWidget" name="snippets_content">
           <property name="geometry">
            <rect>
             <x>0</x>
@@ -276,7 +285,7 @@
             <number>0</number>
            </property>
            <property name="spacing">
-            <number>12</number>
+            <number>16</number>
            </property>
           </layout>
          </widget>
