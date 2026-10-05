@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
  <class>SnippetsScreen</class>
  <widget class="QWidget" name="SnippetsScreen">
@@ -75,7 +75,7 @@
           </font>
          </property>
          <property name="text">
-          <string>pySnips</string>
+          <string>PySnips</string>
          </property>
         </widget>
        </item>
@@ -124,8 +124,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>236</width>
-            <height>546</height>
+            <width>235</width>
+            <height>548</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="categories_dynamic_layout">
@@ -184,7 +184,7 @@
         <number>20</number>
        </property>
        <item>
-        <widget class="QWidget" name="search_holder">
+        <widget class="QWidget" name="search_holder" native="true">
          <property name="minimumSize">
           <size>
            <width>0</width>
@@ -258,7 +258,7 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>687</width>
+            <width>688</width>
             <height>553</height>
            </rect>
           </property>
@@ -288,6 +288,6 @@
    </item>
   </layout>
  </widget>
- <resources />
- <connections />
+ <resources/>
+ <connections/>
 </ui>

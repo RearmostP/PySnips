@@ -1,5 +1,6 @@
 from pathlib import Path
 from urllib.parse import quote
+from PySide6.QtCore import QDir
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtWidgets import QDialog, QVBoxLayout, QPushButton, QLineEdit, QComboBox, QPlainTextEdit, QTextBrowser, QFileDialog, QStackedWidget
 from core.localization.ui_translator import translate_ui
@@ -16,7 +17,9 @@ class CreateSnippet(QDialog):
         self.pending_media = []
         self.setWindowTitle(localization.text('snips.edit' if snippet else 'snips.create'))
         self.resize(600, 699)
-        self.ui = QUiLoader().load(str(Path(__file__).with_suffix('.ui')), self)
+        loader = QUiLoader()
+        loader.setWorkingDirectory(QDir(str(Path(__file__).parent)))
+        self.ui = loader.load(str(Path(__file__).with_suffix('.ui')), self)
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(self.ui)

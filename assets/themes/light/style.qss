@@ -41,4 +41,40 @@ QStackedWidget#wdg_settings_pages { background-color: #f0f0f0; }
 QWidget#SettingsScreen QLabel { color: #202020; font-size: 16px; font-weight: bold; }
 QWidget#SettingsScreen QPushButton#deleted, QWidget#SettingsScreen QPushButton#rebuild { background-color: transparent; color: #0066b8; border: none; text-align: left; padding: 5px 0; font-size: 13px; font-weight: bold; }
 QWidget#SettingsScreen QPushButton#deleted:hover, QWidget#SettingsScreen QPushButton#rebuild:hover { color: #004b86; text-decoration: underline; }
-QWidget#CreateSnippetForm QPushButton#bold, QWidget#CreateSnippetForm QPushButton#heading, QWidget#CreateSnippetForm QPushButton#code_block, QWidget#CreateSnippetForm QPushButton#list, QWidget#CreateSnippetForm QPushButton#preview, QWidget#CreateSnippetForm QPushButton#media, QWidget#CreateSnippetForm QPushButton#advanced { min-width: 24px; max-width: 36px; padding: 4px; }
+
+/* Create / Edit Snippet: restrained metadata, compact toolbar, focused editor. */
+QWidget#CreateSnippetForm QLabel[metadataLabel="true"] { color: #596372; font-size: 12px; font-weight: 600; background: transparent; }
+QWidget#CreateSnippetForm QLineEdit, QWidget#CreateSnippetForm QComboBox { background: #e8eaed; color: #28313d; border: 1px solid #c6cbd2; border-radius: 6px; padding: 7px 10px; }
+QWidget#CreateSnippetForm QLineEdit:focus, QWidget#CreateSnippetForm QComboBox:focus { border-color: #5683ad; }
+QWidget#markdownToolbar { background: #e8eaed; border-radius: 6px; }
+QWidget#CreateSnippetForm QPushButton[toolbarAction="true"] { background: transparent; border: 1px solid transparent; border-radius: 4px; padding: 0; }
+QWidget#CreateSnippetForm QPushButton[toolbarAction="true"]:hover { background: #dce1e7; }
+QWidget#CreateSnippetForm QPushButton[toolbarAction="true"]:pressed { background: #d6e8fa; }
+QWidget#CreateSnippetForm QPushButton[toolbarAction="true"]:focus { border-color: #5683ad; }
+QFrame#toolbarSeparator { background: #c6cbd2; border: none; min-width: 1px; max-width: 1px; min-height: 18px; max-height: 18px; margin: 0 4px; }
+QWidget#CreateSnippetForm QPlainTextEdit#content, QWidget#CreateSnippetForm QTextBrowser#preview_browser { background: #ffffff; color: #28313d; border: 1px solid #c6cbd2; border-radius: 7px; padding: 14px; selection-background-color: #d6e8fa; selection-color: #202020; }
+QWidget#CreateSnippetForm QPlainTextEdit#content { font-family: "JetBrains Mono", Consolas, monospace; font-size: 14px; font-weight: 400; }
+QWidget#CreateSnippetForm QPlainTextEdit#content:focus { border-color: #5683ad; }
+QWidget#CreateSnippetForm QTextBrowser#preview_browser { font-family: "Segoe UI"; font-size: 13px; }
+QWidget#CreateSnippetForm QPushButton#cancel, QWidget#CreateSnippetForm QPushButton#save { border-radius: 6px; padding: 7px 18px; }
+QWidget#CreateSnippetForm QPushButton#cancel { background: transparent; color: #28313d; border: 1px solid #c6cbd2; }
+QWidget#CreateSnippetForm QPushButton#cancel:hover { background: #dce1e7; }
+QWidget#CreateSnippetForm QPushButton#save { background: #286394; color: #ffffff; border: 1px solid #286394; font-weight: 600; }
+QWidget#CreateSnippetForm QPushButton#save:hover { background: #205580; border-color: #205580; }
+QWidget#CreateSnippetForm QPushButton#save:pressed { background: #194567; border-color: #194567; }
+QWidget#CreateSnippetForm QPushButton#cancel:focus, QWidget#CreateSnippetForm QPushButton#save:focus { border-color: #5683ad; }
+
+/* Snippet details follows the editor's surfaces and action hierarchy. */
+QWidget#SnippetDetails QLabel { background: transparent; color: #28313d; font-size: 14px; }
+QWidget#SnippetDetails QLabel#title { font-size: 20px; font-weight: 600; }
+QWidget#SnippetDetails QWidget#metadataPanel { background: #e8eaed; border-radius: 6px; }
+QWidget#SnippetDetails QWidget#tags { background: transparent; }
+QWidget#SnippetDetails QLabel[metadataLabel="true"] { color: #596372; font-size: 12px; }
+QWidget#SnippetDetails QLabel[tagBadge="true"] { background: #dce1e7; border-radius: 4px; padding: 3px 8px; font-size: 12px; }
+QWidget#SnippetDetails QPushButton { border-radius: 6px; padding: 7px 18px; }
+QWidget#SnippetDetails QPushButton#close { background: transparent; color: #28313d; border: 1px solid #c6cbd2; }
+QWidget#SnippetDetails QPushButton#close:hover { background: #dce1e7; }
+QWidget#SnippetDetails QPushButton#edit { background: #286394; color: #ffffff; border: 1px solid #286394; font-weight: 600; }
+QWidget#SnippetDetails QPushButton#edit:hover { background: #205580; border-color: #205580; }
+QWidget#SnippetDetails QPushButton#edit:pressed { background: #194567; border-color: #194567; }
+QWidget#SnippetDetails QPushButton:focus { border-color: #5683ad; }

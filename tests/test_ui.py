@@ -2,7 +2,7 @@ from pathlib import Path
 import tempfile
 import unittest
 from unittest.mock import patch
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QCoreApplication, QEvent
 from PySide6.QtWidgets import QApplication, QPushButton, QLabel
 from core.common.paths import PROJECT_ROOT
 from core.localization.localization import Localization
@@ -28,7 +28,13 @@ class UiTests(unittest.TestCase):
         self.themes = ThemeManager(self.app)
         self.themes.apply('dark')
         self.window = MainWindow(self.library, Settings('he'), self.localization, self.themes)
-        self.addCleanup(self.window.close)
+        self.addCleanup(self.dispose_window)
+
+    def dispose_window(self):
+        self.app.processEvents()
+        self.window.close()
+        self.window.deleteLater()
+        QCoreApplication.sendPostedEvents(self.window, QEvent.DeferredDelete)
 
     def test_navigation_and_startup(self):
         self.assertEqual(self.window.stack.count(), 3)
@@ -113,3 +119,74 @@ class UiTests(unittest.TestCase):
         self.assertIn('example', dialog.preview.toPlainText())
         dialog.show_preview()
         self.assertEqual(dialog.content_stack.currentIndex(), 0)
+
+    def test_details_metadata_presentation(self):
+        from dataclasses import replace
+        from datetime import datetime
+        from core.localization.ui_translator import translate_ui
+        from PySide6.QtWidgets import QGridLayout
+        original = self.library.create('<b>Branch</b>', 'Python', 'content', 'git, branch')
+        snippet = replace(original, created_at='2026-10-05T14:22:35+00:00')
+        dialog = SnippetDetails(self.library, self.localization, self.window.messages, snippet, self.window)
+        self.addCleanup(dialog.close)
+        tags = dialog.ui.findChild(QGridLayout, 'tagsLayout')
+        self.assertEqual([tags.itemAt(i).widget().text() for i in range(tags.count())], snippet.tags)
+        self.assertEqual(dialog.ui.findChild(QLabel, 'title').textFormat(), Qt.PlainText)
+        self.assertIsNone(dialog.ui.findChild(QLabel, 'title_label'))
+        expected = datetime.fromisoformat(snippet.created_at).astimezone().strftime('%d/%m/%Y %H:%M')
+        self.assertEqual(dialog.ui.findChild(QLabel, 'created_at').text(), expected)
+        for language, direction in [('en', Qt.LeftToRight), ('he', Qt.RightToLeft)]:
+            self.localization.set_language(language)
+            translate_ui(dialog, self.localization)
+            self.assertEqual(dialog.windowTitle(), self.localization.text('snips.details_title'))
+            self.assertEqual(dialog.ui.layoutDirection(), direction)
+            for theme in ('light', 'dark'):
+                self.themes.apply(theme)
+                dialog.ensurePolished()
+                self.assertEqual(dialog.ui.findChild(QLabel, 'title').font().pixelSize(), 20)
+                self.assertEqual(dialog.ui.findChild(QLabel, 'category').font().family(), 'Segoe UI')
+        dialog.snippet = replace(snippet, tags=[], created_at='invalid timestamp')
+        dialog.refresh()
+        self.assertEqual(tags.count(), 1)
+        self.assertEqual(tags.itemAt(0).widget().text(), '—')
+        self.assertEqual(dialog.ui.findChild(QLabel, 'created_at').text(), '—')
+        long_tag = 'a-very-long-developer-tag-' * 4
+        dialog.snippet = replace(snippet, title='A long snippet title ' * 8, tags=[long_tag] * 7)
+        dialog.refresh()
+        dialog.show()
+        self.app.processEvents()
+        self.assertEqual(tags.count(), 7)
+        self.assertEqual(tags.itemAt(0).widget().toolTip(), long_tag)
+        self.assertGreaterEqual(dialog.height(), dialog.layout().totalHeightForWidth(dialog.width()))
+        self.assertEqual(self.library.load(original.id).created_at, original.created_at)
+
+    def test_editor_polish_preserves_language_and_theme_switching(self):
+        from main import load_fonts
+        from core.localization.ui_translator import translate_ui
+        load_fonts()
+        dialog = CreateSnippet(self.library, self.localization, self.window.messages, parent=self.window)
+        self.addCleanup(dialog.close)
+        dialog.show()
+        self.app.processEvents()
+        for language, direction in [('he', Qt.RightToLeft), ('en', Qt.LeftToRight)]:
+            self.localization.set_language(language)
+            translate_ui(dialog, self.localization)
+            self.assertEqual(dialog.ui.layoutDirection(), direction)
+            self.assertEqual(dialog.content.layoutDirection(), Qt.LeftToRight)
+            for name, key in [('title', 'snips.title'), ('category', 'snips.category'), ('tags', 'snips.tags_label')]:
+                label = dialog.ui.findChild(QLabel, name + 'Label')
+                self.assertEqual(label.text(), self.localization.text(key))
+                self.assertIs(label.buddy(), getattr(dialog, name))
+            for theme in ('light', 'dark'):
+                self.themes.apply(theme)
+                self.app.processEvents()
+                self.assertEqual(dialog.content.font().family(), 'JetBrains Mono')
+                self.assertEqual(dialog.content.font().pixelSize(), 14)
+                self.assertEqual(dialog.preview.font().family(), 'Segoe UI')
+                for name in ('bold', 'heading', 'code_block', 'list', 'preview', 'media', 'advanced'):
+                    button = dialog.ui.findChild(QPushButton, name)
+                    self.assertFalse(button.icon().isNull(), name)
+                    self.assertFalse(button.icon().pixmap(18, 18).isNull(), name)
+                    self.assertEqual(button.width(), 32)
+                    self.assertEqual(button.height(), 32)
+                    self.assertTrue(button.toolTip())

@@ -70,3 +70,5 @@ editor.code = Code block
 editor.list = List
 snips.tags_label = Tags
 snips.created = Created
+snips.details_title = Snippet details
+snips.details_title = Snippet details
