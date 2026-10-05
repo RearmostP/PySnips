@@ -43,7 +43,7 @@ class MainWindow(QMainWindow):
             self.snips.refresh_categories()
             self.stack.setCurrentWidget(self.snips)
         except (LibraryError, OSError) as error:
-            self.messages.data_error(error)
+            self.messages.error_key('errors.' + (str(error) if isinstance(error, LibraryError) else 'io'))
 
     def show_settings(self):
         self.stack.setCurrentWidget(self.settings_screen)
@@ -57,5 +57,5 @@ class MainWindow(QMainWindow):
             translate_ui(self, self.localization)
             self.settings_screen.general.retranslate()
             self.snips.refresh_categories()
-        except OSError as error:
-            self.messages.data_error(error)
+        except OSError:
+            self.messages.error_key('errors.io')

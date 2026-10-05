@@ -1,5 +1,4 @@
 from PySide6.QtWidgets import QMessageBox
-from core.snips.models import LibraryError
 
 
 class UserMessageManager:
@@ -28,6 +27,5 @@ class UserMessageManager:
         box.exec()
         return box.clickedButton() == yes
 
-    def data_error(self, error):
-        key = str(error) if isinstance(error, LibraryError) else 'io'
-        self.error(self.localization.text('errors.' + key))
+    def error_key(self, key):
+        self.error(self.localization.text(key))

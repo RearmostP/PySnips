@@ -20,7 +20,7 @@ class LocalizationTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory)
             (path / 'en.lang').write_text('button = English', encoding='utf-8')
-            (path / 'he.lang').write_text('button = עברית', encoding='utf-8')
+            (path / 'he.lang').write_text('language.direction = rtl\nbutton = עברית', encoding='utf-8')
             (path / 'partial.lang').write_text('another = something', encoding='utf-8')
             localization = Localization('he', path)
             root = QWidget()
@@ -39,6 +39,24 @@ class LocalizationTests(unittest.TestCase):
 
     def test_missing_language_falls_back(self):
         self.assertEqual(Localization('unavailable').language, 'en')
+
+    def test_direction_comes_from_language_file(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory)
+            (path / 'en.lang').write_text('language.direction = ltr', encoding='utf-8')
+            for direction, expected in [('rtl', True), ('ltr', False), (None, False), ('unknown', False)]:
+                with self.subTest(direction=direction):
+                    text = '' if direction is None else 'language.direction = ' + direction
+                    (path / 'custom.lang').write_text(text, encoding='utf-8')
+                    localization = Localization('custom', path)
+                    self.assertEqual(localization.rtl, expected)
+                    localization.set_language('en')
+                    self.assertFalse(localization.rtl)
+
+    def test_bundled_language_directions(self):
+        self.assertFalse(Localization('en').rtl)
+        self.assertTrue(Localization('he').rtl)
+        self.assertEqual(Localization('he').text('settings.general'), 'כללי')
 
     def test_settings_defaults_do_not_create_file(self):
         with tempfile.TemporaryDirectory() as directory:

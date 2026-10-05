@@ -59,4 +59,4 @@ class SettingsScreen(QWidget):
             self.library.rebuild_search()
             self.messages.info(self.localization.text('settings.rebuilt'))
         except (LibraryError, OSError) as error:
-            self.messages.data_error(error)
+            self.messages.error_key('errors.' + (str(error) if isinstance(error, LibraryError) else 'io'))

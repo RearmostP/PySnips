@@ -64,7 +64,7 @@ class CreateSnippet(QDialog):
                                                    disk_name=self.disk_name.text().strip() or None,
                                                    media=self.pending_media)
         except (LibraryError, OSError) as error:
-            self.messages.data_error(error)
+            self.messages.error_key('errors.' + (str(error) if isinstance(error, LibraryError) else 'io'))
             return
         self.accept()
 
@@ -84,7 +84,7 @@ class CreateSnippet(QDialog):
             image = Path(source).suffix.lower() in {'.png', '.jpg', '.jpeg', '.gif', '.bmp', '.svg'}
             self.content.insertPlainText(('!' if image else '') + f'[{name}]({quote(relative)})')
         except (LibraryError, OSError) as error:
-            self.messages.data_error(error)
+            self.messages.error_key('errors.' + (str(error) if isinstance(error, LibraryError) else 'io'))
 
     def show_preview(self):
         try:
@@ -92,7 +92,7 @@ class CreateSnippet(QDialog):
             render_markdown(self.preview, self.content.toPlainText(), base)
             self.content_stack.setCurrentIndex(1 - self.content_stack.currentIndex())
         except (LibraryError, OSError) as error:
-            self.messages.data_error(error)
+            self.messages.error_key('errors.' + (str(error) if isinstance(error, LibraryError) else 'io'))
 
     def format_selection(self, before, after=''):
         cursor = self.content.textCursor()

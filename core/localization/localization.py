@@ -35,7 +35,7 @@ class Localization:
 
     @property
     def rtl(self):
-        return self.language == 'he'
+        return self.strings.get('language.direction', 'ltr').lower() == 'rtl'
 
     def resolve(self, key, fallback=None):
         return self.strings.get(key, fallback)

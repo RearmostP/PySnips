@@ -30,7 +30,7 @@ class DeletedSnippets(QDialog):
                 item.setData(Qt.ItemDataRole.UserRole, snippet.id)
             self.selection_changed()
         except (LibraryError, OSError) as error:
-            self.messages.data_error(error)
+            self.messages.error_key('errors.' + (str(error) if isinstance(error, LibraryError) else 'io'))
 
     def selection_changed(self):
         for name in ('restore', 'permanent'):
@@ -43,7 +43,7 @@ class DeletedSnippets(QDialog):
                 self.library.restore(item.data(Qt.ItemDataRole.UserRole))
                 self.refresh()
             except (LibraryError, OSError) as error:
-                self.messages.data_error(error)
+                self.messages.error_key('errors.' + (str(error) if isinstance(error, LibraryError) else 'io'))
 
     def permanent(self):
         item = self.items.currentItem()
@@ -52,4 +52,4 @@ class DeletedSnippets(QDialog):
                 self.library.permanently_delete(item.data(Qt.ItemDataRole.UserRole))
                 self.refresh()
             except (LibraryError, OSError) as error:
-                self.messages.data_error(error)
+                self.messages.error_key('errors.' + (str(error) if isinstance(error, LibraryError) else 'io'))

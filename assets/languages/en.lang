@@ -1,4 +1,5 @@
 language.name = English
+language.direction = ltr
 home.intro = Your local programming snippet library
 home.open_snips = Open snippets
 nav.home = Home

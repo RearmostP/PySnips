@@ -74,7 +74,7 @@ class SnipsScreen(QWidget):
                                 lambda: self.messages.info(self.localization.text('settings.about_text')))
             self.refresh()
         except (LibraryError, OSError) as error:
-            self.messages.data_error(error)
+            self.messages.error_key('errors.' + (str(error) if isinstance(error, LibraryError) else 'io'))
 
     def select_category(self, category):
         self.current_category = category
@@ -112,7 +112,7 @@ class SnipsScreen(QWidget):
                      if self.current_category else self.localization.text('snips.recent'))
             self.category_title.setText(title)
         except (LibraryError, OSError) as error:
-            self.messages.data_error(error)
+            self.messages.error_key('errors.' + (str(error) if isinstance(error, LibraryError) else 'io'))
 
     def create(self):
         try:
@@ -122,7 +122,7 @@ class SnipsScreen(QWidget):
             if dialog.exec():
                 self.refresh()
         except (LibraryError, OSError) as error:
-            self.messages.data_error(error)
+            self.messages.error_key('errors.' + (str(error) if isinstance(error, LibraryError) else 'io'))
 
     def open_snippet(self, snippet_id):
         try:
@@ -130,7 +130,7 @@ class SnipsScreen(QWidget):
             SnippetDetails(self.library, self.localization, self.messages, snippet, self).exec()
             self.refresh()
         except (LibraryError, OSError) as error:
-            self.messages.data_error(error)
+            self.messages.error_key('errors.' + (str(error) if isinstance(error, LibraryError) else 'io'))
 
     def edit_snippet(self, snippet_id):
         try:
@@ -138,7 +138,7 @@ class SnipsScreen(QWidget):
             if CreateSnippet(self.library, self.localization, self.messages, snippet, self).exec():
                 self.refresh()
         except (LibraryError, OSError) as error:
-            self.messages.data_error(error)
+            self.messages.error_key('errors.' + (str(error) if isinstance(error, LibraryError) else 'io'))
 
     def delete_snippet(self, snippet_id):
         if self.messages.confirm(self.localization.text('snips.confirm_delete')):
@@ -146,7 +146,7 @@ class SnipsScreen(QWidget):
                 self.library.delete(snippet_id)
                 self.refresh()
             except (LibraryError, OSError) as error:
-                self.messages.data_error(error)
+                self.messages.error_key('errors.' + (str(error) if isinstance(error, LibraryError) else 'io'))
 
     def add_category(self):
         name, accepted = QInputDialog.getText(self, self.localization.text('snips.add_category'),
@@ -156,4 +156,4 @@ class SnipsScreen(QWidget):
                 self.library.add_category(name)
                 self.refresh_categories()
             except (LibraryError, OSError) as error:
-                self.messages.data_error(error)
+                self.messages.error_key('errors.' + (str(error) if isinstance(error, LibraryError) else 'io'))

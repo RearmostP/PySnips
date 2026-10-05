@@ -35,4 +35,4 @@ class SnippetDetails(QDialog):
                 self.snippet = dialog.snippet
                 self.refresh()
         except (LibraryError, OSError) as error:
-            self.messages.data_error(error)
+            self.messages.error_key('errors.' + (str(error) if isinstance(error, LibraryError) else 'io'))
