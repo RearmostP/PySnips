@@ -1,0 +1,201 @@
+<?xml version='1.0' encoding='utf-8'?>
+<ui version="4.0">
+ <class>SettingsDialog</class>
+ <widget class="QWidget" name="SettingsScreen">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>760</width>
+    <height>520</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Settings</string>
+  </property>
+  <layout class="QVBoxLayout" name="dialog_layout">
+   <property name="spacing">
+    <number>0</number>
+   </property>
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
+   <item>
+    <layout class="QHBoxLayout" name="content_layout">
+     <property name="spacing">
+      <number>0</number>
+     </property>
+     <item>
+      <widget class="QWidget" name="wdg_settings_sidebar">
+       <property name="minimumSize">
+        <size>
+         <width>210</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>260</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <layout class="QVBoxLayout" name="sidebar_layout">
+        <property name="spacing">
+         <number>6</number>
+        </property>
+        <property name="leftMargin">
+         <number>12</number>
+        </property>
+        <property name="topMargin">
+         <number>12</number>
+        </property>
+        <property name="rightMargin">
+         <number>12</number>
+        </property>
+        <property name="bottomMargin">
+         <number>12</number>
+        </property>
+        <item>
+         <widget class="QPushButton" name="general_button">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>34</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>General</string>
+          </property>
+          <property name="i18nKey" stdset="0">
+           <string>settings.general</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="snips_button">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>34</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>Snippets</string>
+          </property>
+          <property name="i18nKey" stdset="0">
+           <string>nav.snips</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QWidget" name="wdg_snips_submenu">
+          <layout class="QVBoxLayout" name="snips_submenu_layout">
+           <property name="spacing">
+            <number>4</number>
+           </property>
+           <property name="leftMargin">
+            <number>18</number>
+           </property>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
+           <item>
+            <widget class="QPushButton" name="deleted">
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>30</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>Restore</string>
+             </property>
+             <property name="i18nKey" stdset="0">
+              <string>trash.restore</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <spacer name="sidebar_vertical_spacer">
+          <property name="orientation">
+           <enum>Qt::Orientation::Vertical</enum>
+          </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::Policy::Expanding</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QPushButton" name="home">
+          <property name="text">
+           <string>Home</string>
+          </property>
+          <property name="i18nKey" stdset="0">
+           <string>nav.home</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="snips">
+          <property name="text">
+           <string>Snippets</string>
+          </property>
+          <property name="i18nKey" stdset="0">
+           <string>nav.snips</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="about">
+          <property name="text">
+           <string>About</string>
+          </property>
+          <property name="i18nKey" stdset="0">
+           <string>settings.about</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item>
+      <widget class="QStackedWidget" name="wdg_settings_pages">
+       <property name="currentIndex">
+        <number>0</number>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+  <property name="layoutDirection">
+   <enum>Qt::LeftToRight</enum>
+  </property>
+ </widget>
+ <resources />
+ <connections />
+</ui>

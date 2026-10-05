@@ -1,0 +1,130 @@
+<?xml version='1.0' encoding='utf-8'?>
+<ui version="4.0">
+ <class>SnippetDetails</class>
+ <widget class="QWidget" name="SnippetDetails">
+  <layout class="QVBoxLayout" name="layout">
+   <item>
+    <layout class="QFormLayout" name="fields">
+     <item row="0" column="0">
+      <widget class="QLabel" name="title_label">
+       <property name="text">
+        <string>Title</string>
+       </property>
+       <property name="i18nKey" stdset="0">
+        <string>snips.title</string>
+       </property>
+       <property name="textInteractionFlags">
+        <set>Qt::TextSelectableByMouse</set>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QLabel" name="title">
+       <property name="text">
+        <string />
+       </property>
+       <property name="textInteractionFlags">
+        <set>Qt::TextSelectableByMouse</set>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="tags_label">
+       <property name="text">
+        <string>Tags</string>
+       </property>
+       <property name="i18nKey" stdset="0">
+        <string>snips.tags_label</string>
+       </property>
+       <property name="textInteractionFlags">
+        <set>Qt::TextSelectableByMouse</set>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QLabel" name="tags">
+       <property name="text">
+        <string />
+       </property>
+       <property name="textInteractionFlags">
+        <set>Qt::TextSelectableByMouse</set>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="created_at_label">
+       <property name="text">
+        <string>Created</string>
+       </property>
+       <property name="i18nKey" stdset="0">
+        <string>snips.created</string>
+       </property>
+       <property name="textInteractionFlags">
+        <set>Qt::TextSelectableByMouse</set>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QLabel" name="created_at">
+       <property name="text">
+        <string />
+       </property>
+       <property name="textInteractionFlags">
+        <set>Qt::TextSelectableByMouse</set>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="0">
+      <widget class="QLabel" name="category_label">
+       <property name="text">
+        <string>Category</string>
+       </property>
+       <property name="i18nKey" stdset="0">
+        <string>snips.category</string>
+       </property>
+       <property name="textInteractionFlags">
+        <set>Qt::TextSelectableByMouse</set>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1">
+      <widget class="QLabel" name="category">
+       <property name="text">
+        <string />
+       </property>
+       <property name="textInteractionFlags">
+        <set>Qt::TextSelectableByMouse</set>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="buttons">
+     <item>
+      <widget class="QPushButton" name="edit">
+       <property name="text">
+        <string>Edit</string>
+       </property>
+       <property name="i18nKey" stdset="0">
+        <string>snips.edit</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="close">
+       <property name="text">
+        <string>Close</string>
+       </property>
+       <property name="i18nKey" stdset="0">
+        <string>common.close</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources />
+ <connections />
+</ui>

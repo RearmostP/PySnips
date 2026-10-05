@@ -1,9 +1,0 @@
-{
-  "trash": {
-    "retention_days": 30,
-    "delete_permanently": false
-  },
-  "categories": {
-    "pinned_category": "python"
-  }
-}

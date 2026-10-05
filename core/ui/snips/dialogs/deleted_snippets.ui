@@ -1,0 +1,57 @@
+<?xml version='1.0' encoding='utf-8'?>
+<ui version="4.0">
+ <class>DeletedSnippets</class>
+ <widget class="QWidget" name="DeletedSnippets">
+  <layout class="QVBoxLayout" name="layout">
+   <item>
+    <widget class="QLabel" name="heading">
+     <property name="text">
+      <string>Deleted snippets</string>
+     </property>
+     <property name="i18nKey" stdset="0">
+      <string>settings.deleted</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QListWidget" name="snippets" />
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="row_7">
+     <item>
+      <widget class="QPushButton" name="restore">
+       <property name="text">
+        <string>Restore</string>
+       </property>
+       <property name="i18nKey" stdset="0">
+        <string>trash.restore</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="permanent">
+       <property name="text">
+        <string>Delete permanently</string>
+       </property>
+       <property name="i18nKey" stdset="0">
+        <string>trash.permanent</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="close">
+       <property name="text">
+        <string>Close</string>
+       </property>
+       <property name="i18nKey" stdset="0">
+        <string>common.close</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources />
+ <connections />
+</ui>

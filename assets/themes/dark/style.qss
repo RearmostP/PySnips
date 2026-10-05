@@ -1,0 +1,44 @@
+QWidget { background-color: #1e1e1e; color: #e8e8e8; font-family: "Segoe UI"; font-size: 13px; }
+QPushButton { background-color: #2a2a2a; color: #ffffff; border: 1px solid #3a3a3a; border-radius: 4px; padding: 5px 10px; }
+QPushButton:hover { background-color: #333333; }
+QPushButton:pressed, QPushButton:checked { background-color: #36506b; }
+QPushButton:disabled { color: #777777; }
+QLineEdit, QPlainTextEdit, QTextBrowser, QComboBox, QListWidget { background-color: #181818; color: #d4d4d4; border: 1px solid #3a3a3a; border-radius: 4px; padding: 6px; selection-background-color: #36506b; }
+QPlainTextEdit[codeEditor="true"], QLineEdit[codeEditor="true"] { font-family: "JetBrains Mono", Consolas, monospace; }
+QScrollArea { border: none; }
+QScrollBar:vertical { background: #1e1e1e; width: 12px; margin: 0; }
+QScrollBar::handle:vertical { background: #454545; min-height: 24px; border-radius: 4px; }
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical { height: 0; }
+QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical { background: none; }
+QMenu { background-color: #242424; border: 1px solid #343434; padding: 4px; }
+QMenu::item { padding: 6px 22px; }
+QMenu::item:selected { background: #36506b; }
+QPushButton#open_snips, QPushButton#open_settings { font-size: 18pt; }
+QLabel#lbl_app_name { font-size: 14pt; font-weight: bold; }
+QLabel#category_title { font-size: 16pt; font-weight: bold; }
+QSplitter::handle { background-color: #343434; }
+QWidget#SnippetCardWidget { background-color: #202020; border: 1px solid #2d2d2d; border-radius: 6px; }
+QWidget#SnippetCardWidget QLabel { background-color: transparent; border: none; }
+QWidget#SnippetCardWidget QLabel#title { color: #ffffff; font-family: "Segoe UI", Arial, sans-serif; font-size: 14px; font-weight: bold; }
+QWidget#SnippetCardWidget QTextBrowser#content { background-color: #181818; color: #d4d4d4; border: 1px solid #2d2d2d; border-radius: 4px; padding: 8px; font-size: 13px; }
+QWidget#SnippetCardWidget QPushButton { color: white; border: none; border-radius: 4px; padding: 4px 8px; font-size: 12px; font-weight: bold; }
+QWidget#SnippetCardWidget QPushButton#edit { background-color: #007bff; }
+QWidget#SnippetCardWidget QPushButton#edit:hover { background-color: #0056b3; }
+QWidget#SnippetCardWidget QPushButton#edit:pressed { background-color: #004085; }
+QWidget#SnippetCardWidget QPushButton#details { background-color: #6c757d; }
+QWidget#SnippetCardWidget QPushButton#details:hover { background-color: #5a6268; }
+QWidget#SnippetCardWidget QPushButton#details:pressed { background-color: #495057; }
+QWidget#SnippetCardWidget QPushButton#delete { background-color: #8c1d18; }
+QWidget#SnippetCardWidget QPushButton#delete:hover { background-color: #b3261e; }
+QWidget#SnippetCardWidget QPushButton#delete:pressed { background-color: #6f1713; }
+QWidget#wdg_settings_sidebar { background-color: #242424; border-right: 1px solid #343434; }
+QWidget#wdg_settings_sidebar QPushButton { background-color: transparent; color: #d8d8d8; border: none; border-radius: 4px; padding: 7px 10px; text-align: left; font-size: 13px; }
+QWidget#wdg_settings_sidebar QPushButton:hover { background-color: #303030; }
+QWidget#wdg_settings_sidebar QPushButton[active="true"] { background-color: #36506b; color: #ffffff; }
+QWidget#wdg_snips_submenu, QWidget#wdg_snips_submenu QPushButton { background-color: #242424; }
+QWidget#wdg_snips_submenu QPushButton { color: #c8c8c8; padding-left: 18px; font-size: 12px; }
+QStackedWidget#wdg_settings_pages { background-color: #1e1e1e; }
+QWidget#SettingsScreen QLabel { color: #eeeeee; font-size: 16px; font-weight: bold; }
+QWidget#SettingsScreen QPushButton#deleted, QWidget#SettingsScreen QPushButton#rebuild { background-color: transparent; color: #4da3ff; border: none; text-align: left; padding: 5px 0; font-size: 13px; font-weight: bold; }
+QWidget#SettingsScreen QPushButton#deleted:hover, QWidget#SettingsScreen QPushButton#rebuild:hover { color: #7bbcff; text-decoration: underline; }
+QWidget#CreateSnippetForm QPushButton#bold, QWidget#CreateSnippetForm QPushButton#heading, QWidget#CreateSnippetForm QPushButton#code_block, QWidget#CreateSnippetForm QPushButton#list, QWidget#CreateSnippetForm QPushButton#preview, QWidget#CreateSnippetForm QPushButton#media, QWidget#CreateSnippetForm QPushButton#advanced { min-width: 24px; max-width: 36px; padding: 4px; }

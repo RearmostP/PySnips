@@ -1,35 +1,5 @@
-# קבצי הרצה זמניים של פייתון
+.venv/
+.idea/
 __pycache__/
 *.pyc
-*.pyo
-*.pyd
-
-# הגדרות אישיות של PyCharm / סביבת עבודה
-.idea/
-.venv/
-
-# קבצי לוג ומערכת
-*.log
-pysnips.log
-
-# קיצורי דרך של ווינדוס
-*.lnk
-
-# Whoosh search index files
-core/tools/search/index/
-
-# Generated Markdown/HTML preview cache
-data/system_data/cache/
-
-
-data/user_data/snips/
-data/user_data/ready_code/
-# User trash content
-data/user_data/trash/*
-!data/user_data/trash/.gitkeep
-!data/user_data/trash/snips/
-!data/user_data/trash/ready_code/
-data/user_data/trash/snips/*
-data/user_data/trash/ready_code/*
-!data/user_data/trash/snips/.gitkeep
-!data/user_data/trash/ready_code/.gitkeep
+data/

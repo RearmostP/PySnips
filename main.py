@@ -1,106 +1,47 @@
-# main.py
-"""
-📌 PySnips 0.4 - Main Application Entry Point & Project Guide
-==============================================================
-
-👋 ברוך הבא למפתח! קובץ זה הוא שער הכניסה הראשי של האפליקציה.
-לפני שאתה צולל אל הקוד, אנא קרא את ספר החוקים ומפת הקבצים של הפרויקט.
-
-📋 ספר החוקים לשמות ווידג'טים (Naming Conventions Policy):
------------------------------------------------------------
-המערכת אוכפת חוקיות שמות נוקשה ב-Qt Designer כדי למנוע קוד מפוזר ומבולגן.
-1. חובה להשתמש בקידומת מאושרת בת 3 אותיות (למשל: btn, lbl, inp, lst, cmb, txt).
-2. חובה לשים קו תחתון (_) מיד לאחר הקידומת (למשל: btn_submit).
-3. אסור להצמיד מספרים לאותיות! חובה להפריד מספרים עם קו תחתון (btn_snippet_1 ולא btn_snippet1).
-4. שמות אוטומטיים וגנריים של ה-Designer (כמו pushButton_1) מסוננים אוטומטית.
-
-🤔 למה אנחנו עובדים ככה (הסיבה לחוקים)?
-----------------------------------------
-החוקים הללו נולדו מתוך המעבר מפריימוורק ה-Kivy ל-PySide6. עבודה עם שמות גנריים
-יצרה סרבול וחוסר נוחות בקוד. המבנה הנוכחי מבטיח קוד קריא, מאורגן, מונע טעויות הקלדה,
-ומאפשר למערכת האוטומטית למפות את הרכיבים בצורה מושלמת.
-
-📂 מפת הקבצים ותפקידם בפרויקט (Project Architecture):
------------------------------------------------------
-* main.py         <- קובץ ההרצה הראשי. מדליק את ההגנות ומעלה את ה-GUI.
-* core/boot.py    <- מנהל האתחול. בודק התאמת חתימות זמן של ה-UI מול הדיסק לפני הריצה.
-* core/common/
-  ├── integrity.py    <- "הקומפיילר החכם". סורק את ה-UI, אוכף חוקי שמות ויוצר את המיפוי.
-  ├── error_manager.py<- שומר הסף הגלובלי. חוטף קריסות, כותב לוגים ומקפיץ חלונות QMessageBox.
-  └── dynamic_ui_loader.py     <- טוען קבצי ui דינאמחת בזמן ריצה
-
-* core/system_tools
-    └── mapping.py      <- קובץ נתונים סטטי ונקי. מכיל את חתימות הזמן, קבועי השמות ומפת ה-WIDGET_MAPS.
-
-
-📢 בקשה מהמתכנת:
-----------------
-לכל אחד מהקבצים שנזכרו למעלה יש תיעוד (Docstring) מפורט, עמוק ומורחב בראש הקובץ,
-המציג את סדר הפעולות המלא, את הכלים הזמינים בו ואת הרקע הארכיטקטוני שלו.
-אנא בקר בשאר הקבצים וקרא את התיאור שלהם כדי להכיר את המערכת לעומק!
-"""
-
-import ctypes
+"""Explicit startup. No boot framework or developer diagnostics in runtime."""
 import sys
+from PySide6.QtGui import QFontDatabase, QIcon
 from PySide6.QtWidgets import QApplication
-from PySide6.QtGui import QIcon
+from core.common.paths import ASSETS_DIR
+from core.common.user_messages import UserMessageManager
+from core.localization.localization import Localization
+from core.settings.settings import Settings, load_settings
+from core.snips.library import SnippetLibrary
+from core.snips.models import LibraryError
+from core.theme.theme_manager import ThemeManager
+from core.ui.main_window import MainWindow
 
 
-from core.tools.common.screen_manager import ScreenManager # Corrected import
-from core.boot import run_startup_checks
-from core.tools.common.error_manager import AppDebugger
-from core.tools.common.app_paths import AppPaths
-
-from core.screens.ui_logic.home.home_screen import HomeScreen
-from core.screens.ui_logic.ready_code.ready_code import ReadyCodeScreen
-from core.screens.ui_logic.snips.snippets_screen import SnippetsScreen
-
+def load_fonts():
+    for path in (ASSETS_DIR / 'fonts').glob('*'):
+        if path.suffix.lower() in ('.ttf', '.otf'):
+            QFontDatabase.addApplicationFont(str(path))
 
 
 def main():
-    if sys.platform == "win32":
-        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(
-            "Rearmost.PySnips"
-        )
-
-    # 1. יצירת מופע האפליקציה של Qt
     app = QApplication(sys.argv)
-    app_icon = QIcon(str(AppPaths.APP_ICON))
-    app.setWindowIcon(app_icon)
-
-    # 2. הרצת בדיקות השלמות תחילה
-    if not run_startup_checks():
-        AppDebugger.log("בדיקות השלמות נכשלו. הריצה הסתיימה.")
-        sys.exit(1)
-
-    AppDebugger.log("בדיקות השלמות עברו בהצלחה. מתחיל אתחול...")
-
-    # 3. יצירת מנהל המסכים
-    screen_manager = ScreenManager()
-    screen_manager.resize(1024, 768)  # הגדרת גודל החלון הראשי
-    screen_manager.setWindowTitle("PySnips")
-    screen_manager.setWindowIcon(app_icon)
-
-
-    # 4. טעינת מסך הבית
-    home_screen = HomeScreen(screen_manager)
-    home_screen.load_home_screen()
-
-    # 5. טעינת מסך השליפים
-    snippets_screen = SnippetsScreen(parent=screen_manager)
-    snippets_screen.setup_events()
-    screen_manager.register_screen("snippets", snippets_screen)
-
-    # 6. טעינת מסך הקוד המוכן
-    ready_code_screen = ReadyCodeScreen(parent=screen_manager)
-    screen_manager.register_screen("ready_code", ready_code_screen)
-
-    # 7. הצגת מנהל המסכים (החלון הראשי של האפליקציה)
-    screen_manager.show()
-
-    # 8. לולאת האירועים המרכזית של Qt
-    sys.exit(app.exec())
+    app.setApplicationName('PySnips')
+    app.setWindowIcon(QIcon(str(ASSETS_DIR / 'icons' / 'pysnips-multisize.ico')))
+    load_fonts()
+    localization = Localization()
+    messages = UserMessageManager(None, localization)
+    try:
+        settings = load_settings()
+    except (OSError, ValueError):
+        messages.warning(localization.text('errors.settings'))
+        settings = Settings()
+    localization.set_language(settings.language)
+    themes = ThemeManager(app)
+    themes.apply(settings.theme)
+    try:
+        library = SnippetLibrary()
+    except (LibraryError, OSError) as error:
+        messages.data_error(error)
+        return 1
+    window = MainWindow(library, settings, localization, themes)
+    window.show()
+    return app.exec()
 
 
-if __name__ == "__main__":
-    main()
+if __name__ == '__main__':
+    sys.exit(main())
