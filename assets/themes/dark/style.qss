@@ -69,25 +69,18 @@ QWidget#SnippetDetails QPushButton#edit:hover { background: #7888FF; border-colo
 QWidget#SnippetDetails QPushButton#edit:pressed { background: #6575EE; border-color: #6575EE; }
 QWidget#SnippetDetails QPushButton:focus { border-color: #7086A8; }
 
-/* Snips shell: measured Windows 11 Qt dark defaults (PySide6 6.11.2).
-   Window #1E1E1E; native button surfaces #2B2B2B/#313131/#252525.
-   These controls are ordinary buttons; current_category has no visual state. */
-QWidget#SnippetsScreen { background: #1E1E1E; color: #FFFFFF; }
-QWidget#SnippetsScreen QWidget#wdg_sidebar, QWidget#SnippetsScreen QScrollArea#scl_categories, QWidget#SnippetsScreen QWidget#categories_content,
-QWidget#SnippetsScreen QWidget#wdg_main_content, QWidget#SnippetsScreen QWidget#search_holder, QWidget#SnippetsScreen QScrollArea#scl_snippets, QWidget#SnippetsScreen QWidget#snippets_content,
-QWidget#SnippetsScreen QWidget#search_holder QWidget { background: #1E1E1E; }
-QWidget#SnippetsScreen QSplitter#frm_splitter::handle { background: #1E1E1E; }
-QWidget#SnippetsScreen QLabel#lbl_app_name { background: transparent; color: #FFFFFF; font-size: 14pt; font-weight: bold; padding: 0; }
-QWidget#SnippetsScreen QLabel#category_title { background: transparent; color: #FFFFFF; font-size: 16pt; font-weight: bold; }
-QWidget#SnippetsScreen QLabel#snippets_empty { background: transparent; color: #FFFFFF; }
-QWidget#SnippetsScreen QPushButton[sidebarNav="true"], QWidget#SnippetsScreen QPushButton[categoryNav="true"], QWidget#SnippetsScreen QPushButton#create { background: #2B2B2B; color: #FFFFFF; border: 1px solid #343434; border-radius: 4px; padding: 5px 10px; text-align: center; }
-QWidget#SnippetsScreen QPushButton[sidebarNav="true"]:hover, QWidget#SnippetsScreen QPushButton[categoryNav="true"]:hover, QWidget#SnippetsScreen QPushButton#create:hover { background: #313131; border-color: #373737; }
-QWidget#SnippetsScreen QPushButton[sidebarNav="true"]:pressed, QWidget#SnippetsScreen QPushButton[categoryNav="true"]:pressed, QWidget#SnippetsScreen QPushButton#create:pressed { background: #252525; border-color: #323232; }
-QWidget#SnippetsScreen QPushButton[sidebarNav="true"]:disabled, QWidget#SnippetsScreen QPushButton[categoryNav="true"]:disabled, QWidget#SnippetsScreen QPushButton#create:disabled { color: #9D9D9D; }
-/* Native line-edit surfaces and focus accent were measured, not inferred. */
-QWidget#SnippetsScreen QLineEdit#query { background: #2B2B2B; color: #FFFFFF; border: 1px solid #343434; selection-background-color: #0078D4; selection-color: #FFFFFF; }
-QWidget#SnippetsScreen QLineEdit#query:hover { background: #313131; border-color: #373737; }
-QWidget#SnippetsScreen QLineEdit#query:focus { background: #1E1E1E; border-color: #4CC2FF; }
+/* Snips shell only: navigation and search inherit the global dark controls. */
+QWidget#SnippetsScreen { background: #16171B; }
+QWidget#SnippetsScreen QWidget#wdg_sidebar, QWidget#SnippetsScreen QScrollArea#scl_categories, QWidget#SnippetsScreen QWidget#categories_content { background: #1C1F24; }
+QWidget#SnippetsScreen QWidget#wdg_main_content, QWidget#SnippetsScreen QWidget#search_holder, QWidget#SnippetsScreen QScrollArea#scl_snippets, QWidget#SnippetsScreen QWidget#snippets_content { background: #16171B; }
+QWidget#SnippetsScreen QSplitter#frm_splitter::handle { background: #2D2D2D; }
+QWidget#SnippetsScreen QLabel#lbl_app_name { background: transparent; color: #E8E8E8; font-size: 14pt; font-weight: bold; padding: 0; }
+QWidget#SnippetsScreen QLabel#category_title { background: transparent; color: #E8E8E8; font-size: 16pt; font-weight: bold; }
+QWidget#SnippetsScreen QLabel#snippets_empty { background: transparent; color: #E8E8E8; }
+QWidget#SnippetsScreen QPushButton[sidebarNav="true"]:pressed, QWidget#SnippetsScreen QPushButton[categoryNav="true"]:pressed { background-color: #181818; }
+QWidget#SnippetsScreen QPushButton#create { background: #6C7DFF; color: #E8E8E8; border: 1px solid #6C7DFF; border-radius: 6px; font-weight: 600; }
+QWidget#SnippetsScreen QPushButton#create:hover { background: #7888FF; border-color: #7888FF; }
+QWidget#SnippetsScreen QPushButton#create:pressed { background: #6575EE; border-color: #6575EE; }
 
 /* Compact application About dialog. */
 QWidget#AboutForm QLabel { background: transparent; color: #E8E8E8; font-size: 12px; }
