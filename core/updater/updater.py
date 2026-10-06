@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass
 from http.client import HTTPException
+import hashlib
 import json
 from pathlib import Path
 import re
@@ -26,6 +27,7 @@ class UpdateError(Exception):
 class UpdateInfo:
     version: str
     download_url: str
+    checksum_url: str
     release_notes: str
 
 
@@ -112,14 +114,12 @@ def _valid_download_url(url):
     return parsed.scheme == 'https' and bool(parsed.netloc)
 
 
-# מחפש בתוך קבצי ה-Release את קובץ ההתקנה המתאים של PySnips.
-def _installer_url(release, version):
+# מחפש קובץ נדרש יחיד ב-Release ומאמת את כתובת ההורדה שלו.
+def _asset_url(release, expected_name):
     assets = release.get('assets')
 
     if not isinstance(assets, list):
         raise UpdateError('Invalid GitHub release assets')
-
-    expected_name = INSTALLER_NAME.format(version=version)
 
     matches = [
         asset
@@ -130,13 +130,13 @@ def _installer_url(release, version):
 
     if len(matches) != 1:
         raise UpdateError(
-            f'Release is missing a unique installer asset: {expected_name}'
+            f'Release is missing a unique required asset: {expected_name}'
         )
 
     url = matches[0].get('browser_download_url')
 
     if not _valid_download_url(url):
-        raise UpdateError('Invalid installer download URL')
+        raise UpdateError(f'Invalid download URL for asset: {expected_name}')
 
     return url
 
@@ -155,6 +155,29 @@ def _download_installer(url, partial_path):
         with partial_path.open('wb') as file:
             while chunk := response.read(CHUNK_SIZE):
                 file.write(chunk)
+
+
+# מוריד checksum קטן ומאמת שהוא מכיל רק גיבוב SHA-256 תקין.
+def _fetch_checksum(url):
+    request = Request(url, headers={'User-Agent': 'PySnips-Updater'})
+    with urlopen(request, timeout=30) as response:
+        # מגביל את התשובה כדי לא לקרוא קובץ גדול בטעות.
+        content = response.read(1025)
+    if len(content) > 1024:
+        raise UpdateError('Checksum response is too large')
+    checksum = content.decode('ascii').strip()
+    if not re.fullmatch(r'[0-9a-fA-F]{64}', checksum):
+        raise UpdateError('Invalid SHA-256 checksum')
+    return checksum.lower()
+
+
+# מחשב SHA-256 מתוכן הקובץ במקטעים בלי לטעון את כולו לזיכרון.
+def _file_sha256(path):
+    digest = hashlib.sha256()
+    with path.open('rb') as file:
+        while chunk := file.read(CHUNK_SIZE):
+            digest.update(chunk)
+    return digest.hexdigest()
 
 
 class Updater:
@@ -194,7 +217,8 @@ class Updater:
 
         return UpdateInfo(
             version=version,
-            download_url=_installer_url(release, version),
+            download_url=_asset_url(release, INSTALLER_NAME.format(version=version)),
+            checksum_url=_asset_url(release, INSTALLER_NAME.format(version=version) + '.sha256'),
             release_notes=_release_notes(release),
         )
 
@@ -206,6 +230,8 @@ class Updater:
         _version_parts(update.version)
         if not _valid_download_url(update.download_url):
             raise UpdateError('Invalid installer download URL')
+        if not _valid_download_url(update.checksum_url):
+            raise UpdateError('Invalid checksum download URL')
 
         partial_path = None
         try:
@@ -213,14 +239,19 @@ class Updater:
             partial_path = installer_path.with_suffix('.exe.part')
             installer_path.parent.mkdir(parents=True, exist_ok=True)
             _download_installer(update.download_url, partial_path)
+            expected_checksum = _fetch_checksum(update.checksum_url)
+            if _file_sha256(partial_path) != expected_checksum:
+                raise UpdateError('Installer SHA-256 checksum mismatch')
             partial_path.replace(installer_path)
-        except (OSError, ValueError, HTTPException) as error:
+        except (OSError, ValueError, HTTPException, UpdateError) as error:
             try:
                 if partial_path is not None:
                     partial_path.unlink(missing_ok=True)
             except OSError:
                 # שגיאת ניקוי אינה מסתירה את הסיבה המקורית לכישלון ההורדה.
                 pass
+            if isinstance(error, UpdateError):
+                raise
             raise UpdateError('Unable to download the installer') from error
 
         return installer_path
