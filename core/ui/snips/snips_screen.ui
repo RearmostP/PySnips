@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1000</width>
-    <height>700</height>
+    <height>678</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -67,36 +67,71 @@
         <number>16</number>
        </property>
        <item>
-        <widget class="QLabel" name="lbl_app_name">
-         <property name="text">
-          <string>PySnips</string>
+        <layout class="QHBoxLayout" name="sidebar_header_layout">
+         <property name="spacing">
+          <number>6</number>
          </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="menu">
-         <property name="sidebarNav" stdset="0">
-          <bool>true</bool>
-         </property>
-         <property name="minimumSize">
-          <size>
-           <width>0</width>
-           <height>35</height>
-          </size>
-         </property>
-         <property name="text">
-          <string>☰ Menu</string>
-         </property>
-         <property name="i18nKey" stdset="0">
-          <string>snips.menu</string>
-         </property>
-        </widget>
+         <item>
+          <widget class="QPushButton" name="menu">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>32</width>
+             <height>32</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>32</width>
+             <height>32</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>☰</string>
+           </property>
+           <property name="sidebarNav" stdset="0">
+            <bool>true</bool>
+           </property>
+           <property name="i18nTooltipKey" stdset="0">
+            <string>snips.menu</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="lbl_app_name">
+           <property name="font">
+            <font>
+             <pointsize>14</pointsize>
+             <bold>true</bold>
+            </font>
+           </property>
+           <property name="text">
+            <string>PySnips</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="sidebar_header_spacer">
+           <property name="orientation">
+            <enum>Qt::Orientation::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+        </layout>
        </item>
        <item>
         <widget class="QPushButton" name="add_category">
-         <property name="sidebarNav" stdset="0">
-          <bool>true</bool>
-         </property>
          <property name="minimumSize">
           <size>
            <width>0</width>
@@ -105,6 +140,9 @@
          </property>
          <property name="text">
           <string>[+] New category</string>
+         </property>
+         <property name="sidebarNav" stdset="0">
+          <bool>true</bool>
          </property>
          <property name="i18nKey" stdset="0">
           <string>snips.add_category</string>
@@ -124,8 +162,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>235</width>
-            <height>548</height>
+            <width>236</width>
+            <height>561</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="categories_dynamic_layout">
@@ -167,7 +205,7 @@
       </layout>
      </widget>
      <widget class="QWidget" name="wdg_main_content">
-      <layout class="QVBoxLayout" name="main_content_layout" stretch="0,0,1">
+      <layout class="QVBoxLayout" name="main_content_layout">
        <property name="spacing">
         <number>16</number>
        </property>
@@ -203,11 +241,17 @@
         <layout class="QHBoxLayout" name="actions_layout">
          <item>
           <widget class="QLabel" name="category_title">
-           <property name="wordWrap">
-            <bool>true</bool>
+           <property name="font">
+            <font>
+             <pointsize>16</pointsize>
+             <bold>true</bold>
+            </font>
            </property>
            <property name="text">
             <string>Recent snippets</string>
+           </property>
+           <property name="wordWrap">
+            <bool>true</bool>
            </property>
            <property name="i18nKey" stdset="0">
             <string>snips.recent</string>
@@ -261,8 +305,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>688</width>
-            <height>553</height>
+            <width>687</width>
+            <height>531</height>
            </rect>
           </property>
           <layout class="QGridLayout" name="grid_snippets_layout">

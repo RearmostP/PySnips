@@ -69,18 +69,20 @@ QWidget#SnippetDetails QPushButton#edit:hover { background: #7888FF; border-colo
 QWidget#SnippetDetails QPushButton#edit:pressed { background: #6575EE; border-color: #6575EE; }
 QWidget#SnippetDetails QPushButton:focus { border-color: #7086A8; }
 
-/* Snips shell only: navigation and search inherit the global dark controls. */
+/* Snips shell only: search inherits the global dark control style. */
 QWidget#SnippetsScreen { background: #16171B; }
-QWidget#SnippetsScreen QWidget#wdg_sidebar, QWidget#SnippetsScreen QScrollArea#scl_categories, QWidget#SnippetsScreen QWidget#categories_content { background: #1C1F24; }
+QWidget#SnippetsScreen QWidget#wdg_sidebar, QWidget#SnippetsScreen QScrollArea#scl_categories, QWidget#SnippetsScreen QWidget#categories_content { background: #1E1E1E; }
 QWidget#SnippetsScreen QWidget#wdg_main_content, QWidget#SnippetsScreen QWidget#search_holder, QWidget#SnippetsScreen QScrollArea#scl_snippets, QWidget#SnippetsScreen QWidget#snippets_content { background: #16171B; }
 QWidget#SnippetsScreen QSplitter#frm_splitter::handle { background: #2D2D2D; }
 QWidget#SnippetsScreen QLabel#lbl_app_name { background: transparent; color: #E8E8E8; font-size: 14pt; font-weight: bold; padding: 0; }
 QWidget#SnippetsScreen QLabel#category_title { background: transparent; color: #E8E8E8; font-size: 16pt; font-weight: bold; }
 QWidget#SnippetsScreen QLabel#snippets_empty { background: transparent; color: #E8E8E8; }
-QWidget#SnippetsScreen QPushButton[sidebarNav="true"]:pressed, QWidget#SnippetsScreen QPushButton[categoryNav="true"]:pressed { background-color: #181818; }
-QWidget#SnippetsScreen QPushButton#create { background: #6C7DFF; color: #E8E8E8; border: 1px solid #6C7DFF; border-radius: 6px; font-weight: 600; }
-QWidget#SnippetsScreen QPushButton#create:hover { background: #7888FF; border-color: #7888FF; }
-QWidget#SnippetsScreen QPushButton#create:pressed { background: #6575EE; border-color: #6575EE; }
+QWidget#SnippetsScreen QPushButton[sidebarNav="true"], QWidget#SnippetsScreen QPushButton[categoryNav="true"] { background: #2A2A2A; color: #FFFFFF; border: 1px solid #3A3A3A; border-radius: 4px; }
+QWidget#SnippetsScreen QPushButton[sidebarNav="true"]:hover, QWidget#SnippetsScreen QPushButton[categoryNav="true"]:hover { background: #333333; }
+QWidget#SnippetsScreen QPushButton[sidebarNav="true"]:pressed, QWidget#SnippetsScreen QPushButton[categoryNav="true"]:pressed { background: #242424; }
+QWidget#SnippetsScreen QPushButton#create { background: #2A2A2A; color: #FFFFFF; border: 1px solid #3A3A3A; border-radius: 6px; font-weight: 600; }
+QWidget#SnippetsScreen QPushButton#create:hover { background: #333333; border-color: #3A3A3A; }
+QWidget#SnippetsScreen QPushButton#create:pressed { background: #242424; border-color: #3A3A3A; }
 
 /* Compact application About dialog. */
 QWidget#AboutForm QLabel { background: transparent; color: #E8E8E8; font-size: 12px; }
@@ -125,3 +127,34 @@ QWidget#CreateSnippetForm QPushButton:disabled, QWidget#SnippetDetails QPushButt
 /* Content card: a shared header, quiet metadata badges and compact actions. */
 QWidget#SnippetCardWidget QWidget#cardHeader, QWidget#SnippetCardWidget QWidget#cardActions, QWidget#SnippetCardWidget QWidget#cardTags { background: transparent; border: none; }
 QWidget#SnippetCardWidget QLabel[tagBadge="true"] { background: #181818; color: #D4D4D4; border: 1px solid #2D2D2D; border-radius: 4px; padding: 2px 7px; font-size: 11px; font-weight: 400; }
+
+/* Snips navigation and surfaces matched to the reference screen. */
+QWidget#SnippetsScreen QWidget#wdg_sidebar, QWidget#SnippetsScreen QScrollArea#scl_categories, QWidget#SnippetsScreen QWidget#categories_content { background: #1D2025; }
+QWidget#SnippetsScreen QSplitter#frm_splitter::handle { background: #2C3339; }
+QWidget#SnippetsScreen QPushButton[categoryNav="true"] { background: transparent; color: #E8E8E8; border: none; border-radius: 4px; text-align: left; padding: 8px 12px; }
+QWidget#SnippetsScreen QPushButton[categoryNav="true"]:hover { background: #252830; }
+QWidget#SnippetsScreen QPushButton[categoryNav="true"]:pressed { background: #2C3038; }
+QWidget#SnippetsScreen QPushButton#menu { background: transparent; border: none; padding: 0; }
+QWidget#SnippetsScreen QPushButton#menu:hover { background: #252830; }
+QWidget#SnippetsScreen QPushButton#menu::menu-indicator { image: none; width: 0; height: 0; }
+QWidget#SnippetsScreen QPushButton#add_category { background: #252830; border: 1px solid #30343C; border-radius: 6px; }
+QWidget#SnippetsScreen QPushButton#add_category:hover { background: #2E323B; }
+QWidget#SnippetsScreen QPushButton#create { background: #7774FF; color: #FFFFFF; border: none; border-radius: 6px; padding: 7px 18px; font-weight: 600; }
+QWidget#SnippetsScreen QPushButton#create:hover { background: #8582FF; }
+QWidget#SnippetsScreen QPushButton#create:pressed { background: #6865E8; }
+QWidget#SnippetsScreen QLineEdit#query { background: #1D2025; border: 1px solid #34383F; border-radius: 6px; padding: 8px 10px; }
+
+/* Open snippet card with a bordered content preview. */
+QWidget#SnippetCardWidget { background: transparent; border: none; border-radius: 0; }
+QWidget#SnippetCardWidget QLabel#title { color: #E8E8E8; font-weight: 600; }
+QWidget#SnippetCardWidget QTextBrowser#content { background: #191C21; color: #E8E8E8; border: 1px solid #34383F; border-radius: 6px; padding: 10px 12px; }
+QWidget#SnippetCardWidget QPushButton { color: #FFFFFF; border-radius: 5px; padding: 4px 8px; font-weight: normal; }
+QWidget#SnippetCardWidget QPushButton#details { background: #252830; border: 1px solid #34383F; }
+QWidget#SnippetCardWidget QPushButton#details:hover { background: #30343C; }
+QWidget#SnippetCardWidget QPushButton#details:pressed { background: #20232A; }
+QWidget#SnippetCardWidget QPushButton#edit { background: #7774FF; }
+QWidget#SnippetCardWidget QPushButton#edit:hover { background: #8582FF; }
+QWidget#SnippetCardWidget QPushButton#edit:pressed { background: #6865E8; }
+QWidget#SnippetCardWidget QPushButton#delete { background: #E85555; }
+QWidget#SnippetCardWidget QPushButton#delete:hover { background: #F16666; }
+QWidget#SnippetCardWidget QPushButton#delete:pressed { background: #CF4646; }

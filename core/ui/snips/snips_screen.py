@@ -1,9 +1,11 @@
 from pathlib import Path
-from PySide6.QtCore import Signal, Qt
+from PySide6.QtCore import Signal, Qt, QSize
+from PySide6.QtGui import QIcon
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QGridLayout, QPushButton,
                                QLabel, QInputDialog, QMenu)
 from core.snips.models import LibraryError
+from core.common.paths import ASSETS_DIR
 from core.localization.ui_translator import translate_ui
 from core.ui.snips.widgets.snippet_search import SnippetSearch
 from core.ui.snips.widgets.snippet_card import SnippetCard
@@ -36,7 +38,11 @@ class SnipsScreen(QWidget):
         search_layout.setContentsMargins(0, 0, 0, 0)
         search_layout.addWidget(self.search)
         self.menu = QMenu(self)
-        self.ui.findChild(QPushButton, 'menu').setMenu(self.menu)
+        menu_button = self.ui.findChild(QPushButton, 'menu')
+        menu_button.setText('')
+        menu_button.setIcon(QIcon(str(ASSETS_DIR / 'icons' / 'hamburger.svg')))
+        menu_button.setIconSize(QSize(20, 20))
+        menu_button.setMenu(self.menu)
         self.ui.findChild(QPushButton, 'create').clicked.connect(self.create)
         self.ui.findChild(QPushButton, 'add_category').clicked.connect(self.add_category)
         self.search.changed.connect(self.refresh)

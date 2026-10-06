@@ -64,7 +64,7 @@ class SnippetCardTests(unittest.TestCase):
                             delete.mapTo(card, delete.rect().center()).x())
             self.assertEqual(card.preview.layoutDirection(), Qt.LayoutDirection.LeftToRight)
             buttons = [card.ui.findChild(QPushButton, name) for name in ('details', 'edit', 'delete')]
-            self.assertEqual({button.height() for button in buttons}, {25})
+            self.assertEqual({button.height() for button in buttons}, {35})
             for name, signal in [('details', card.details_requested),
                                  ('edit', card.edit_requested), ('delete', card.delete_requested)]:
                 received = []

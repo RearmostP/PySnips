@@ -15,7 +15,7 @@
   </property>
   <layout class="QVBoxLayout" name="main_layout">
    <property name="spacing">
-    <number>6</number>
+    <number>3</number>
    </property>
    <property name="leftMargin">
     <number>12</number>
@@ -33,7 +33,7 @@
     <widget class="QWidget" name="cardHeader">
      <layout class="QVBoxLayout" name="headerLayout">
       <property name="spacing">
-       <number>6</number>
+       <number>24</number>
       </property>
       <property name="leftMargin">
        <number>0</number>
@@ -49,6 +49,9 @@
       </property>
       <item>
        <widget class="QLabel" name="title">
+        <property name="alignment">
+         <set>Qt::AlignLeft|Qt::AlignVCenter</set>
+        </property>
         <property name="text">
          <string>Snippet Title</string>
         </property>
@@ -86,13 +89,13 @@
            <property name="minimumSize">
             <size>
              <width>60</width>
-             <height>25</height>
+             <height>35</height>
             </size>
            </property>
            <property name="maximumSize">
             <size>
              <width>60</width>
-             <height>25</height>
+             <height>35</height>
             </size>
            </property>
            <property name="text">
@@ -121,13 +124,13 @@
            <property name="minimumSize">
             <size>
              <width>60</width>
-             <height>25</height>
+             <height>35</height>
             </size>
            </property>
            <property name="maximumSize">
             <size>
              <width>60</width>
-             <height>25</height>
+             <height>35</height>
             </size>
            </property>
            <property name="text">
@@ -143,13 +146,13 @@
            <property name="minimumSize">
             <size>
              <width>60</width>
-             <height>25</height>
+             <height>35</height>
             </size>
            </property>
            <property name="maximumSize">
             <size>
              <width>60</width>
-             <height>25</height>
+             <height>35</height>
             </size>
            </property>
            <property name="text">

@@ -67,8 +67,7 @@ class SnippetCard(QWidget):
         document_height = ceil(self.preview.document().size().height())
         layout = self.ui.layout()
         margins = layout.contentsMargins()
-        actions = self.ui.findChild(QWidget, 'cardActions').layout()
-        header_height = self.title.sizeHint().height() + actions.sizeHint().height()
+        header_height = self.header.sizeHint().height()
         tags_height = 0 if self.tags.isHidden() else self.tags.sizeHint().height() + layout.spacing()
         preview_chrome = self.preview.frameWidth() * 2 + CONTENT_HEIGHT_PADDING
         height = (margins.top() + margins.bottom() + header_height + tags_height
