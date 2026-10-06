@@ -28,7 +28,7 @@ class PathTests(unittest.TestCase):
             with patch.object(sys, 'frozen', frozen, create=True):
                 with patch.object(sys, 'executable', str(self.installation / 'PySnips.exe')):
                     with patch.object(sys, 'platform', 'win32'):
-                        with patch.object(sys, '_MEIPASS', str(bundle or self.installation), create=True):
+                        with patch.object(sys, '_MEIPASS', str(bundle or self.installation / '_internal'), create=True):
                             return runpy.run_path(str(Path(paths.__file__)))
 
     def assert_user_paths(self, result, root):
@@ -44,6 +44,7 @@ class PathTests(unittest.TestCase):
         result = self.resolve_paths()
         repository = Path(paths.__file__).resolve().parents[2]
         self.assertEqual(result['PROJECT_ROOT'], repository)
+        self.assertEqual(result['RESOURCE_ROOT'], repository)
         self.assertEqual(result['ASSETS_DIR'], repository / 'assets')
         self.assert_user_paths(result, repository / 'data')
         self.assertEqual(result['VERSION_FILE'], repository / 'data' / 'system_data' / 'version.json')
@@ -59,10 +60,11 @@ class PathTests(unittest.TestCase):
         bundle = self.installation / '_internal'
         result = self.resolve_paths(frozen=True, bundle=bundle)
         self.assertEqual(result['PROJECT_ROOT'], self.installation)
+        self.assertEqual(result['RESOURCE_ROOT'], bundle)
         self.assertEqual(result['ASSETS_DIR'], bundle / 'assets')
         self.assert_user_paths(result, self.local_app_data / 'PySnips')
-        self.assertEqual(result['SYSTEM_DATA_DIR'], self.installation / 'data' / 'system_data')
-        self.assertEqual(result['VERSION_FILE'], self.installation / 'data' / 'system_data' / 'version.json')
+        self.assertEqual(result['SYSTEM_DATA_DIR'], bundle / 'data' / 'system_data')
+        self.assertEqual(result['VERSION_FILE'], bundle / 'data' / 'system_data' / 'version.json')
         self.assertFalse(result['USER_DATA_DIR'].is_relative_to(self.installation))
         self.assertFalse(result['CACHE_DIR'].is_relative_to(result['USER_DATA_DIR']))
         self.assertFalse(self.local_app_data.exists())
@@ -71,7 +73,7 @@ class PathTests(unittest.TestCase):
         override = self.base / 'custom'
         result = self.resolve_paths(frozen=True, override=override)
         self.assert_user_paths(result, override)
-        self.assertEqual(result['VERSION_FILE'], self.installation / 'data' / 'system_data' / 'version.json')
+        self.assertEqual(result['VERSION_FILE'], self.installation / '_internal' / 'data' / 'system_data' / 'version.json')
 
     def test_missing_local_app_data_uses_home_fallback(self):
         with patch.object(Path, 'home', return_value=self.base / 'home'):
