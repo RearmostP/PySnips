@@ -176,6 +176,11 @@ class UiTests(unittest.TestCase):
         second = self.library.create('Qt example', 'PySide6', 'secondword')
         self.window.show_snips()
         self.window.snips.select_category('Python')
+        self.assertEqual(self.window.snips.current_category, 'Python')
+        for _, button in self.window.snips.category_buttons:
+            self.assertFalse(button.isCheckable())
+            self.assertFalse(button.isChecked())
+            self.assertEqual(button.minimumHeight(), 35)
         self.assertEqual(len(self.window.snips.cards), 1)
         self.assertEqual(self.window.snips.cards[0].title.text(), first.title)
         self.window.snips.search.query.setText('secondword')

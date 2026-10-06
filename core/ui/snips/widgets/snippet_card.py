@@ -7,13 +7,19 @@ from core.localization.ui_translator import translate_ui
 from core.markdown.renderer import render_markdown
 
 
+MINIMUM_CARD_HEIGHT = 170
+CONTENT_HEIGHT_PADDING = 12
+DEFAULT_MAXIMUM_CARD_HEIGHT = 600
+
+
 class SnippetCard(QWidget):
     details_requested = Signal(str)
     edit_requested = Signal(str)
     delete_requested = Signal(str)
 
-    def __init__(self, snippet, media_base, localization, parent=None):
+    def __init__(self, snippet, media_base, localization, parent=None, *, card_height=DEFAULT_MAXIMUM_CARD_HEIGHT):
         super().__init__(parent)
+        self._maximum_card_height = max(300, min(int(card_height), 900))
         self.ui = QUiLoader().load(str(Path(__file__).with_suffix('.ui')), self)
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
@@ -57,18 +63,17 @@ class SnippetCard(QWidget):
 
     def update_height(self):
         self._height_pending = False
-        # Include the horizontal header, optional badges and preview padding.
+        # Original content-aware sizing, plus the current optional tag row.
         document_height = ceil(self.preview.document().size().height())
         layout = self.ui.layout()
         margins = layout.contentsMargins()
-        header_height = self.header.heightForWidth(self.header.width())
-        if header_height < 0:
-            header_height = self.header.sizeHint().height()
+        actions = self.ui.findChild(QWidget, 'cardActions').layout()
+        header_height = self.title.sizeHint().height() + actions.sizeHint().height()
         tags_height = 0 if self.tags.isHidden() else self.tags.sizeHint().height() + layout.spacing()
-        preview_chrome = self.preview.height() - self.preview.viewport().height()
+        preview_chrome = self.preview.frameWidth() * 2 + CONTENT_HEIGHT_PADDING
         height = (margins.top() + margins.bottom() + header_height + tags_height
-                  + layout.spacing() + document_height + preview_chrome)
-        self.setFixedHeight(max(140, min(600, height)))
+                  + layout.spacing() * 2 + document_height + preview_chrome)
+        self.setFixedHeight(max(MINIMUM_CARD_HEIGHT, min(self._maximum_card_height, height)))
 
     def show_context_menu(self, position):
         from PySide6.QtWidgets import QApplication

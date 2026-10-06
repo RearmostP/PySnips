@@ -31,9 +31,6 @@
    </property>
    <item>
     <widget class="QSplitter" name="frm_splitter">
-     <property name="handleWidth">
-      <number>1</number>
-     </property>
      <property name="layoutDirection">
       <enum>Qt::LayoutDirection::LeftToRight</enum>
      </property>
@@ -55,13 +52,13 @@
       </property>
       <layout class="QVBoxLayout" name="sidebar_layout">
        <property name="spacing">
-        <number>6</number>
+        <number>8</number>
        </property>
        <property name="leftMargin">
         <number>12</number>
        </property>
        <property name="topMargin">
-        <number>20</number>
+        <number>16</number>
        </property>
        <property name="rightMargin">
         <number>12</number>
@@ -84,7 +81,7 @@
          <property name="minimumSize">
           <size>
            <width>0</width>
-           <height>38</height>
+           <height>35</height>
           </size>
          </property>
          <property name="text">
@@ -103,7 +100,7 @@
          <property name="minimumSize">
           <size>
            <width>0</width>
-           <height>38</height>
+           <height>35</height>
           </size>
          </property>
          <property name="text">
@@ -133,13 +130,13 @@
           </property>
           <layout class="QVBoxLayout" name="categories_dynamic_layout">
            <property name="spacing">
-            <number>4</number>
+            <number>6</number>
            </property>
            <property name="leftMargin">
             <number>0</number>
            </property>
            <property name="topMargin">
-            <number>12</number>
+            <number>0</number>
            </property>
            <property name="rightMargin">
             <number>0</number>
@@ -175,13 +172,13 @@
         <number>16</number>
        </property>
        <property name="leftMargin">
-        <number>20</number>
+        <number>24</number>
        </property>
        <property name="topMargin">
         <number>20</number>
        </property>
        <property name="rightMargin">
-        <number>20</number>
+        <number>24</number>
        </property>
        <property name="bottomMargin">
         <number>20</number>
@@ -204,9 +201,6 @@
        </item>
        <item>
         <layout class="QHBoxLayout" name="actions_layout">
-         <property name="spacing">
-          <number>12</number>
-         </property>
          <item>
           <widget class="QLabel" name="category_title">
            <property name="wordWrap">
@@ -241,7 +235,7 @@
            <property name="minimumSize">
             <size>
              <width>120</width>
-             <height>40</height>
+             <height>35</height>
             </size>
            </property>
            <property name="text">
@@ -285,7 +279,7 @@
             <number>0</number>
            </property>
            <property name="spacing">
-            <number>16</number>
+            <number>12</number>
            </property>
           </layout>
          </widget>

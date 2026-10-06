@@ -2,7 +2,7 @@ from pathlib import Path
 from PySide6.QtCore import Signal, Qt
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QGridLayout, QPushButton,
-                               QLabel, QInputDialog, QMenu, QSplitter)
+                               QLabel, QInputDialog, QMenu)
 from core.snips.models import LibraryError
 from core.localization.ui_translator import translate_ui
 from core.ui.snips.widgets.snippet_search import SnippetSearch
@@ -40,7 +40,6 @@ class SnipsScreen(QWidget):
         self.ui.findChild(QPushButton, 'create').clicked.connect(self.create)
         self.ui.findChild(QPushButton, 'add_category').clicked.connect(self.add_category)
         self.search.changed.connect(self.refresh)
-        self.ui.findChild(QSplitter, 'frm_splitter').setSizes([205, 795])
 
     @staticmethod
     def clear_layout(layout):
@@ -62,9 +61,7 @@ class SnipsScreen(QWidget):
                          if category else self.localization.text('snips.recent'))
                 button = QPushButton(title, self.ui)
                 button.setProperty('categoryNav', True)
-                button.setMinimumHeight(38)
-                button.setCheckable(True)
-                button.setChecked(category == self.current_category)
+                button.setMinimumHeight(35)
                 button.setCursor(Qt.CursorShape.PointingHandCursor)
                 button.clicked.connect(lambda checked=False, value=category: self.select_category(value))
                 self.category_layout.addWidget(button)
@@ -83,8 +80,6 @@ class SnipsScreen(QWidget):
         self.current_category = category
         self.search.query.clear()
         self.search.timer.stop()
-        for value, button in self.category_buttons:
-            button.setChecked(value == category)
         self.refresh()
 
     def refresh(self):
