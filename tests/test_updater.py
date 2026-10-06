@@ -325,3 +325,66 @@ class DownloadTests(unittest.TestCase):
             with patch('core.updater.updater.urlopen', side_effect=[BytesIO(b'new'), self.checksum_response(b'other')]):
                 with self.assertRaisesRegex(UpdateError, 'checksum mismatch'):
                     self.updater.download(self.update)
+
+
+class InstallTests(unittest.TestCase):
+    # מכין קובץ דמה כדי לבדוק הפעלה בלי להריץ מתקין אמיתי.
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.installer = Path(self.temp.name) / 'PySnips-0.1.1-Setup.exe'
+        self.installer.write_bytes(b'installer placeholder')
+        self.updater = Updater()
+
+    # בודק הפעלה של נתיב או מחרוזת ללא המתנה לתהליך.
+    def test_valid_installer_launch_is_non_blocking(self):
+        for value in (self.installer, str(self.installer)):
+            with self.subTest(value=value):
+                with patch('core.updater.updater.subprocess.Popen') as launch:
+                    self.assertIsNone(self.updater.install(value))
+                    launch.assert_called_once_with([str(self.installer.resolve())])
+                    launch.return_value.wait.assert_not_called()
+                    launch.return_value.communicate.assert_not_called()
+
+    # בודק שקובץ חסר אינו מופעל.
+    def test_missing_installer(self):
+        self.installer.unlink()
+        with patch('core.updater.updater.subprocess.Popen') as launch:
+            with self.assertRaises(UpdateError):
+                self.updater.install(self.installer)
+            launch.assert_not_called()
+
+    # בודק שתיקייה אינה מתקבלת כמתקין גם כששמה מסתיים ב-exe.
+    def test_directory_is_rejected(self):
+        self.installer.unlink()
+        self.installer.mkdir()
+        with patch('core.updater.updater.subprocess.Popen') as launch:
+            with self.assertRaises(UpdateError):
+                self.updater.install(self.installer)
+            launch.assert_not_called()
+
+    # בודק שקובץ עם סיומת אחרת אינו מופעל.
+    def test_wrong_extension(self):
+        wrong_path = self.installer.with_suffix('.exe.part')
+        self.installer.rename(wrong_path)
+        with patch('core.updater.updater.subprocess.Popen') as launch:
+            with self.assertRaises(UpdateError):
+                self.updater.install(wrong_path)
+            launch.assert_not_called()
+
+    # בודק שקלט שאינו נתיב גורם לשגיאה ברורה.
+    def test_invalid_path_input(self):
+        for value in (None, 123, object(), 'bad\x00path.exe'):
+            with self.subTest(value=value):
+                with patch('core.updater.updater.subprocess.Popen') as launch:
+                    with self.assertRaises(UpdateError):
+                        self.updater.install(value)
+                    launch.assert_not_called()
+
+    # בודק שכשל בהפעלת התהליך שומר את החריגה המקורית.
+    def test_launch_failure_preserves_cause(self):
+        error = OSError('process launch failed')
+        with patch('core.updater.updater.subprocess.Popen', side_effect=error):
+            with self.assertRaises(UpdateError) as caught:
+                self.updater.install(self.installer)
+        self.assertIs(caught.exception.__cause__, error)

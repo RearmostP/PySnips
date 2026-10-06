@@ -6,6 +6,7 @@ import hashlib
 import json
 from pathlib import Path
 import re
+import subprocess
 import tempfile
 from urllib.parse import urlsplit
 from urllib.request import Request, urlopen
@@ -20,7 +21,7 @@ CHUNK_SIZE = 64 * 1024
 
 
 class UpdateError(Exception):
-    """Raised when update metadata or an installer cannot be fetched or stored."""
+    """Raised when update metadata or an installer cannot be fetched, stored or launched."""
 
 
 @dataclass(frozen=True)
@@ -255,3 +256,14 @@ class Updater:
             raise UpdateError('Unable to download the installer') from error
 
         return installer_path
+
+    # מאמת את נתיב המתקין ומפעיל אותו בתהליך נפרד ללא המתנה לסיומו.
+    def install(self, installer_path):
+        try:
+            installer_path = Path(installer_path).resolve()
+            if not installer_path.is_file() or installer_path.suffix.lower() != '.exe':
+                raise UpdateError('Installer must be an existing .exe file')
+
+            subprocess.Popen([str(installer_path)])
+        except (TypeError, ValueError, OSError) as error:
+            raise UpdateError('Unable to launch the installer') from error
