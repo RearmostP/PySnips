@@ -22,6 +22,8 @@ class LibraryTests(unittest.TestCase):
                                    '# Example\n```python\nprint(123)\n```', tags=['venv', 'venv'], **kwargs)
 
     def test_create_self_contained_directory(self):
+        self.assertEqual(self.library.root, self.base / 'user_data' / 'snips')
+        self.assertEqual(self.library.trash, self.base / 'user_data' / 'trash' / 'snips')
         s = self.create()
         directory = self.library.media_base(s.id)
         self.assertEqual({p.name for p in directory.iterdir()}, {'snippet.md', 'metadata.json', 'media'})
@@ -106,6 +108,7 @@ class LibraryTests(unittest.TestCase):
         self.assertEqual(self.library.deleted(), [s])
 
     def test_search_rebuild_and_updates(self):
+        self.assertEqual(self.library.index.directory, self.base / 'cache' / 'search_index')
         s = self.create()
         shutil.rmtree(self.library.index.directory)
         self.assertEqual([hit.id for hit in self.library.search('ven')], [s.id])
