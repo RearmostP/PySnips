@@ -41,7 +41,7 @@ $env:PYSNIPS_DATA_DIR = Join-Path $env:TEMP 'PySnips-build-smoke'
 
 ## שלב שני: מתקין Windows
 
-לאחר בניית PyInstaller, יש לקמפל את `installer.iss` באמצעות Inno Setup 6.3
+לאחר בניית PyInstaller, יש לקמפל את `installer.iss` באמצעות Inno Setup 6.6+
 ומעלה. משורש המאגר, לדוגמה כשהמהדר מותקן במיקום הרגיל:
 
 ```powershell
