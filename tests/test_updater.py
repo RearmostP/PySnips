@@ -1,14 +1,15 @@
 from io import BytesIO
+from http.client import IncompleteRead
 import json
 from pathlib import Path
 import tempfile
 import unittest
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 from urllib.error import HTTPError, URLError
 
 from core.common.paths import SYSTEM_DATA_DIR, VERSION_FILE
 from core.updater import Updater, UpdateError, UpdateInfo
-from core.updater.updater import LATEST_RELEASE_URL
+from core.updater.updater import CHUNK_SIZE, LATEST_RELEASE_URL
 
 
 class UpdaterTests(unittest.TestCase):
@@ -119,3 +120,118 @@ class UpdaterTests(unittest.TestCase):
         with patch('core.updater.updater.urlopen', return_value=BytesIO(b'{broken')):
             with self.assertRaises(UpdateError):
                 self.updater.check()
+
+
+class DownloadTests(unittest.TestCase):
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        temp_patch = patch('core.updater.updater.tempfile.gettempdir', return_value=self.temp.name)
+        temp_patch.start()
+        self.addCleanup(temp_patch.stop)
+        self.updater = Updater()
+        self.update = UpdateInfo('0.1.1', 'https://example.com/arbitrary-name.exe', '')
+        self.installer = Path(self.temp.name) / 'PySnips' / 'updates' / 'PySnips-0.1.1-Setup.exe'
+        self.partial = self.installer.with_suffix('.exe.part')
+
+    def response(self, chunks):
+        response = MagicMock()
+        response.__enter__.return_value = response
+        response.read.side_effect = chunks
+        return response
+
+    def test_success_and_chunked_download(self):
+        payload = b'x' * CHUNK_SIZE
+        response = self.response([payload, b'end', b''])
+        with patch('core.updater.updater.urlopen', return_value=response) as request:
+            result = self.updater.download(self.update)
+        self.assertIsInstance(result, Path)
+        self.assertEqual(result, self.installer)
+        self.assertEqual(result.read_bytes(), payload + b'end')
+        self.assertFalse(self.partial.exists())
+        self.assertEqual(response.read.call_count, 3)
+        for call in response.read.call_args_list:
+            self.assertEqual(call.args, (CHUNK_SIZE,))
+        args, kwargs = request.call_args
+        self.assertEqual(args[0].full_url, self.update.download_url)
+        self.assertEqual(args[0].get_header('User-agent'), 'PySnips-Updater')
+        self.assertEqual(kwargs['timeout'], 30)
+
+    def test_existing_installer_replaced_after_success(self):
+        self.installer.parent.mkdir(parents=True)
+        self.installer.write_bytes(b'old')
+        self.partial.write_bytes(b'stale partial')
+        with patch('core.updater.updater.urlopen', return_value=BytesIO(b'new')):
+            self.updater.download(self.update)
+        self.assertEqual(self.installer.read_bytes(), b'new')
+        self.assertFalse(self.partial.exists())
+
+    def test_network_failure(self):
+        error = URLError('offline')
+        with patch('core.updater.updater.urlopen', side_effect=error):
+            with self.assertRaises(UpdateError) as caught:
+                self.updater.download(self.update)
+        self.assertIs(caught.exception.__cause__, error)
+        self.assertFalse(self.partial.exists())
+        self.assertFalse(self.installer.exists())
+
+    def test_interrupted_download_preserves_completed_installer(self):
+        self.installer.parent.mkdir(parents=True)
+        self.installer.write_bytes(b'completed')
+        for error in (TimeoutError('timeout'), IncompleteRead(b'partial')):
+            with self.subTest(error=error):
+                response = self.response([b'partial', error])
+                with patch('core.updater.updater.urlopen', return_value=response):
+                    with self.assertRaises(UpdateError) as caught:
+                        self.updater.download(self.update)
+                self.assertIs(caught.exception.__cause__, error)
+                self.assertEqual(self.installer.read_bytes(), b'completed')
+                self.assertFalse(self.partial.exists())
+
+    def test_write_failure_cleans_partial_file(self):
+        error = OSError('disk full')
+        real_open = Path.open
+
+        def failing_open(path, *args, **kwargs):
+            stream = real_open(path, *args, **kwargs)
+            file = MagicMock()
+            file.__enter__.return_value = file
+            file.__exit__.side_effect = lambda *args: stream.close()
+            file.write.side_effect = error
+            return file
+
+        with patch('core.updater.updater.urlopen', return_value=BytesIO(b'data')):
+            with patch.object(Path, 'open', failing_open):
+                with self.assertRaises(UpdateError) as caught:
+                    self.updater.download(self.update)
+        self.assertIs(caught.exception.__cause__, error)
+        self.assertFalse(self.partial.exists())
+        self.assertFalse(self.installer.exists())
+
+    def test_directory_failure(self):
+        error = PermissionError('access denied')
+        with patch.object(Path, 'mkdir', side_effect=error):
+            with self.assertRaises(UpdateError) as caught:
+                self.updater.download(self.update)
+        self.assertIs(caught.exception.__cause__, error)
+
+    def test_replace_failure_preserves_completed_installer(self):
+        self.installer.parent.mkdir(parents=True)
+        self.installer.write_bytes(b'completed')
+        error = PermissionError('installer is locked')
+        with patch('core.updater.updater.urlopen', return_value=BytesIO(b'new')):
+            with patch.object(Path, 'replace', side_effect=error):
+                with self.assertRaises(UpdateError) as caught:
+                    self.updater.download(self.update)
+        self.assertIs(caught.exception.__cause__, error)
+        self.assertEqual(self.installer.read_bytes(), b'completed')
+        self.assertFalse(self.partial.exists())
+
+    def test_invalid_input_does_not_access_network(self):
+        for update in (None, UpdateInfo('../bad', 'https://example.com/setup.exe', ''),
+                       UpdateInfo('0.1.1', 'http://example.com/setup.exe', '')):
+            with self.subTest(update=update):
+                with patch('core.updater.updater.urlopen') as request:
+                    with self.assertRaises(UpdateError):
+                        self.updater.download(update)
+                    request.assert_not_called()

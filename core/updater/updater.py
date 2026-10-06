@@ -1,9 +1,11 @@
 """Local version metadata and stable GitHub Release checks."""
 
 from dataclasses import dataclass
+from http.client import HTTPException
 import json
 from pathlib import Path
 import re
+import tempfile
 from urllib.parse import urlsplit
 from urllib.request import Request, urlopen
 
@@ -13,10 +15,11 @@ from core.common.paths import VERSION_FILE
 
 LATEST_RELEASE_URL = 'https://api.github.com/repos/RearmostP/PySnips/releases/latest'
 INSTALLER_NAME = 'PySnips-{version}-Setup.exe'
+CHUNK_SIZE = 64 * 1024
 
 
 class UpdateError(Exception):
-    """Raised when update metadata cannot be read or validated."""
+    """Raised when update metadata or an installer cannot be fetched or stored."""
 
 
 @dataclass(frozen=True)
@@ -138,6 +141,22 @@ def _installer_url(release, version):
     return url
 
 
+# מחזיר את נתיב המתקין בתיקיית העדכונים הזמנית של מערכת ההפעלה.
+def _installer_path(version):
+    directory = Path(tempfile.gettempdir()) / 'PySnips' / 'updates'
+    return directory / INSTALLER_NAME.format(version=version)
+
+
+# מוריד את המתקין לקובץ חלקי במקטעים כדי להגביל את השימוש בזיכרון.
+def _download_installer(url, partial_path):
+    request = Request(url, headers={'User-Agent': 'PySnips-Updater'})
+
+    with urlopen(request, timeout=30) as response:
+        with partial_path.open('wb') as file:
+            while chunk := response.read(CHUNK_SIZE):
+                file.write(chunk)
+
+
 class Updater:
 
     # יוצר Updater ומשתמש בקובץ שמכיל את הגרסה המקומית של האפליקציה.
@@ -178,3 +197,30 @@ class Updater:
             download_url=_installer_url(release, version),
             release_notes=_release_notes(release),
         )
+
+    # מוריד עדכון ומחזיר את נתיב המתקין רק לאחר השלמת ההורדה בהצלחה.
+    def download(self, update):
+        if not isinstance(update, UpdateInfo):
+            raise UpdateError('Invalid update information')
+
+        _version_parts(update.version)
+        if not _valid_download_url(update.download_url):
+            raise UpdateError('Invalid installer download URL')
+
+        partial_path = None
+        try:
+            installer_path = _installer_path(update.version)
+            partial_path = installer_path.with_suffix('.exe.part')
+            installer_path.parent.mkdir(parents=True, exist_ok=True)
+            _download_installer(update.download_url, partial_path)
+            partial_path.replace(installer_path)
+        except (OSError, ValueError, HTTPException) as error:
+            try:
+                if partial_path is not None:
+                    partial_path.unlink(missing_ok=True)
+            except OSError:
+                # שגיאת ניקוי אינה מסתירה את הסיבה המקורית לכישלון ההורדה.
+                pass
+            raise UpdateError('Unable to download the installer') from error
+
+        return installer_path
