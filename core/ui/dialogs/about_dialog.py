@@ -9,9 +9,9 @@ from PySide6.QtWidgets import QDialog, QVBoxLayout, QLabel, QPushButton
 
 from core.common.paths import ASSETS_DIR
 from core.localization.ui_translator import translate_ui
+from core.updater.updater import Updater, UpdateError
 
 
-APP_VERSION = '2.0.0'
 GITHUB_URL = 'https://github.com/RearmostP/PySnips'
 FORUM_URL = (
     'https://mitmachim.top/topic/99203/'
@@ -34,8 +34,12 @@ class AboutDialog(QDialog):
         self.setWindowIcon(icon)
         self.ui.findChild(QLabel, 'app_icon').setPixmap(icon.pixmap(QSize(64, 64)))
         translate_ui(self, localization)
+        try:
+            app_version = Updater().current_version
+        except UpdateError:
+            app_version = '—'
         for name, key, values in (
-            ('version', 'about.version', {'version': APP_VERSION}),
+            ('version', 'about.version', {'version': app_version}),
             ('python_version', 'about.python', {'version': python_version()}),
             ('pyside_version', 'about.pyside', {'version': pyside_version}),
             ('creator', 'about.created_by', {'creator': 'RearmostP'}),

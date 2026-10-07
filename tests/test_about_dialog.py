@@ -1,6 +1,7 @@
 from pathlib import Path
 from platform import python_version
 import tempfile
+import json
 import unittest
 from unittest.mock import patch
 
@@ -13,7 +14,9 @@ from core.localization.localization import Localization
 from core.settings.settings import Settings
 from core.snips.library import SnippetLibrary
 from core.theme.theme_manager import ThemeManager
-from core.ui.dialogs.about_dialog import AboutDialog, APP_VERSION, GITHUB_URL, FORUM_URL
+from core.ui.dialogs.about_dialog import AboutDialog, GITHUB_URL, FORUM_URL
+from core.common.paths import VERSION_FILE
+from core.updater.updater import Updater
 from core.ui.settings.settings_screen import SettingsScreen
 from core.ui.snips.snips_screen import SnipsScreen
 
@@ -32,7 +35,7 @@ class AboutDialogTests(unittest.TestCase):
             self.addCleanup(dialog.close)
             self.assertEqual(dialog.windowTitle(), localization.text('about.title'))
             for name, key, values in (
-                ('version', 'about.version', {'version': APP_VERSION}),
+                ('version', 'about.version', {'version': json.loads(VERSION_FILE.read_text(encoding='utf-8'))['version']}),
                 ('python_version', 'about.python', {'version': python_version()}),
                 ('pyside_version', 'about.pyside', {'version': pyside_version}),
                 ('creator', 'about.created_by', {'creator': 'RearmostP'}),
@@ -51,6 +54,31 @@ class AboutDialogTests(unittest.TestCase):
                 self.assertTrue(230 <= dialog.height() <= 240)
             dialog.ui.findChild(QPushButton, 'close').click()
             self.assertEqual(dialog.result(), dialog.DialogCode.Accepted)
+
+    def test_version_is_read_from_metadata_each_time(self):
+        localization = Localization('en')
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / 'version.json'
+            with patch('core.ui.dialogs.about_dialog.Updater', side_effect=lambda: Updater(path)):
+                for version in ('0.2.0', '0.2.1'):
+                    path.write_text(json.dumps({'version': version}), encoding='utf-8')
+                    dialog = AboutDialog(localization)
+                    self.addCleanup(dialog.close)
+                    self.assertEqual(dialog.ui.findChild(QLabel, 'version').text(),
+                                     localization.text('about.version', version=version))
+
+    def test_unreadable_or_invalid_version_does_not_break_about(self):
+        localization = Localization('en')
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / 'version.json'
+            with patch('core.ui.dialogs.about_dialog.Updater', side_effect=lambda: Updater(path)):
+                for content in (None, '{', '{"version": "invalid"}'):
+                    if content is not None:
+                        path.write_text(content, encoding='utf-8')
+                    dialog = AboutDialog(localization)
+                    self.addCleanup(dialog.close)
+                    self.assertEqual(dialog.ui.findChild(QLabel, 'version').text(),
+                                     localization.text('about.version', version='—'))
 
     def test_links_open_supplied_urls(self):
         dialog = AboutDialog(Localization('en'))

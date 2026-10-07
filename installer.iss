@@ -1,6 +1,6 @@
 ; Compile with Inno Setup 6.3 or newer after building PySnips.spec.
 ; Keep this single version value in sync with data/system_data/version.json.
-#define AppVersion "0.1.0"
+#define AppVersion "0.2.0"
 
 [Setup]
 ; Permanent identity: never change this GUID for normal future releases.
