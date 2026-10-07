@@ -3,6 +3,7 @@ import tempfile
 import unittest
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QApplication, QWidget, QPushButton, QLineEdit
+from core.common.paths import USER_DATA_DIR
 from core.localization.localization import Localization, parse_language
 from core.localization.ui_translator import translate_ui
 from core.settings.settings import Settings, load_settings, save_settings
@@ -59,6 +60,9 @@ class LocalizationTests(unittest.TestCase):
         self.assertEqual(Localization('he').text('settings.general'), 'כללי')
 
     def test_settings_defaults_do_not_create_file(self):
+        expected_path = USER_DATA_DIR / 'settings' / 'settings.json'
+        self.assertEqual(load_settings.__defaults__[0], expected_path)
+        self.assertEqual(save_settings.__defaults__[0], expected_path)
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / 'settings.json'
             self.assertEqual(load_settings(path), Settings())

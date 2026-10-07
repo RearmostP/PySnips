@@ -10,7 +10,7 @@ import re
 import shutil
 import uuid
 from core.common.file_io import read_json, write_json_atomic, write_text_atomic
-from core.common.paths import DATA_DIR
+from core.common.paths import DATA_DIR, SNIPS_DIR, TRASH_DIR, SEARCH_INDEX_DIR
 from core.snips.models import LibraryError, Snippet
 from core.snips.search import SearchIndex
 
@@ -37,9 +37,9 @@ def normalize_tags(tags):
 
 class SnippetLibrary:
     def __init__(self, data_dir=DATA_DIR):
-        self.root = Path(data_dir) / 'user_data' / 'snips'
-        self.trash = Path(data_dir) / 'user_data' / 'trash' / 'snips'
-        self.index = SearchIndex(Path(data_dir) / 'system_data' / 'search_index')
+        self.root = Path(data_dir) / SNIPS_DIR.relative_to(DATA_DIR)
+        self.trash = Path(data_dir) / TRASH_DIR.relative_to(DATA_DIR)
+        self.index = SearchIndex(Path(data_dir) / SEARCH_INDEX_DIR.relative_to(DATA_DIR))
         self.root.mkdir(parents=True, exist_ok=True)
         self.trash.mkdir(parents=True, exist_ok=True)
         self.categories_file = self.root / 'categories.json'
