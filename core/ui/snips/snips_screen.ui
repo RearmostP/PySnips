@@ -81,14 +81,14 @@
            </property>
            <property name="minimumSize">
             <size>
-             <width>32</width>
-             <height>32</height>
+             <width>26</width>
+             <height>26</height>
             </size>
            </property>
            <property name="maximumSize">
             <size>
-             <width>32</width>
-             <height>32</height>
+             <width>26</width>
+             <height>26</height>
             </size>
            </property>
            <property name="text">
@@ -106,7 +106,7 @@
           <widget class="QLabel" name="lbl_app_name">
            <property name="font">
             <font>
-             <pointsize>14</pointsize>
+             <pointsize>13</pointsize>
              <bold>true</bold>
             </font>
            </property>
@@ -135,7 +135,7 @@
          <property name="minimumSize">
           <size>
            <width>0</width>
-           <height>35</height>
+           <height>34</height>
           </size>
          </property>
          <property name="text">
@@ -243,7 +243,7 @@
           <widget class="QLabel" name="category_title">
            <property name="font">
             <font>
-             <pointsize>16</pointsize>
+             <pointsize>14</pointsize>
              <bold>true</bold>
             </font>
            </property>
@@ -278,8 +278,8 @@
           <widget class="QPushButton" name="create">
            <property name="minimumSize">
             <size>
-             <width>120</width>
-             <height>35</height>
+             <width>110</width>
+             <height>34</height>
             </size>
            </property>
            <property name="text">

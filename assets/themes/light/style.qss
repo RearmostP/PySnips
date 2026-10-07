@@ -19,8 +19,8 @@ QMenu { background-color: #F7F8FA; border: 1px solid #D8DCE2; padding: 4px; }
 QMenu::item { padding: 6px 22px; }
 QMenu::item:selected { background: #D6E2F1; }
 QPushButton#open_snips, QPushButton#open_settings { font-size: 18pt; }
-QLabel#lbl_app_name { font-size: 14pt; font-weight: bold; }
-QLabel#category_title { font-size: 16pt; font-weight: bold; }
+QLabel#lbl_app_name { font-size: 18px; font-weight: bold; }
+QLabel#category_title { font-size: 18px; font-weight: bold; }
 QSplitter::handle { background-color: #D8DCE2; }
 QWidget#SnippetCardWidget { background-color: #F7F8FA; border: 1px solid #D2D6DC; border-radius: 6px; }
 QWidget#SnippetCardWidget QLabel { background-color: transparent; border: none; }
@@ -79,7 +79,7 @@ QWidget#SnippetsScreen QWidget#wdg_sidebar, QWidget#SnippetsScreen QScrollArea#s
 QWidget#SnippetsScreen QWidget#wdg_main_content, QWidget#SnippetsScreen QWidget#search_holder, QWidget#SnippetsScreen QScrollArea#scl_snippets, QWidget#SnippetsScreen QWidget#snippets_content { background: #ECEEF1; }
 QWidget#SnippetsScreen QSplitter#frm_splitter::handle { background: #D2D6DC; }
 QWidget#SnippetsScreen QSplitter#frm_splitter::handle:hover { background: #C2C8D0; }
-QWidget#SnippetsScreen QLabel#lbl_app_name { background: transparent; color: #202124; font-size: 18px; font-weight: 600; padding: 0 10px 12px; }
+QWidget#SnippetsScreen QLabel#lbl_app_name { background: transparent; color: #202124; font-size: 18px; font-weight: 600; padding: 0; }
 QWidget#SnippetsScreen QPushButton[sidebarNav="true"], QWidget#SnippetsScreen QPushButton[categoryNav="true"] { background: transparent; color: #5F6368; border: 1px solid transparent; border-radius: 6px; padding: 6px 10px; text-align: left; }
 QWidget#SnippetsScreen QPushButton[sidebarNav="true"][navRtl="true"], QWidget#SnippetsScreen QPushButton[categoryNav="true"][navRtl="true"] { text-align: right; }
 QWidget#SnippetsScreen QPushButton[sidebarNav="true"]:hover, QWidget#SnippetsScreen QPushButton[categoryNav="true"]:hover { background: #E2E6EB; color: #202124; }
@@ -88,7 +88,7 @@ QWidget#SnippetsScreen QPushButton[categoryNav="true"]:checked { background: #D6
 QWidget#SnippetsScreen QPushButton[categoryNav="true"]:checked:hover { background: #CBDCEF; }
 QWidget#SnippetsScreen QPushButton[sidebarNav="true"]:focus, QWidget#SnippetsScreen QPushButton[categoryNav="true"]:focus { border-color: #3478D4; }
 QWidget#SnippetsScreen QPushButton#menu::menu-indicator { image: none; }
-QWidget#SnippetsScreen QLabel#category_title { background: transparent; color: #202124; font-size: 20px; font-weight: 600; }
+QWidget#SnippetsScreen QLabel#category_title { background: transparent; color: #202124; font-size: 18px; font-weight: 600; }
 QWidget#SnippetsScreen QLabel#snippets_empty { color: #5F6368; }
 QWidget#SnippetsScreen QPushButton#create { background: #3478D4; color: #F7F8FA; border: 1px solid #3478D4; border-radius: 6px; padding: 7px 18px; font-weight: 600; }
 QWidget#SnippetsScreen QPushButton#create:hover { background: #2B6CC4; border-color: #2B6CC4; }
