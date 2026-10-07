@@ -48,6 +48,30 @@ class UiTests(unittest.TestCase):
         self.assertIs(other.stack.currentWidget(), other.snips)
         other.close()
 
+    def test_windows11_menu_indicator_accepts_themed_font(self):
+        from PySide6.QtCore import qInstallMessageHandler
+        from PySide6.QtWidgets import QStyleFactory, QStyle
+        if 'windows11' not in [name.lower() for name in QStyleFactory.keys()]:
+            self.skipTest('Windows 11 style is unavailable')
+        original_style = self.app.style().objectName()
+        warnings = []
+        previous_handler = qInstallMessageHandler(lambda kind, context, message: warnings.append(message))
+        try:
+            self.app.setStyle('windows11')
+            menu = self.window.snips.ui.findChild(QPushButton, 'menu')
+            for theme in ('dark', 'light'):
+                self.themes.apply(theme)
+                menu.ensurePolished()
+                # This native metric used to read -1 from the pixel-sized font.
+                menu.style().pixelMetric(QStyle.PM_MenuButtonIndicator, None, menu)
+                self.window.show_snips()
+                self.window.show()
+                self.app.processEvents()
+                self.assertFalse([message for message in warnings if 'QFont::setPointSize' in message], theme)
+        finally:
+            qInstallMessageHandler(previous_handler)
+            self.app.setStyle(original_style)
+
     def test_create_edit_details_and_trash_dialogs(self):
         dialog = CreateSnippet(self.library, self.localization, self.window.messages, parent=self.window)
         dialog.title.setText('UI example')

@@ -1,4 +1,6 @@
 QWidget { background-color: #16171B; color: #E8E8E8; font-family: "Segoe UI"; font-size: 13px; }
+/* Windows 11's menu indicator reads pointSize(); 9.75pt equals 13px at 96 DPI. */
+QWidget#SnippetsScreen QPushButton#menu { font-size: 9.75pt; }
 QPushButton { background-color: #202020; color: #E8E8E8; border: 1px solid #2D2D2D; border-radius: 4px; padding: 5px 10px; }
 QPushButton:hover { background-color: #303030; }
 QPushButton:pressed, QPushButton:checked { background-color: #28303D; }
