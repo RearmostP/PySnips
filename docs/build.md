@@ -6,15 +6,21 @@
 .\.venv\Scripts\Activate.ps1
 python -m pip install -r requirements-build.txt
 pyinstaller --clean --noconfirm PySnips.spec
+pyinstaller --clean --noconfirm PySnipsUpdater.spec
 ```
 
 אפשר להפעיל את אותו כלי גם כמודול Python:
 
 ```powershell
 python -m PyInstaller --clean --noconfirm PySnips.spec
+python -m PyInstaller --clean --noconfirm PySnipsUpdater.spec
 ```
 
-התוצאה היא `dist/PySnips/PySnips.exe`, לצד כל התלויות והמשאבים הנדרשים.
+התוצאה היא `dist/PySnips/PySnips.exe`, לצד כל התלויות והמשאבים הנדרשים,
+וכן `dist/PySnipsUpdater.exe` כ־ONEFILE עצמאי ללא קונסולה. המעדכן אינו
+תלוי ב־`PySnips/_internal`; הוא כולל שפות, גרסה, אייקון, QSS ו־Qt משלו.
+המתקין מעתיק אותו לצד `PySnips.exe`. לבדיקה של תיקיית build בלי Setup,
+יש להעתיק את `dist/PySnipsUpdater.exe` אל `dist/PySnips/`.
 יש להפיץ את **כל** תיקיית `dist/PySnips/`, ולא רק את קובץ ההפעלה.
 
 ה־spec משתמש בפריסת onedir הרגילה של PyInstaller, ללא חלון קונסולה,
@@ -39,7 +45,7 @@ $env:PYSNIPS_DATA_DIR = Join-Path $env:TEMP 'PySnips-build-smoke'
 
 `build/` ו־`dist/` הם פלט שניתן לבנות מחדש ואינם נשמרים ב־Git.
 
-## שלב שני: מתקין Windows
+## שלב שלישי: מתקין Windows
 
 לאחר בניית PyInstaller, יש לקמפל את `installer.iss` באמצעות Inno Setup 6.6+
 ומעלה. משורש המאגר, לדוגמה כשהמהדר מותקן במיקום הרגיל:
@@ -49,8 +55,12 @@ $env:PYSNIPS_DATA_DIR = Join-Path $env:TEMP 'PySnips-build-smoke'
 ```
 
 אם `ISCC.exe` נמצא ב־PATH, אפשר להשתמש ב־`ISCC.exe installer.iss`.
-התוצאה היא `dist/installer/PySnips-0.1.0-Setup.exe`, המכילה את כל
-`dist/PySnips/`, כולל `_internal/`. הפלט כבר מוחרג מ־Git.
+התוצאה היא `dist/installer/PySnips-0.2.0-Setup.exe`, המכילה את כל
+`dist/PySnips/`, כולל `_internal/`, וגם את `dist/PySnipsUpdater.exe`.
+ההתקנה כוללת גם `assets/` לצד קובצי ההפעלה; משאבי חבילת PyInstaller
+נשארים ב־`_internal/assets` כדי לשמר את פתרון הנתיבים הקיים.
+הפלט כבר מוחרג מ־Git. זהו build מקומי בלבד: אין להחליף את ה־Release
+או tag שפורסמו ל־0.2.0 באמצעות build פיתוח זה.
 
 לפני בניית גרסה חדשה, יש לעדכן את `AppVersion` היחיד ב־`installer.iss`
 בהתאם ל־`data/system_data/version.json`, ולבנות מחדש את חבילת PyInstaller.
@@ -63,3 +73,5 @@ $env:PYSNIPS_DATA_DIR = Join-Path $env:TEMP 'PySnips-build-smoke'
 תחת `%LOCALAPPDATA%\PySnips` ללא שינוי.
 
 המתקין אינו חתום בשלב זה. יצירת GitHub Release וקובץ checksum היא שלב נפרד.
+
+פרטי המצבים, ההעברה הזמנית ופקודת Setup בעדכון: [המעדכן העצמאי](updater.md).

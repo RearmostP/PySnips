@@ -21,6 +21,10 @@ class UiTests(unittest.TestCase):
         cls.app = QApplication.instance() or QApplication([])
 
     def setUp(self):
+        # GUI tests must never launch a real network check from the startup timer.
+        launcher = patch('core.common.update_process.UpdaterProcess.launch')
+        launcher.start()
+        self.addCleanup(launcher.stop)
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
         self.library = SnippetLibrary(Path(self.temp.name))

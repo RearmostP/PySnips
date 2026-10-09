@@ -16,7 +16,7 @@ from core.snips.library import SnippetLibrary
 from core.theme.theme_manager import ThemeManager
 from core.ui.dialogs.about_dialog import AboutDialog, GITHUB_URL, FORUM_URL
 from core.common.paths import VERSION_FILE
-from core.updater.updater import Updater
+from core.common.version import read_version
 from core.ui.settings.settings_screen import SettingsScreen
 from core.ui.snips.snips_screen import SnipsScreen
 
@@ -59,7 +59,7 @@ class AboutDialogTests(unittest.TestCase):
         localization = Localization('en')
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / 'version.json'
-            with patch('core.ui.dialogs.about_dialog.Updater', side_effect=lambda: Updater(path)):
+            with patch('core.ui.dialogs.about_dialog.read_version', side_effect=lambda: read_version(path)):
                 for version in ('0.2.0', '0.2.1'):
                     path.write_text(json.dumps({'version': version}), encoding='utf-8')
                     dialog = AboutDialog(localization)
@@ -71,7 +71,7 @@ class AboutDialogTests(unittest.TestCase):
         localization = Localization('en')
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / 'version.json'
-            with patch('core.ui.dialogs.about_dialog.Updater', side_effect=lambda: Updater(path)):
+            with patch('core.ui.dialogs.about_dialog.read_version', side_effect=lambda: read_version(path)):
                 for content in (None, '{', '{"version": "invalid"}'):
                     if content is not None:
                         path.write_text(content, encoding='utf-8')

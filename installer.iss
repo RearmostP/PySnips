@@ -1,4 +1,4 @@
-; Compile with Inno Setup 6.3 or newer after building PySnips.spec.
+; Compile after building PySnips.spec (onedir) and PySnipsUpdater.spec (onefile).
 ; Keep this single version value in sync with data/system_data/version.json.
 #define AppVersion "0.2.0"
 
@@ -32,6 +32,10 @@ Name: "desktopicon"; Description: "Create a &desktop shortcut"; GroupDescription
 [Files]
 ; Only application files are installed. LocalAppData\PySnips is never touched.
 Source: "dist\PySnips\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "dist\PySnipsUpdater.exe"; DestDir: "{app}"; Flags: ignoreversion
+; Keep the public assets directory alongside both executables. Bundled Qt resource
+; lookup still uses _internal/assets, and the ONEFILE updater embeds its own resources.
+Source: "assets\*"; DestDir: "{app}\assets"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
 Name: "{group}\PySnips"; Filename: "{app}\PySnips.exe"; WorkingDir: "{app}"

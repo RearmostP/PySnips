@@ -767,6 +767,41 @@
            </widget>
           </item>
           <item>
+           <widget class="QWidget" name="updates_section">
+            <layout class="QVBoxLayout" name="updates_layout">
+             <property name="leftMargin"><number>0</number></property>
+             <property name="topMargin"><number>0</number></property>
+             <property name="rightMargin"><number>0</number></property>
+             <property name="bottomMargin"><number>0</number></property>
+             <property name="spacing"><number>10</number></property>
+             <item><widget class="QLabel" name="updates_heading">
+              <property name="text"><string>Updates</string></property>
+              <property name="i18nKey" stdset="0"><string>settings.section.updates</string></property>
+              <property name="settingsSection" stdset="0"><bool>true</bool></property>
+             </widget></item>
+             <item><widget class="QWidget" name="updates_row">
+              <layout class="QHBoxLayout" name="updates_row_layout" stretch="1,0">
+               <property name="leftMargin"><number>0</number></property>
+               <property name="topMargin"><number>0</number></property>
+               <property name="rightMargin"><number>0</number></property>
+               <property name="bottomMargin"><number>0</number></property>
+               <property name="spacing"><number>18</number></property>
+               <item><widget class="QLabel" name="update_version">
+                <property name="text"><string>Current version</string></property>
+                <property name="settingsRowTitle" stdset="0"><bool>true</bool></property>
+               </widget></item>
+               <item><widget class="QPushButton" name="check_updates">
+                <property name="text"><string>Check for updates</string></property>
+                <property name="i18nKey" stdset="0"><string>updater.check</string></property>
+                <property name="settingsControl" stdset="0"><bool>true</bool></property>
+                <property name="minimumSize"><size><width>160</width><height>36</height></size></property>
+               </widget></item>
+              </layout>
+             </widget></item>
+            </layout>
+           </widget>
+          </item>
+          <item>
            <widget class="QWidget" name="about_section">
             <layout class="QVBoxLayout" name="about_layout">
              <property name="leftMargin">

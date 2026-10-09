@@ -11,8 +11,8 @@ import tempfile
 from urllib.parse import urlsplit
 from urllib.request import Request, urlopen
 
-from core.common.file_io import read_json
 from core.common.paths import VERSION_FILE
+from core.common.version import read_version, version_parts, VersionError
 
 
 LATEST_RELEASE_URL = 'https://api.github.com/repos/RearmostP/PySnips/releases/latest'
@@ -34,16 +34,10 @@ class UpdateInfo:
 
 # בודק שמספר הגרסה תקין וממיר אותו למספרים שאפשר להשוות ביניהם.
 def _version_parts(version):
-    pattern = (
-        r'(0|[1-9][0-9]*)\.'
-        r'(0|[1-9][0-9]*)\.'
-        r'(0|[1-9][0-9]*)'
-    )
-
-    if not isinstance(version, str) or not re.fullmatch(pattern, version):
-        raise UpdateError('Invalid stable version metadata')
-
-    return tuple(int(part) for part in version.split('.'))
+    try:
+        return version_parts(version)
+    except VersionError as error:
+        raise UpdateError(str(error)) from error
 
 
 # מביא מ-GitHub את המידע על ה-Release היציב האחרון.
@@ -60,7 +54,7 @@ def _fetch_latest_release():
         with urlopen(request, timeout=10) as response:
             return json.load(response)
 
-    except (OSError, ValueError) as error:
+    except (OSError, ValueError, HTTPException) as error:
         raise UpdateError(
             'Unable to fetch the latest GitHub release'
         ) from error
@@ -149,13 +143,24 @@ def _installer_path(version):
 
 
 # מוריד את המתקין לקובץ חלקי במקטעים כדי להגביל את השימוש בזיכרון.
-def _download_installer(url, partial_path):
+def _download_installer(url, partial_path, progress=None):
     request = Request(url, headers={'User-Agent': 'PySnips-Updater'})
 
     with urlopen(request, timeout=30) as response:
+        headers = getattr(response, 'headers', {})
+        length = headers.get('Content-Length')
+        total = int(length) if isinstance(length, str) and length.isdecimal() and int(length) > 0 else None
+        downloaded = 0
+        if progress:
+            progress(downloaded, total)
         with partial_path.open('wb') as file:
             while chunk := response.read(CHUNK_SIZE):
                 file.write(chunk)
+                downloaded += len(chunk)
+                if progress:
+                    progress(downloaded, total)
+        if total is not None and downloaded != total:
+            raise UpdateError('Incomplete installer download')
 
 
 # מוריד checksum קטן ומאמת שהוא מכיל רק גיבוב SHA-256 תקין.
@@ -191,20 +196,9 @@ class Updater:
     @property
     def current_version(self):
         try:
-            metadata = read_json(self.version_file)
-        except (OSError, ValueError) as error:
-            raise UpdateError(
-                'Unable to read local version metadata'
-            ) from error
-
-        if not isinstance(metadata, dict):
-            raise UpdateError('Invalid local version metadata')
-
-        version = metadata.get('version')
-
-        _version_parts(version)
-
-        return version
+            return read_version(self.version_file)
+        except VersionError as error:
+            raise UpdateError(str(error)) from error
 
     # בודק ב-GitHub אם קיימת גרסה חדשה ומחזיר עליה מידע אם נמצאה.
     def check(self):
@@ -224,7 +218,7 @@ class Updater:
         )
 
     # מוריד עדכון ומחזיר את נתיב המתקין רק לאחר השלמת ההורדה בהצלחה.
-    def download(self, update):
+    def download(self, update, progress=None, verifying=None, directory=None):
         if not isinstance(update, UpdateInfo):
             raise UpdateError('Invalid update information')
 
@@ -236,14 +230,18 @@ class Updater:
 
         partial_path = None
         try:
-            installer_path = _installer_path(update.version)
+            installer_path = (Path(directory) / INSTALLER_NAME.format(version=update.version)
+                              if directory is not None else _installer_path(update.version))
             partial_path = installer_path.with_suffix('.exe.part')
             installer_path.parent.mkdir(parents=True, exist_ok=True)
-            _download_installer(update.download_url, partial_path)
+            _download_installer(update.download_url, partial_path, progress)
+            if verifying:
+                verifying()
             expected_checksum = _fetch_checksum(update.checksum_url)
             if _file_sha256(partial_path) != expected_checksum:
                 raise UpdateError('Installer SHA-256 checksum mismatch')
             partial_path.replace(installer_path)
+            self.verified_checksum = expected_checksum
         except (OSError, ValueError, HTTPException, UpdateError) as error:
             try:
                 if partial_path is not None:

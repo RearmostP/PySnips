@@ -16,8 +16,6 @@ a = Analysis(
     pathex=[str(root)],
     datas=datas,
     hiddenimports=[
-        # The updater is not connected to the UI yet, but belongs in the bundle.
-        'core.updater.updater',
         # Markdown selects these extensions by name at runtime.
         'markdown.extensions.fenced_code',
         'markdown.extensions.codehilite',

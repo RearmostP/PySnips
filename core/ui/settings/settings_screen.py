@@ -7,11 +7,13 @@ from core.settings.settings import Settings
 from core.ui.snips.dialogs.deleted_snippets import DeletedSnippets
 from core.ui.dialogs.about_dialog import AboutDialog
 from core.snips.models import LibraryError
+from core.common.version import read_version, VersionError
 
 
 class SettingsScreen(QWidget):
     back_requested = Signal()
     save_requested = Signal(object)
+    check_updates_requested = Signal()
 
     def __init__(self, library, settings, localization, themes, messages, parent=None):
         super().__init__(parent)
@@ -35,6 +37,7 @@ class SettingsScreen(QWidget):
         self.ui.findChild(QPushButton, 'rebuild').clicked.connect(self.rebuild)
         self.ui.findChild(QPushButton, 'about').clicked.connect(lambda: AboutDialog(localization, self).exec())
         self.ui.findChild(QPushButton, 'back').clicked.connect(self.back_requested.emit)
+        self.ui.findChild(QPushButton, 'check_updates').clicked.connect(self.check_updates_requested.emit)
 
     def save(self):
         self.save_requested.emit(Settings(self.language.currentData(), self.theme.currentData(), self.start.isChecked()))
@@ -44,6 +47,11 @@ class SettingsScreen(QWidget):
             translate_ui(self, self.localization)
             alignment = Qt.AlignRight if self.localization.rtl else Qt.AlignLeft
             self.ui.findChild(QLabel, 'about_title').setAlignment(alignment | Qt.AlignAbsolute | Qt.AlignVCenter)
+            try:
+                version = read_version()
+            except VersionError:
+                version = '—'
+            self.ui.findChild(QLabel, 'update_version').setText(self.localization.text('updater.current_version', version=version))
             for index in range(self.theme.count()):
                 name = self.theme.itemData(index)
                 self.theme.setItemText(index, self.localization.text('theme.' + name) if name in ('light', 'dark') else name)

@@ -1,0 +1,11 @@
+QWidget { background: #181b22; color: #edf0f5; font-family: "Segoe UI"; font-size: 14px; }
+QLabel#heading { font-size: 23px; font-weight: 600; }
+QLabel#details { color: #b8c0cf; }
+QPushButton { background: #303642; border: 1px solid #414a59; border-radius: 7px; padding: 9px 18px; }
+QPushButton:hover { background: #414a59; }
+QPushButton#primary { background: #386bea; border: none; }
+QPushButton#primary:hover { background: #487cfa; }
+QPushButton:disabled { color: #8a94a4; background: #303642; }
+QProgressBar { border: 1px solid #414a59; border-radius: 6px; text-align: center; min-height: 23px; }
+QProgressBar::chunk { background: #386bea; border-radius: 5px; }
+QPlainTextEdit { background: #222731; border: 1px solid #414a59; border-radius: 6px; padding: 8px; }

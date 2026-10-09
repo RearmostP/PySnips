@@ -1,5 +1,7 @@
 # PySnips V2
 
+מעדכן עצמאי ובנייה: [תיעוד המעדכן](docs/updater.md), [הוראות בנייה](docs/build.md).
+
 ספרייה מקומית לשליפים, Markdown וקבצים נלווים, באמצעות Python ו־PySide6.
 
 ## הפעלה
