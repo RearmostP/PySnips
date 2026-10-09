@@ -1,3 +1,5 @@
+# python -m PyInstaller --clean --noconfirm PySnipsUpdater.spec
+
 """PyInstaller entry point; development uses python -m core.updater."""
 from core.updater.app import main
 
