@@ -39,6 +39,7 @@ class MainWindow(QMainWindow):
         self.snips.open_settings.connect(self.show_settings)
         self.settings_screen.save_requested.connect(self.apply_settings)
         self.settings_screen.check_updates_requested.connect(self.updater_process.launch)
+        self.settings_screen.library_restored.connect(self.snips.refresh_categories)
         self.settings_previous_screen = self.home
         self.settings_screen.back_requested.connect(self.back_from_settings)
         translate_ui(self, localization)

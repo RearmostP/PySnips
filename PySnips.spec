@@ -1,5 +1,6 @@
 # -*- mode: python ; coding: utf-8 -*-
 from pathlib import Path
+from PyInstaller.utils.hooks import collect_data_files, collect_submodules
 
 root = Path(SPECPATH)
 datas = [
@@ -10,6 +11,7 @@ datas += [
     (str(path), str(path.parent.relative_to(root)))
     for path in sorted((root / 'core/ui').rglob('*.ui'))
 ]
+datas += collect_data_files('googleapiclient')
 
 a = Analysis(
     [str(root / 'main.py')],
@@ -21,7 +23,8 @@ a = Analysis(
         'markdown.extensions.codehilite',
         'markdown.extensions.tables',
         'markdown.extensions.sane_lists',
-    ],
+        'keyring.backends.Windows',
+    ] + collect_submodules('keyring.backends'),
 )
 pyz = PYZ(a.pure)
 exe = EXE(
