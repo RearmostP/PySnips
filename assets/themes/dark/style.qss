@@ -17,7 +17,6 @@ QMenu::item { padding: 6px 22px; }
 QMenu::item:selected { background: #28303D; }
 QPushButton#open_snips, QPushButton#open_settings { font-size: 18pt; }
 QLabel#lbl_app_name { font-size: 18px; font-weight: bold; }
-QDialog#CloudBackupDialog QLabel#backup_heading { font-size: 20px; font-weight: 600; background: transparent; }
 QLabel#category_title { font-size: 18px; font-weight: bold; }
 QSplitter::handle { background-color: #343434; }
 QWidget#SnippetCardWidget { background-color: #202020; border: 1px solid #2D2D2D; border-radius: 6px; }

@@ -8,14 +8,12 @@ from core.ui.snips.dialogs.deleted_snippets import DeletedSnippets
 from core.ui.dialogs.about_dialog import AboutDialog
 from core.snips.models import LibraryError
 from core.common.version import read_version, VersionError
-from core.ui.dialogs.cloud_backup import CloudBackupDialog
 
 
 class SettingsScreen(QWidget):
     back_requested = Signal()
     save_requested = Signal(object)
     check_updates_requested = Signal()
-    library_restored = Signal()
 
     def __init__(self, library, settings, localization, themes, messages, parent=None):
         super().__init__(parent)
@@ -37,7 +35,6 @@ class SettingsScreen(QWidget):
         self.start.toggled.connect(self.save)
         self.ui.findChild(QPushButton, 'deleted').clicked.connect(self.show_deleted)
         self.ui.findChild(QPushButton, 'rebuild').clicked.connect(self.rebuild)
-        self.ui.findChild(QPushButton, 'cloud_manage').clicked.connect(self.show_backup)
         self.ui.findChild(QPushButton, 'about').clicked.connect(lambda: AboutDialog(localization, self).exec())
         self.ui.findChild(QPushButton, 'back').clicked.connect(self.back_requested.emit)
         self.ui.findChild(QPushButton, 'check_updates').clicked.connect(self.check_updates_requested.emit)
@@ -65,11 +62,6 @@ class SettingsScreen(QWidget):
 
     def show_deleted(self):
         DeletedSnippets(self.library, self.localization, self.messages, self).exec()
-
-    def show_backup(self):
-        dialog = CloudBackupDialog(self.library, self.localization, self.messages, self)
-        dialog.restored.connect(self.library_restored.emit)
-        dialog.exec()
 
     def rebuild(self):
         try:
