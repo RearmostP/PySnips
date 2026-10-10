@@ -763,6 +763,106 @@
                </layout>
               </widget>
              </item>
+             <item>
+              <widget class="QWidget" name="cloud_row">
+               <layout class="QHBoxLayout" name="cloud_row_layout" stretch="1,0">
+                <property name="leftMargin">
+                 <number>0</number>
+                </property>
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="rightMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
+                <property name="spacing">
+                 <number>18</number>
+                </property>
+                <item>
+                 <widget class="QWidget" name="cloud_text">
+                  <layout class="QVBoxLayout" name="cloud_text_layout">
+                   <property name="leftMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="topMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="rightMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="bottomMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="spacing">
+                    <number>3</number>
+                   </property>
+                   <item>
+                    <widget class="QLabel" name="cloud_title">
+                     <property name="text">
+                      <string>Cloud backup</string>
+                     </property>
+                     <property name="wordWrap">
+                      <bool>true</bool>
+                     </property>
+                     <property name="i18nKey" stdset="0">
+                      <string>backup.title</string>
+                     </property>
+                     <property name="settingsRowTitle" stdset="0">
+                      <bool>true</bool>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QLabel" name="cloud_description">
+                     <property name="text">
+                      <string>Back up and restore your snippet library with Google Drive</string>
+                     </property>
+                     <property name="wordWrap">
+                      <bool>true</bool>
+                     </property>
+                     <property name="i18nKey" stdset="0">
+                      <string>backup.description</string>
+                     </property>
+                     <property name="settingsDescription" stdset="0">
+                      <bool>true</bool>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="cloud_manage">
+                  <property name="settingsControl" stdset="0">
+                   <bool>true</bool>
+                  </property>
+                  <property name="minimumSize">
+                   <size>
+                    <width>100</width>
+                    <height>36</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>Manage</string>
+                  </property>
+                  <property name="i18nKey" stdset="0">
+                   <string>backup.manage</string>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>120</width>
+                    <height>36</height>
+                   </size>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+
             </layout>
            </widget>
           </item>
