@@ -8,6 +8,7 @@ from unittest.mock import patch
 import zipfile
 
 from core.backup.backup_manager import BackupManager, BackupError
+from core.common.version import read_version
 from core.snips.library import SnippetLibrary
 
 
@@ -62,7 +63,7 @@ class BackupTests(unittest.TestCase):
                 self.assertEqual(source.read(prefix + name), (self.directory / name).read_bytes())
             manifest = json.loads(source.read('manifest.json'))
             self.assertEqual(manifest['format_version'], 1)
-            self.assertEqual(manifest['pysnips_version'], '0.2.1')
+            self.assertEqual(manifest['pysnips_version'], read_version())
             self.assertNotIn('settings', manifest)
 
     def test_restore_replaces_library_and_trash_preserves_settings_rebuilds_index(self):

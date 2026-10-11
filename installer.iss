@@ -1,7 +1,6 @@
 ; Compile after building PySnips.spec (onedir) and PySnipsUpdater.spec (onefile).
 ; Keep this single version value in sync with data/system_data/version.json.
-#define AppVersion "0.2.1"
-git diff
+#define AppVersion "0.3.0"
 [Setup]
 ; Permanent identity: never change this GUID for normal future releases.
 AppId={{6A34FC85-F3CB-4544-9846-9F80D53853A9}
