@@ -1,0 +1,177 @@
+/* Shared theme layout. Colors come from <theme>/colors.json. */
+QWidget { background: $background; color: $text; font-family: "Segoe UI"; font-size: 13px; }
+/* Windows 11 reads pointSize() for the menu indicator; 9.75pt = 13px at 96 DPI. */
+QWidget#SnippetsScreen QPushButton#menu { font-size: 9.75pt; background: transparent; border: none; padding: 0; }
+QPushButton { background: $surface; color: $text; border: 1px solid $border; border-radius: 4px; padding: 5px 10px; }
+QPushButton:disabled { color: $text_disabled; }
+QPushButton:hover { background: $surface_hover; }
+QPushButton:pressed,
+QPushButton:checked { background: $selection; }
+QLineEdit,
+QPlainTextEdit,
+QTextBrowser { background: $input_background; color: $input_text; border: 1px solid $border; border-radius: 4px; padding: 6px; selection-background-color: $selection; placeholder-text-color: $placeholder; selection-color: $text; }
+QComboBox { background: $input_background; color: $input_text; border: 1px solid $border; border-radius: 4px; padding: 6px; selection-background-color: $selection; placeholder-text-color: $text_disabled; selection-color: $text; }
+QListWidget { background: $input_background; color: $input_text; border: 1px solid $border; border-radius: 4px; padding: 6px; selection-background-color: $selection; }
+QPlainTextEdit[codeEditor="true"],
+QLineEdit[codeEditor="true"] { font-family: "JetBrains Mono", Consolas, monospace; }
+QScrollArea { border: none; }
+QScrollBar:vertical { background: $background; width: 12px; margin: 0; }
+QScrollBar::handle:vertical { background: $border_strong; min-height: 24px; border-radius: 4px; }
+QScrollBar::add-line:vertical,
+QScrollBar::sub-line:vertical { height: 0; }
+QScrollBar::add-page:vertical,
+QScrollBar::sub-page:vertical { background: none; }
+QMenu { background: $surface; border: 1px solid $divider; padding: 4px; }
+QMenu::item { padding: 6px 22px; }
+QMenu::item:selected { background: $selection; }
+QPushButton#open_snips,
+QPushButton#open_settings { font-size: 18pt; }
+QLabel#lbl_app_name { font-size: 18px; font-weight: bold; }
+QDialog#CloudBackupDialog QLabel#backup_heading { font-size: 20px; font-weight: 600; background: transparent; }
+QLabel#category_title { font-size: 18px; font-weight: bold; }
+QSplitter::handle { background: $divider; }
+
+/* Snippet cards and their actions. */
+QWidget#SnippetCardWidget { background: $card_background; border: 1px solid $card_border; border-radius: 6px; }
+QWidget#SnippetCardWidget QLabel { background: transparent; border: none; }
+QWidget#SnippetCardWidget QLabel#title { color: $text; font-family: "Segoe UI", Arial, sans-serif; font-size: 14px; font-weight: 600; }
+QWidget#SnippetCardWidget QTextBrowser#content { background: $background_alt; color: $text; border: 1px solid $preview_border; border-radius: 6px; padding: 10px 12px; font-size: 13px; font-family: "Segoe UI", Arial, sans-serif; }
+QWidget#SnippetCardWidget QPushButton { color: $action_text; border: 1px solid transparent; border-radius: 5px; padding: 4px 8px; font-size: 12px; font-weight: normal; }
+QWidget#SnippetCardWidget QPushButton#edit { background: $accent; color: $action_text; }
+QWidget#SnippetCardWidget QPushButton#edit:hover { background: $accent_hover; }
+QWidget#SnippetCardWidget QPushButton#edit:pressed { background: $accent_pressed; }
+QWidget#SnippetCardWidget QPushButton#details { background: $secondary; border: 1px solid $preview_border; }
+QWidget#SnippetCardWidget QPushButton#details:hover { background: $secondary_hover; }
+QWidget#SnippetCardWidget QPushButton#details:pressed { background: $secondary_pressed; }
+QWidget#SnippetCardWidget QPushButton#delete { background: $danger; }
+QWidget#SnippetCardWidget QPushButton#delete:hover { background: $danger_hover; }
+QWidget#SnippetCardWidget QPushButton#delete:pressed { background: $danger_pressed; }
+
+/* Create / edit form, toolbar and preview. */
+QWidget#CreateSnippetForm QLabel[metadataLabel="true"] { color: $text_muted; font-size: 12px; font-weight: 600; background: transparent; }
+QWidget#CreateSnippetForm QLineEdit,
+QWidget#CreateSnippetForm QComboBox { background: $input_background; color: $text; border: 1px solid $border; border-radius: 6px; padding: 7px 10px; }
+QWidget#CreateSnippetForm QLineEdit:focus,
+QWidget#CreateSnippetForm QComboBox:focus { border-color: $border_focus; }
+QWidget#markdownToolbar { background: $surface; border-radius: 6px; }
+QWidget#CreateSnippetForm QPushButton[toolbarAction="true"] { background: transparent; border: 1px solid transparent; border-radius: 4px; padding: 0; }
+QWidget#CreateSnippetForm QPushButton[toolbarAction="true"]:hover { background: $surface_hover; }
+QWidget#CreateSnippetForm QPushButton[toolbarAction="true"]:pressed { background: $selection; }
+QWidget#CreateSnippetForm QPushButton[toolbarAction="true"]:focus { border-color: $border_focus; }
+QFrame#toolbarSeparator { background: $border; border: none; min-width: 1px; max-width: 1px; min-height: 18px; max-height: 18px; margin: 0 4px; }
+QWidget#CreateSnippetForm QPlainTextEdit#content { background: $input_background; color: $input_text; border: 1px solid $border; border-radius: 7px; padding: 14px; selection-background-color: $selection; selection-color: $text; font-family: "JetBrains Mono", Consolas, monospace; font-size: 14px; font-weight: 400; }
+QWidget#CreateSnippetForm QTextBrowser#preview_browser { background: $input_background; color: $input_text; border: 1px solid $border; border-radius: 7px; padding: 14px; selection-background-color: $selection; selection-color: $text; font-family: "Segoe UI"; font-size: 13px; }
+QWidget#CreateSnippetForm QPlainTextEdit#content:focus { border-color: $border_focus; }
+QWidget#CreateSnippetForm QPushButton#cancel { border-radius: 6px; padding: 7px 18px; background: transparent; color: $text; border: 1px solid $border; }
+QWidget#CreateSnippetForm QPushButton#save { border-radius: 6px; padding: 7px 18px; background: $accent; color: $accent_text; border: 1px solid $accent; font-weight: 600; }
+QWidget#CreateSnippetForm QPushButton#cancel:hover { background: $surface_hover; }
+QWidget#CreateSnippetForm QPushButton#save:hover { background: $accent_hover; border-color: $accent_hover; }
+QWidget#CreateSnippetForm QPushButton#save:pressed { background: $accent_pressed; border-color: $accent_pressed; }
+QWidget#CreateSnippetForm QPushButton#cancel:focus,
+QWidget#CreateSnippetForm QPushButton#save:focus { border-color: $border_focus; }
+
+/* Snippet details. */
+QWidget#SnippetDetails QLabel { background: transparent; color: $text; font-size: 14px; }
+QWidget#SnippetDetails QLabel#title { font-size: 20px; font-weight: 600; }
+QWidget#SnippetDetails QWidget#metadataPanel { background: $surface; border-radius: 6px; }
+QWidget#SnippetDetails QWidget#tags { background: transparent; }
+QWidget#SnippetDetails QLabel[metadataLabel="true"] { color: $text_muted; font-size: 12px; }
+QWidget#SnippetDetails QLabel[tagBadge="true"] { background: $surface_hover; border-radius: 4px; padding: 3px 8px; font-size: 12px; }
+QWidget#SnippetDetails QPushButton { border-radius: 6px; padding: 7px 18px; }
+QWidget#SnippetDetails QPushButton#close { background: transparent; color: $text; border: 1px solid $border; }
+QWidget#SnippetDetails QPushButton#close:hover { background: $surface_hover; }
+QWidget#SnippetDetails QPushButton#edit { background: $accent; color: $accent_text; border: 1px solid $accent; font-weight: 600; }
+QWidget#SnippetDetails QPushButton#edit:hover { background: $accent_hover; border-color: $accent_hover; }
+QWidget#SnippetDetails QPushButton#edit:pressed { background: $accent_pressed; border-color: $accent_pressed; }
+QWidget#SnippetDetails QPushButton:focus { border-color: $border_focus; }
+
+/* Snippets shell and navigation. */
+QWidget#SnippetsScreen { background: $background; }
+QWidget#SnippetsScreen QWidget#wdg_sidebar,
+QWidget#SnippetsScreen QScrollArea#scl_categories,
+QWidget#SnippetsScreen QWidget#categories_content { background: $sidebar; }
+QWidget#SnippetsScreen QWidget#wdg_main_content,
+QWidget#SnippetsScreen QWidget#search_holder,
+QWidget#SnippetsScreen QScrollArea#scl_snippets,
+QWidget#SnippetsScreen QWidget#snippets_content { background: $background; }
+QWidget#SnippetsScreen QSplitter#frm_splitter::handle { background: $preview_border; }
+QWidget#SnippetsScreen QLabel#lbl_app_name { background: transparent; color: $text; font-size: 18px; font-weight: bold; padding: 0; }
+QWidget#SnippetsScreen QLabel#category_title { background: transparent; color: $text; font-size: 18px; font-weight: bold; }
+QWidget#SnippetsScreen QLabel#snippets_empty { background: transparent; color: $navigation_text; }
+QWidget#SnippetsScreen QPushButton[sidebarNav="true"] { color: $navigation_text; border-radius: 4px; }
+QWidget#SnippetsScreen QPushButton[categoryNav="true"] { background: transparent; color: $navigation_text; border: none; border-radius: 4px; text-align: left; padding: 8px 12px; }
+QWidget#SnippetsScreen QPushButton[sidebarNav="true"]:hover { color: $text; }
+QWidget#SnippetsScreen QPushButton[categoryNav="true"]:hover { background: $navigation_hover; color: $text; }
+QWidget#SnippetsScreen QPushButton[sidebarNav="true"]:pressed { background: $navigation_pressed; color: $text; }
+QWidget#SnippetsScreen QPushButton[categoryNav="true"]:pressed { background: $navigation_pressed; color: $text; }
+QWidget#SnippetsScreen QPushButton#create { background: $accent; color: $action_text; border: none; border-radius: 6px; font-weight: 600; padding: 6px 14px; }
+QWidget#SnippetsScreen QPushButton#create:hover { background: $accent_hover; }
+QWidget#SnippetsScreen QPushButton#create:pressed { background: $accent_pressed; }
+
+/* About dialog. */
+QWidget#AboutForm QLabel { background: transparent; color: $text; font-size: 12px; }
+QWidget#AboutForm QLabel#product_name { font-size: 20px; font-weight: 600; }
+QWidget#AboutForm QLabel[aboutMuted="true"] { color: $text_subtle; }
+QWidget#AboutForm QLabel#version { font-size: 13px; }
+QWidget#AboutForm QPushButton[aboutLink="true"] { background: transparent; color: $link; border: 1px solid transparent; border-radius: 0; padding: 1px 0; font-size: 12px; text-align: left; }
+QWidget#AboutForm QPushButton[aboutLink="true"]:hover { color: $link_hover; text-decoration: underline; }
+QWidget#AboutForm QPushButton[aboutLink="true"]:focus { border-bottom-color: $accent; }
+QWidget#AboutForm QPushButton#close { background: transparent; color: $text; border: 1px solid $border; border-radius: 6px; padding: 5px 14px; }
+QWidget#AboutForm QPushButton#close:hover { background: $surface_hover; }
+QWidget#AboutForm QPushButton#close:focus { border-color: $border_focus; }
+
+/* Settings controls. */
+QWidget#SettingsScreen QLabel#page_title { background: transparent; color: $text; font-size: 20px; font-weight: 600; }
+QWidget#SettingsScreen QLabel[settingsSection="true"] { background: transparent; color: $text; font-size: 15px; font-weight: 600; border-bottom: 1px solid $divider; padding-bottom: 8px; }
+QWidget#SettingsScreen QLabel[settingsRowTitle="true"] { background: transparent; color: $text; font-weight: 600; }
+QWidget#SettingsScreen QLabel[settingsDescription="true"] { background: transparent; color: $text_subtle; font-size: 12px; }
+QWidget#SettingsScreen QComboBox[settingsControl="true"] { background: $input_background; color: $text; border: 1px solid $border; border-radius: 6px; padding: 6px 10px; }
+QWidget#SettingsScreen QComboBox[settingsControl="true"]:focus { border-color: $border_focus; }
+QWidget#SettingsScreen QPushButton[settingsControl="true"] { background: $surface; color: $text; border: 1px solid $border; border-radius: 6px; padding: 6px 14px; }
+QWidget#SettingsScreen QPushButton[settingsControl="true"]:hover { background: $surface_hover; }
+QWidget#SettingsScreen QPushButton[settingsControl="true"]:pressed { background: $selection; }
+QWidget#SettingsScreen QPushButton[settingsControl="true"]:focus { border-color: $border_focus; }
+QWidget#SettingsScreen QCheckBox[settingsControl="true"]::indicator { width: 18px; height: 18px; }
+QWidget#SettingsScreen QCheckBox[settingsControl="true"]::indicator:unchecked { background: $input_background; border: 1px solid $border_strong; border-radius: 4px; }
+QWidget#SettingsScreen QCheckBox[settingsControl="true"]::indicator:unchecked:hover { border-color: $border_focus; }
+QWidget#SettingsScreen QPushButton#back { background: transparent; color: $text_muted; border: 1px solid transparent; border-radius: 6px; padding: 4px 8px; }
+QWidget#SettingsScreen QPushButton#back:hover { background: $surface_hover; color: $text; }
+QWidget#SettingsScreen QPushButton#back:focus,
+QLineEdit:focus,
+QPlainTextEdit:focus,
+QTextBrowser:focus,
+QComboBox:focus,
+QListWidget:focus,
+QPushButton:focus { border-color: $border_focus; }
+QComboBox QAbstractItemView { background: $surface; color: $text; border-color: $border; selection-background-color: $selection; selection-color: $text; }
+QWidget#SettingsScreen QCheckBox[settingsControl="true"]::indicator:checked { background: $accent; border-color: $accent; }
+QWidget#SettingsScreen QCheckBox[settingsControl="true"]::indicator:focus { border-color: $text_muted; }
+QWidget QPushButton:disabled,
+QWidget QLineEdit:disabled,
+QWidget QPlainTextEdit:disabled,
+QWidget QComboBox:disabled,
+QWidget#CreateSnippetForm QPushButton:disabled,
+QWidget#SnippetDetails QPushButton:disabled,
+QWidget#SettingsScreen QPushButton:disabled { background: $surface; color: $text_disabled; border-color: $divider; }
+QWidget#SnippetCardWidget QWidget#cardHeader,
+QWidget#SnippetCardWidget QWidget#cardActions,
+QWidget#SnippetCardWidget QWidget#cardTags { background: transparent; border: none; }
+QWidget#SnippetCardWidget QLabel[tagBadge="true"] { background: $input_background; color: $text_muted; border: 1px solid $badge_border; border-radius: 4px; padding: 2px 7px; font-size: 11px; font-weight: 400; }
+QWidget#SnippetsScreen QPushButton#menu:hover { background: $navigation_hover; }
+QWidget#SnippetsScreen QPushButton#menu::menu-indicator { image: none; width: 0; height: 0; }
+QWidget#SnippetsScreen QPushButton#add_category { background: $navigation_hover; border: 1px solid $preview_border; border-radius: 6px; }
+QWidget#SnippetsScreen QPushButton#add_category:hover { background: $surface_hover; }
+QWidget#SnippetsScreen QLineEdit#query { background: $sidebar; border: 1px solid $preview_border; border-radius: 6px; padding: 8px 10px; }
+QListWidget::item:selected { background: $selection; color: $text; }
+QWidget#SnippetsScreen QSplitter#frm_splitter::handle:hover { background: $divider_hover; }
+QWidget#SnippetsScreen QPushButton[sidebarNav="true"][navRtl="true"],
+QWidget#SnippetsScreen QPushButton[categoryNav="true"][navRtl="true"] { text-align: right; }
+QWidget#SnippetsScreen QPushButton[categoryNav="true"]:checked { background: $selection; color: $text; font-weight: 600; }
+QWidget#SnippetsScreen QPushButton[categoryNav="true"]:checked:hover { background: $selection_hover; }
+QWidget#SnippetsScreen QPushButton[sidebarNav="true"]:focus,
+QWidget#SnippetsScreen QPushButton[categoryNav="true"]:focus,
+QWidget#SnippetsScreen QPushButton#create:focus,
+QWidget#SnippetCardWidget QPushButton:focus { border-color: $border_focus; }
+QWidget#SnippetCardWidget QPushButton#details:disabled,
+QWidget#SnippetCardWidget QPushButton#edit:disabled,
+QWidget#SnippetCardWidget QPushButton#delete:disabled { background: $background_alt; color: $text_subtle; border-color: transparent; }
