@@ -4,12 +4,35 @@
  <widget class="QWidget" name="DeletedSnippets">
   <layout class="QVBoxLayout" name="layout">
    <item>
+    <widget class="QLabel" name="categories_heading">
+     <property name="text"><string>Deleted categories</string></property>
+     <property name="i18nKey" stdset="0"><string>trash.categories</string></property>
+    </widget>
+   </item>
+   <item><widget class="QListWidget" name="categories" /></item>
+   <item>
+    <layout class="QHBoxLayout" name="category_actions">
+     <item>
+      <widget class="QPushButton" name="restore_category">
+       <property name="text"><string>Restore category</string></property>
+       <property name="i18nKey" stdset="0"><string>category.restore</string></property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="permanent_category">
+       <property name="text"><string>Permanently delete category</string></property>
+       <property name="i18nKey" stdset="0"><string>category.permanent</string></property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
     <widget class="QLabel" name="heading">
      <property name="text">
       <string>Deleted snippets</string>
      </property>
      <property name="i18nKey" stdset="0">
-      <string>settings.deleted</string>
+      <string>trash.snippets</string>
      </property>
     </widget>
    </item>

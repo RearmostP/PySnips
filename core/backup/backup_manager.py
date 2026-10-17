@@ -41,6 +41,7 @@ class BackupManager:
         self.data_dir = Path(data_dir)
         self.snips = self.data_dir / SNIPS_DIR.relative_to(DATA_DIR)
         self.trash = self.data_dir / TRASH_DIR.relative_to(DATA_DIR)
+        self.category_trash = self.trash.parent / 'categories'
 
     def create(self, destination, *, version=None):
         destination = Path(destination)
@@ -52,6 +53,9 @@ class BackupManager:
                 check_path(root)
                 if not root.is_dir() or destination.resolve().is_relative_to(root.resolve()):
                     raise BackupError('unsafe')
+            check_path(self.category_trash)
+            if destination.resolve().is_relative_to(self.category_trash.resolve()):
+                raise BackupError('unsafe')
             destination.mkdir(parents=True, exist_ok=True)
             final = destination / name
             with tempfile.TemporaryDirectory(prefix='.backup-', dir=destination) as temporary:
@@ -65,6 +69,9 @@ class BackupManager:
                     for root, prefix in ((self.snips, 'snips'), (self.trash, 'trash/snips')):
                         output.writestr(prefix + '/', b'')
                         self._archive_tree(output, root, prefix)
+                    output.writestr('trash/categories/', b'')
+                    if self.category_trash.exists():
+                        self._archive_tree(output, self.category_trash, 'trash/categories')
                 # Validate our finished snapshot too; never publish corrupt input.
                 self.validate(archive)
                 os.replace(archive, final)
@@ -110,7 +117,7 @@ class BackupManager:
             raise BackupError('unsafe')
         if not (name == 'manifest.json' or parts[0] == 'snips'
                 or parts == ['trash'] and info.is_dir()
-                or parts[:2] == ['trash', 'snips']):
+                or parts[:2] in (['trash', 'snips'], ['trash', 'categories'])):
             raise BackupError('layout')
         return parts
 
@@ -174,11 +181,16 @@ class BackupManager:
             # Use existing readers without their constructor's directory creation.
             library = SnippetLibrary.__new__(SnippetLibrary)
             library.root, library.trash = root, trash
+            library.category_trash = staging / 'trash/categories'
             library.categories_file = root / 'categories.json'
-            categories = json.loads(library.categories_file.read_text(encoding='utf-8-sig'))
-            if not isinstance(categories, list) or any(not isinstance(c, str) for c in categories):
+            categories = library._category_records(migrate=False)
+            if any(not ((library.category_trash if c['deleted'] else root) / c['name']).is_dir()
+                   for c in categories):
                 raise LibraryError('invalid_data')
-            if any(not (root / safe_name(c)).is_dir() for c in categories):
+            # Older format-1 archives do not contain category trash.
+            library.category_trash.mkdir(parents=True, exist_ok=True)
+            deleted_dirs = list(library.category_trash.iterdir())
+            if {p.name for p in deleted_dirs} != {c['name'] for c in categories if c['deleted']}:
                 raise LibraryError('invalid_data')
             # Existing library readers ignore unlisted categories. Preserve and
             # validate those directories too rather than dropping local data.
@@ -190,18 +202,21 @@ class BackupManager:
                         raise LibraryError('invalid_data')
                     category_dirs.append(directory)
             ids = set()
-            for parent, deleted in [*((directory, False) for directory in category_dirs), (trash, True)]:
+            for parent, deleted, category_deleted in [
+                    *((directory, False, False) for directory in category_dirs),
+                    (trash, True, False),
+                    *((directory, False, True) for directory in deleted_dirs)]:
+                if not parent.is_dir():
+                    raise LibraryError('invalid_data')
                 for directory in parent.iterdir():
                     if not directory.is_dir() or {p.name for p in directory.iterdir()} != {'metadata.json', 'snippet.md', 'media'}:
                         raise LibraryError('invalid_data')
                     if not (directory / 'media').is_dir():
                         raise LibraryError('invalid_data')
-                    snippet = library._read(directory, deleted)
+                    snippet = library._read(directory, deleted, category_deleted=category_deleted)
                     if snippet.id in ids:
                         raise LibraryError('invalid_data')
                     ids.add(snippet.id)
-            library.list()
-            library.deleted()
         except (LibraryError, ValueError, OSError, TypeError) as error:
             raise BackupError('metadata') from error
 
@@ -212,6 +227,7 @@ class BackupManager:
     def restore(self, archive, *, rebuild=None, status=lambda key: None):
         check_path(self.snips)
         check_path(self.trash)
+        check_path(self.category_trash)
         user = self.snips.parent
         try:
             user.mkdir(parents=True, exist_ok=True)
@@ -224,7 +240,8 @@ class BackupManager:
                 moved, installed = [], []
                 try:
                     for live, fresh, label in ((self.snips, stage / 'snips', 'snips'),
-                                               (self.trash, stage / 'trash/snips', 'trash')):
+                                               (self.trash, stage / 'trash/snips', 'trash'),
+                                               (self.category_trash, stage / 'trash/categories', 'categories')):
                         live.parent.mkdir(parents=True, exist_ok=True)
                         old = Path(temporary) / ('old-' + label)
                         if live.exists():

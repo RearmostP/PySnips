@@ -65,6 +65,7 @@ class SettingsScreen(QWidget):
 
     def show_deleted(self):
         DeletedSnippets(self.library, self.localization, self.messages, self).exec()
+        self.library_restored.emit()
 
     def show_backup(self):
         dialog = CloudBackupDialog(self.library, self.localization, self.messages, self)

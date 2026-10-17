@@ -70,6 +70,11 @@ class SnipsScreen(QWidget):
                 button.setMinimumHeight(35)
                 button.setCursor(Qt.CursorShape.PointingHandCursor)
                 button.clicked.connect(lambda checked=False, value=category: self.select_category(value))
+                if category is not None:
+                    button.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+                    button.customContextMenuRequested.connect(
+                        lambda position, value=category, owner=button:
+                        self.show_category_menu(value, owner, position))
                 self.category_layout.addWidget(button)
                 self.category_buttons.append((category, button))
             self.category_layout.addStretch()
@@ -87,6 +92,42 @@ class SnipsScreen(QWidget):
         self.search.query.clear()
         self.search.timer.stop()
         self.refresh()
+
+    def category_menu(self, name, parent):
+        menu = QMenu(parent)
+        menu.setLayoutDirection(Qt.RightToLeft if self.localization.rtl else Qt.LeftToRight)
+        pinned = self.library.category_pinned(name)
+        menu.addAction(self.localization.text('category.unpin' if pinned else 'category.pin'),
+                       lambda: self.pin_category(name, not pinned))
+        menu.addAction(self.localization.text('category.delete'), lambda: self.delete_category(name))
+        return menu
+
+    def show_category_menu(self, name, button, position):
+        try:
+            menu = self.category_menu(name, button)
+            try:
+                menu.exec(button.mapToGlobal(position))
+            finally:
+                menu.deleteLater()
+        except (LibraryError, OSError) as error:
+            self.messages.error_key('errors.' + (str(error) if isinstance(error, LibraryError) else 'io'))
+
+    def pin_category(self, name, pinned):
+        try:
+            self.library.pin_category(name, pinned)
+            self.refresh_categories()
+        except (LibraryError, OSError) as error:
+            self.messages.error_key('errors.' + (str(error) if isinstance(error, LibraryError) else 'io'))
+
+    def delete_category(self, name):
+        if not self.messages.confirm(self.localization.text('category.confirm_delete', category=name)):
+            return
+        try:
+            self.library.delete_category(name)
+            self.refresh_categories()
+            self.messages.info(self.localization.text('category.deleted', category=name))
+        except (LibraryError, OSError) as error:
+            self.messages.error_key('errors.' + (str(error) if isinstance(error, LibraryError) else 'io'))
 
     def refresh(self):
         try:

@@ -9,7 +9,8 @@ other stages use an indeterminate indicator. Dates are shown in local time.
 ## Snapshot contract
 
 **Settings are NOT backed up in V1.** The only authoritative input is
-`DATA_DIR/user_data/snips/` and `DATA_DIR/user_data/trash/snips/`.
+`DATA_DIR/user_data/snips/`, `DATA_DIR/user_data/trash/snips/` and
+`DATA_DIR/user_data/trash/categories/`.
 `PYSNIPS_DATA_DIR` is respected. UTF-8 Markdown, metadata/UUIDs,
 categories, deleted snippets and binary media are copied without rewriting.
 
@@ -26,12 +27,22 @@ trash/snips/
   <deleted-snippet>/metadata.json
   <deleted-snippet>/snippet.md
   <deleted-snippet>/media/...
+trash/categories/
+  <deleted-category>/<snippet>/metadata.json
+  <deleted-category>/<snippet>/snippet.md
+  <deleted-category>/<snippet>/media/...
 ```
 
 `manifest.json` contains `format_version: 1`, a UTC ISO `created_at`, and
 the unchanged current `pysnips_version`. Format and application versions are
 independent. Filenames use a filesystem-safe UTC timestamp with microseconds:
 `PySnips-Backup-2026-10-10T22-30-00-123456Z.zip`.
+
+Format 1 also accepts older snapshots with string-list category metadata and no
+`trash/categories/` tree. These restore with empty category trash; normal library
+loading migrates their category metadata. New snapshots preserve pin/deletion
+state and category trash as a separate tree. Older PySnips versions do not
+understand the new category metadata and cannot restore these new snapshots.
 
 Settings, cache/search_index, system_data/version.json, updater files,
 OAuth client configuration/tokens and hidden atomic-write/staging files
@@ -59,7 +70,7 @@ Only then are existing trees renamed aside and the new trees installed.
 Search indexing runs before old copies are removed. A caught install or
 index error rolls the old library back. A failed rollback retains old data
 under `user_data/backup-recovery-*`; close PySnips and recover the
-`old-snips`/`old-trash` trees to their original paths before further edits.
+`old-snips`/`old-trash`/`old-categories` trees to their original paths before further edits.
 A successfully recovered tree may already be back at its original path.
 Cleanup errors can leave a hidden `.restore-*` directory for later removal.
 The derived search index will be rebuilt on the next search if a rollback
@@ -70,7 +81,7 @@ closed during a worker operation. The core requires its caller to exclude
 concurrent writers. Only one application instance is supported, consistent
 with the current library. External editors/other instances must stay closed.
 Rollback is exception-safe, not a power-loss/process-kill transaction across
-two directories. ZIPs are not encrypted; protect your Google account.
+the library and trash trees. ZIPs are not encrypted; protect your Google account.
 
 ## Google Drive and credentials
 

@@ -39,51 +39,169 @@ class SnippetLibrary:
     def __init__(self, data_dir=DATA_DIR):
         self.root = Path(data_dir) / SNIPS_DIR.relative_to(DATA_DIR)
         self.trash = Path(data_dir) / TRASH_DIR.relative_to(DATA_DIR)
+        self.category_trash = self.trash.parent / 'categories'
         self.index = SearchIndex(Path(data_dir) / SEARCH_INDEX_DIR.relative_to(DATA_DIR))
+        self._safe(self.root, Path(data_dir))
+        self._safe(self.trash, Path(data_dir))
         self.root.mkdir(parents=True, exist_ok=True)
         self.trash.mkdir(parents=True, exist_ok=True)
+        self._safe(self.category_trash, self.trash.parent)
+        self.category_trash.mkdir(exist_ok=True)
         self.categories_file = self.root / 'categories.json'
+        self._safe(self.categories_file, self.root)
         if not self.categories_file.exists():
-            write_json_atomic(self.categories_file, ['Python', 'PySide6'])
+            write_json_atomic(self.categories_file, [
+                {'name': name, 'pinned': False, 'deleted': False}
+                for name in ('Python', 'PySide6')])
         self.categories()
 
     @staticmethod
     def _safe(path, root):
-        if path.is_symlink() or path.is_junction() or not path.resolve().is_relative_to(root.resolve()):
+        if (any(p.is_symlink() or p.is_junction() for p in (path, *path.parents))
+                or not path.resolve().is_relative_to(root.resolve())):
             raise LibraryError('invalid_data')
 
-    def categories(self):
+    def _category_records(self, *, migrate=True):
+        """Validate everything before migrating or creating any directories."""
         try:
-            categories = read_json(self.categories_file)
-            if not isinstance(categories, list) or not all(isinstance(c, str) for c in categories):
+            self._safe(self.categories_file, self.root)
+            records = read_json(self.categories_file)
+            if not isinstance(records, list):
                 raise LibraryError('invalid_data')
-            if len({c.casefold() for c in categories}) != len(categories):
+            legacy = bool(records) and all(isinstance(c, str) for c in records)
+            if legacy:
+                records = [{'name': c, 'pinned': False, 'deleted': False} for c in records]
+            for record in records:
+                if (not isinstance(record, dict) or set(record) != {'name', 'pinned', 'deleted'}
+                        or not isinstance(record['name'], str)
+                        or type(record['pinned']) is not bool or type(record['deleted']) is not bool
+                        or record['deleted'] and record['pinned']):
+                    raise LibraryError('invalid_data')
+                safe_name(record['name'])
+            if len({c['name'].casefold() for c in records}) != len(records):
                 raise LibraryError('invalid_data')
-            for c in categories:
-                safe_name(c)
-                directory = self.root / c
-                self._safe(directory, self.root)
-                directory.mkdir(exist_ok=True)
-            return categories
-        except (ValueError, OSError) as error:
+        except (ValueError, OSError, LibraryError) as error:
             raise LibraryError('invalid_data') from error
+        if legacy and migrate:
+            write_json_atomic(self.categories_file, records)
+        return records
+
+    def categories(self):
+        records = [c for c in self._category_records() if not c['deleted']]
+        for c in records:
+            self._safe(self.root / c['name'], self.root)
+        for c in records:
+            (self.root / c['name']).mkdir(exist_ok=True)
+        return [c['name'] for c in sorted(records, key=lambda c: not c['pinned'])]
+
+    def category_pinned(self, name):
+        return self._category_record(self._category_records(), name, False)['pinned']
+
+    @staticmethod
+    def _category_record(records, name, deleted):
+        for record in records:
+            if record['name'] == name and record['deleted'] == deleted:
+                return record
+        raise LibraryError('deleted_category_missing' if deleted else 'category_missing')
+
+    def pin_category(self, name, pinned):
+        if type(pinned) is not bool:
+            raise LibraryError('invalid_data')
+        records = self._category_records()
+        self._category_record(records, name, False)['pinned'] = pinned
+        write_json_atomic(self.categories_file, records)
+
+    def deleted_categories(self):
+        return [c['name'] for c in self._category_records() if c['deleted']]
+
+    def _safe_category_tree(self, directory, root):
+        self._safe(directory, root)
+        pending = [directory]
+        while pending:
+            parent = pending.pop()
+            for path in parent.iterdir():
+                self._safe(path, root)
+                if path.is_dir():
+                    pending.append(path)
+
+    @staticmethod
+    def _category_destination(target, error_key):
+        if any(p.name.casefold() == target.name.casefold() for p in target.parent.iterdir()):
+            raise LibraryError(error_key)
+
+    def _move_category(self, name, *, deleted):
+        records = self._category_records()
+        record = self._category_record(records, name, not deleted)
+        origin, destination = (self.root, self.category_trash) if deleted else (self.category_trash, self.root)
+        source, target = origin / name, destination / name
+        self._safe(source, origin)
+        self._safe(target, destination)
+        if not source.is_dir():
+            raise LibraryError('category_missing' if deleted else 'deleted_category_missing')
+        self._category_destination(target, 'category_trash_exists' if deleted else 'category_destination_exists')
+        self._safe_category_tree(source, origin)
+        if not deleted:
+            # Validate restored metadata and UUIDs before making it searchable.
+            seen = {s.id for s in self.list()}
+            for directory in source.iterdir():
+                if directory.is_dir() and not directory.name.startswith('.'):
+                    snippet = self._read(directory, category_deleted=True)
+                    if snippet.id in seen:
+                        raise LibraryError('invalid_data')
+                    seen.add(snippet.id)
+        source.rename(target)
+        try:
+            record.update(deleted=deleted, pinned=False)
+            write_json_atomic(self.categories_file, records)
+        except OSError:
+            try:
+                target.rename(source)
+            except OSError as error:
+                raise LibraryError('category_rollback') from error
+            raise
+        self._refresh_index()
+
+    def delete_category(self, name):
+        self._move_category(name, deleted=True)
+
+    def restore_category(self, name):
+        self._move_category(name, deleted=False)
+
+    def permanently_delete_category(self, name):
+        records = self._category_records()
+        record = self._category_record(records, name, True)
+        directory = self.category_trash / name
+        self._safe(directory, self.category_trash)
+        if directory.exists():
+            self._safe_category_tree(directory, self.category_trash)
+            shutil.rmtree(directory)
+        # A failed metadata write leaves a tombstone that can be retried safely.
+        records.remove(record)
+        write_json_atomic(self.categories_file, records)
 
     def add_category(self, name):
         name = safe_name(name.strip())
-        categories = self.categories()
-        if name.casefold() in {c.casefold() for c in categories}:
+        records = self._category_records()
+        if name.casefold() in {c['name'].casefold() for c in records}:
             raise LibraryError('name_exists')
         directory = self.root / name
         self._safe(directory, self.root)
+        existed = directory.exists()
         directory.mkdir(exist_ok=True)
-        write_json_atomic(self.categories_file, categories + [name])
+        try:
+            write_json_atomic(self.categories_file, records + [
+                {'name': name, 'pinned': False, 'deleted': False}])
+        except OSError:
+            if not existed:
+                directory.rmdir()
+            raise
 
     def _valid_category(self, category):
         if category not in self.categories():
             raise LibraryError('category_missing')
 
-    def _read(self, directory, deleted=False):
-        self._safe(directory, self.trash if deleted else self.root)
+    def _read(self, directory, deleted=False, *, category_deleted=False):
+        self._safe(directory, self.category_trash if category_deleted else self.trash if deleted else self.root)
         try:
             meta = read_json(directory / 'metadata.json')
             keys = {'id', 'title', 'disk_name', 'category', 'tags', 'created_at'}

@@ -90,6 +90,67 @@ class BackupTests(unittest.TestCase):
         self.manager.restore(archive)
         self.assertEqual(self.library.deleted(), [])
 
+    def test_deleted_categories_are_backed_up_and_restored_as_whole_trees(self):
+        category = self.snippet.category
+        self.library.pin_category(category, True)
+        self.library.delete_category(category)
+        archive = self.backup()
+        with zipfile.ZipFile(archive) as source:
+            prefix = 'trash/categories/' + category + '/' + self.snippet.disk_name + '/'
+            self.assertEqual(source.read(prefix + 'media/תמונה.bin'), self.media)
+            self.assertNotIn('snips/' + category + '/', source.namelist())
+        self.library.restore_category(category)
+        self.library.update(self.snippet.id, content='changed')
+        self.manager.restore(archive)
+        self.assertEqual(self.library.deleted_categories(), [category])
+        self.assertNotIn(category, self.library.categories())
+        self.assertFalse((self.library.root / category).exists())
+        self.assertEqual(self.library.deleted(), [self.deleted])
+        self.library.restore_category(category)
+        self.assertEqual(self.library.load(self.snippet.id).content, self.snippet.content.replace('\r\n', '\n'))
+        self.assertEqual((self.library.media_base(self.snippet.id) / 'media/תמונה.bin').read_bytes(), self.media)
+
+    def test_legacy_archive_without_category_trash_still_restores(self):
+        names = self.library.categories()
+        archive = self.backup()
+        with zipfile.ZipFile(archive) as source:
+            remove = [name for name in source.namelist() if name.startswith('trash/categories/')]
+        archive = self.rewrite(archive, remove=remove,
+                               replace={'snips/categories.json': json.dumps(names)})
+        self.library.add_category('Later')
+        self.library.create('Later', 'Later', 'later')
+        self.library.delete_category('Later')
+        self.manager.restore(archive)
+        self.assertEqual(self.library.categories(), names)
+        self.assertEqual(self.library.deleted_categories(), [])
+        self.assertEqual(list(self.library.category_trash.iterdir()), [])
+        self.assertEqual(self.library.deleted(), [self.deleted])
+
+    def test_category_trash_install_failure_rolls_back_all_trees(self):
+        self.library.delete_category(self.snippet.category)
+        archive = self.backup()
+        original = self.snapshot()
+        rename = Path.rename
+        def fail(path, target):
+            if path.as_posix().endswith('/snapshot/trash/categories'):
+                raise OSError('replacement failed')
+            return rename(path, target)
+        with patch.object(Path, 'rename', fail):
+            with self.assertRaisesRegex(BackupError, 'restore'):
+                self.manager.restore(archive)
+        self.assertEqual(self.snapshot(), original)
+
+    def test_deleted_category_archive_requires_matching_state_and_safe_contents(self):
+        self.library.delete_category(self.snippet.category)
+        archive = self.backup()
+        with zipfile.ZipFile(archive) as source:
+            remove = [name for name in source.namelist() if name.startswith('trash/categories/')]
+        bad = self.rewrite(archive, remove=remove)
+        before = self.snapshot()
+        with self.assertRaisesRegex(BackupError, 'metadata'):
+            self.manager.restore(bad)
+        self.assertEqual(self.snapshot(), before)
+
     def test_unlisted_category_preserved_without_changing_categories(self):
         from core.common.file_io import write_json_atomic
         orphan = self.library.root / 'Unlisted'

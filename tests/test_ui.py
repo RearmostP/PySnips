@@ -149,6 +149,15 @@ class UiTests(unittest.TestCase):
             back.click()
             self.assertIs(self.window.stack.currentWidget(), target)
 
+    def test_closing_trash_refreshes_restored_category_navigation(self):
+        self.library.delete_category('Python')
+        self.window.snips.refresh_categories()
+        self.assertNotIn('Python', [name for name, _ in self.window.snips.category_buttons])
+        with patch('core.ui.settings.settings_screen.DeletedSnippets') as dialog:
+            dialog.return_value.exec.side_effect = lambda: self.library.restore_category('Python')
+            self.window.settings_screen.show_deleted()
+        self.assertIn('Python', [name for name, _ in self.window.snips.category_buttons])
+
     def test_settings_width_and_direction(self):
         from PySide6.QtWidgets import QWidget
         screen = self.window.settings_screen
