@@ -1,6 +1,9 @@
 language.name = English
 language.direction = ltr
 home.intro = Your local programming snippet library
+home.snips_description = Manage and organize your snippets
+home.settings_description = Customize PySnips and manage your data
+home.open_settings = Open settings
 home.open_snips = Open snippets
 nav.home = Home
 nav.snips = Snippets

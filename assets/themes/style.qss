@@ -24,8 +24,18 @@ QScrollBar::sub-page:vertical { background: none; }
 QMenu { background: $surface; border: 1px solid $divider; padding: 4px; }
 QMenu::item { padding: 6px 22px; }
 QMenu::item:selected { background: $selection; }
-QPushButton#open_snips,
-QPushButton#open_settings { font-size: 18pt; }
+/* Home: bounded action cards, with one primary destination. */
+QWidget#HomeScreen QLabel { background: transparent; }
+QWidget#HomeScreen QLabel#home_title { font-size: 30px; font-weight: 600; }
+QWidget#HomeScreen QLabel[homeMuted="true"] { color: $text_subtle; }
+QWidget#HomeScreen QLabel[homeCardTitle="true"] { font-size: 18px; font-weight: 600; }
+QWidget#HomeScreen QFrame[homeCard="true"] { background: $surface; border: 1px solid $border; border-radius: 10px; }
+QWidget#HomeScreen QFrame[homeCard="true"][primary="true"] { border-color: $accent; }
+QWidget#HomeScreen QPushButton { border-radius: 6px; padding: 7px 14px; }
+QWidget#HomeScreen QPushButton#open_snips { background: $accent; color: $accent_text; border-color: $accent; font-weight: 600; }
+QWidget#HomeScreen QPushButton#open_snips:hover { background: $accent_hover; border-color: $accent_hover; }
+QWidget#HomeScreen QPushButton#open_snips:pressed { background: $accent_pressed; border-color: $accent_pressed; }
+QWidget#HomeScreen QPushButton:focus { border-color: $border_focus; }
 QLabel#lbl_app_name { font-size: 18px; font-weight: bold; }
 QDialog#CloudBackupDialog QLabel#backup_heading { font-size: 20px; font-weight: 600; background: transparent; }
 QLabel#category_title { font-size: 18px; font-weight: bold; }

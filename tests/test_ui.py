@@ -45,9 +45,10 @@ class UiTests(unittest.TestCase):
         self.assertIs(self.window.stack.currentWidget(), self.window.home)
         self.window.home.ui.findChild(QPushButton, 'open_snips').click()
         self.assertIs(self.window.stack.currentWidget(), self.window.snips)
-        self.window.show_settings()
+        self.window.show_home()
+        self.window.home.ui.findChild(QPushButton, 'open_settings').click()
         self.assertIs(self.window.stack.currentWidget(), self.window.settings_screen)
-        self.assertEqual(self.window.home.ui.findChild(QPushButton, 'open_snips').text(), self.localization.text('nav.snips'))
+        self.assertEqual(self.window.home.ui.findChild(QPushButton, 'open_snips').text(), self.localization.text('home.open_snips'))
         other = MainWindow(self.library, Settings('he', 'dark', True), self.localization, self.themes)
         self.assertIs(other.stack.currentWidget(), other.snips)
         other.close()
@@ -104,7 +105,7 @@ class UiTests(unittest.TestCase):
             self.window.apply_settings(Settings('en', 'light', True))
             save.assert_called_once()
         self.assertEqual(self.window.layoutDirection(), Qt.LayoutDirection.LeftToRight)
-        self.assertEqual(self.window.home.ui.findChild(QPushButton, 'open_snips').text(), self.localization.text('nav.snips'))
+        self.assertEqual(self.window.home.ui.findChild(QPushButton, 'open_snips').text(), self.localization.text('home.open_snips'))
         self.assertEqual(self.themes.current, 'light')
 
     def test_settings_controls_save_immediately(self):

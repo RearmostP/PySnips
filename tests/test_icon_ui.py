@@ -66,7 +66,7 @@ class IconUiTests(unittest.TestCase):
         self.assert_button_icons(self.window.settings_screen.ui,
                                  ('back', 'deleted', 'cloud_manage', 'about', 'check_updates'))
         self.assertEqual(self.window.home.ui.findChild(QPushButton, 'open_snips').text(),
-                         self.localization.text('nav.snips'))
+                         self.localization.text('home.open_snips'))
         menu_button = self.window.snips.ui.findChild(QPushButton, 'menu')
         self.assertEqual(menu_button.text(), '')
         self.assertEqual(menu_button.toolTip(), self.localization.text('snips.menu'))
