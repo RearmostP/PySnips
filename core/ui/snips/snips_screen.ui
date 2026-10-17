@@ -139,7 +139,7 @@
           </size>
          </property>
          <property name="text">
-          <string>[+] New category</string>
+          <string>New category</string>
          </property>
          <property name="sidebarNav" stdset="0">
           <bool>true</bool>
@@ -283,7 +283,7 @@
             </size>
            </property>
            <property name="text">
-            <string>[+] New snippet</string>
+            <string>New snippet</string>
            </property>
            <property name="i18nKey" stdset="0">
             <string>snips.create</string>

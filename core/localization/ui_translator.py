@@ -1,5 +1,5 @@
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QWidget, QLineEdit, QPlainTextEdit, QTextEdit
+from PySide6.QtWidgets import QWidget, QLineEdit, QPlainTextEdit, QTextEdit, QAbstractButton
 
 
 def translate_ui(root, localization):
@@ -18,6 +18,13 @@ def translate_ui(root, localization):
                     fallback = getattr(widget, getter)()
                     widget.setProperty(fallback_property, fallback)
                 getattr(widget, setter)(localization.resolve(key, fallback))
+        if isinstance(widget, QAbstractButton):
+            if not widget.icon().isNull():
+                # Some containers intentionally keep an LTR layout; their
+                # icon/text buttons still follow the interface language.
+                widget.setLayoutDirection(root.layoutDirection())
+            if not widget.text() and widget.toolTip():
+                widget.setAccessibleName(widget.toolTip())
         # Code stays LTR. This explicit semantic property is set in Designer.
         if widget.property('codeEditor'):
             widget.setLayoutDirection(Qt.LayoutDirection.LeftToRight)

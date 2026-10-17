@@ -4,6 +4,7 @@ from PySide6.QtUiTools import QUiLoader
 from PySide6.QtWidgets import QDialog, QVBoxLayout, QPushButton, QListWidget, QListWidgetItem
 from core.localization.ui_translator import translate_ui
 from core.snips.models import LibraryError
+from core.ui.icons import set_button_icon
 
 
 class DeletedSnippets(QDialog):
@@ -16,6 +17,10 @@ class DeletedSnippets(QDialog):
         QVBoxLayout(self).addWidget(self.ui)
         self.items = self.ui.findChild(QListWidget, 'snippets')
         self.category_items = self.ui.findChild(QListWidget, 'categories')
+        for name, glyph in (('restore', 'actions/restore'), ('restore_category', 'actions/restore'),
+                            ('permanent', 'actions/delete'), ('permanent_category', 'actions/delete'),
+                            ('close', 'actions/close')):
+            set_button_icon(self.ui.findChild(QPushButton, name), glyph)
         self.ui.findChild(QPushButton, 'restore_category').clicked.connect(self.restore_category)
         self.ui.findChild(QPushButton, 'permanent_category').clicked.connect(self.permanent_category)
         self.ui.findChild(QPushButton, 'restore').clicked.connect(self.restore)

@@ -6,6 +6,7 @@ from PySide6.QtWidgets import QDialog, QVBoxLayout, QLabel, QPushButton, QGridLa
 from core.localization.ui_translator import translate_ui
 from core.snips.models import LibraryError
 from core.ui.snips.dialogs.create_snippet import CreateSnippet
+from core.ui.icons import set_button_icon
 
 
 class SnippetDetails(QDialog):
@@ -23,6 +24,8 @@ class SnippetDetails(QDialog):
             label.setTextFormat(Qt.TextFormat.PlainText)
         self.ui.findChild(QPushButton, 'edit').clicked.connect(self.edit)
         self.ui.findChild(QPushButton, 'close').clicked.connect(self.accept)
+        set_button_icon(self.ui.findChild(QPushButton, 'edit'), 'actions/edit')
+        set_button_icon(self.ui.findChild(QPushButton, 'close'), 'actions/close')
         translate_ui(self, localization)
         self.refresh()
 

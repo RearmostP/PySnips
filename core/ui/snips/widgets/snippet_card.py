@@ -5,6 +5,7 @@ from PySide6.QtUiTools import QUiLoader
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QGridLayout, QLabel, QPushButton, QTextBrowser, QSizePolicy
 from core.localization.ui_translator import translate_ui
 from core.markdown.renderer import render_markdown
+from core.ui.icons import set_button_icon
 
 
 MINIMUM_CARD_HEIGHT = 170
@@ -48,6 +49,8 @@ class SnippetCard(QWidget):
         self.preview.customContextMenuRequested.connect(self.show_context_menu)
         for name, signal in [('details', self.details_requested),
                              ('edit', self.edit_requested), ('delete', self.delete_requested)]:
+            set_button_icon(self.ui.findChild(QPushButton, name),
+                            'content/info' if name == 'details' else 'actions/' + name)
             self.ui.findChild(QPushButton, name).clicked.connect(
                 lambda checked=False, event=signal: event.emit(snippet.id))
         translate_ui(self, localization)
@@ -68,6 +71,9 @@ class SnippetCard(QWidget):
         layout = self.ui.layout()
         margins = layout.contentsMargins()
         header_height = self.header.sizeHint().height()
+        # Keep the icon/text action row inside its parent when the preview
+        # competes for space in a short card.
+        self.header.setMinimumHeight(header_height)
         tags_height = 0 if self.tags.isHidden() else self.tags.sizeHint().height() + layout.spacing()
         preview_chrome = self.preview.frameWidth() * 2 + CONTENT_HEIGHT_PADDING
         height = (margins.top() + margins.bottom() + header_height + tags_height

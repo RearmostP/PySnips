@@ -1,11 +1,10 @@
 from pathlib import Path
-from PySide6.QtCore import Signal, Qt, QSize
-from PySide6.QtGui import QIcon
+from PySide6.QtCore import Signal, Qt
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QGridLayout, QPushButton,
                                QLabel, QInputDialog, QMenu)
 from core.snips.models import LibraryError
-from core.common.paths import ASSETS_DIR
+from core.ui.icons import icon, set_button_icon, NAV_ICON_SIZE
 from core.localization.ui_translator import translate_ui
 from core.ui.snips.widgets.snippet_search import SnippetSearch
 from core.ui.snips.widgets.snippet_card import SnippetCard
@@ -40,9 +39,10 @@ class SnipsScreen(QWidget):
         self.menu = QMenu(self)
         menu_button = self.ui.findChild(QPushButton, 'menu')
         menu_button.setText('')
-        menu_button.setIcon(QIcon(str(ASSETS_DIR / 'icons' / 'hamburger.svg')))
-        menu_button.setIconSize(QSize(20, 20))
+        set_button_icon(menu_button, 'navigation/menu', size=NAV_ICON_SIZE)
         menu_button.setMenu(self.menu)
+        set_button_icon(self.ui.findChild(QPushButton, 'create'), 'actions/add')
+        set_button_icon(self.ui.findChild(QPushButton, 'add_category'), 'actions/add')
         self.ui.findChild(QPushButton, 'create').clicked.connect(self.create)
         self.ui.findChild(QPushButton, 'add_category').clicked.connect(self.add_category)
         self.search.changed.connect(self.refresh)
@@ -67,6 +67,9 @@ class SnipsScreen(QWidget):
                          if category else self.localization.text('snips.recent'))
                 button = QPushButton(title, self.ui)
                 button.setProperty('categoryNav', True)
+                glyph = ('actions/pin' if category is not None and self.library.category_pinned(category)
+                         else 'content/folder' if category is not None else 'content/snippet')
+                set_button_icon(button, glyph)
                 button.setMinimumHeight(35)
                 button.setCursor(Qt.CursorShape.PointingHandCursor)
                 button.clicked.connect(lambda checked=False, value=category: self.select_category(value))
@@ -79,9 +82,9 @@ class SnipsScreen(QWidget):
                 self.category_buttons.append((category, button))
             self.category_layout.addStretch()
             self.menu.clear()
-            self.menu.addAction(self.localization.text('nav.home'), self.open_home.emit)
-            self.menu.addAction(self.localization.text('nav.settings'), self.open_settings.emit)
-            self.menu.addAction(self.localization.text('settings.about'),
+            self.menu.addAction(icon('navigation/home', self.menu), self.localization.text('nav.home'), self.open_home.emit)
+            self.menu.addAction(icon('navigation/settings', self.menu), self.localization.text('nav.settings'), self.open_settings.emit)
+            self.menu.addAction(icon('content/info', self.menu), self.localization.text('settings.about'),
                                 lambda: AboutDialog(self.localization, self).exec())
             self.refresh()
         except (LibraryError, OSError) as error:
@@ -97,9 +100,11 @@ class SnipsScreen(QWidget):
         menu = QMenu(parent)
         menu.setLayoutDirection(Qt.RightToLeft if self.localization.rtl else Qt.LeftToRight)
         pinned = self.library.category_pinned(name)
-        menu.addAction(self.localization.text('category.unpin' if pinned else 'category.pin'),
+        menu.addAction(icon('actions/unpin' if pinned else 'actions/pin', menu),
+                       self.localization.text('category.unpin' if pinned else 'category.pin'),
                        lambda: self.pin_category(name, not pinned))
-        menu.addAction(self.localization.text('category.delete'), lambda: self.delete_category(name))
+        menu.addAction(icon('actions/delete', menu), self.localization.text('category.delete'),
+                       lambda: self.delete_category(name))
         return menu
 
     def show_category_menu(self, name, button, position):
@@ -160,6 +165,7 @@ class SnipsScreen(QWidget):
                     button.style().unpolish(button)
                     button.style().polish(button)
             translate_ui(self, self.localization)
+            self.search.query.setLayoutDirection(Qt.RightToLeft if self.localization.rtl else Qt.LeftToRight)
             title = (self.localization.text('snips.search_title') if query else
                      self.localization.text('snips.folder', category=self.current_category)
                      if self.current_category else self.localization.text('snips.recent'))

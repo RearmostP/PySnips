@@ -3,11 +3,11 @@ from platform import python_version
 
 from PySide6 import __version__ as pyside_version
 from PySide6.QtCore import QUrl, QSize
-from PySide6.QtGui import QDesktopServices, QIcon
+from PySide6.QtGui import QDesktopServices
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtWidgets import QDialog, QVBoxLayout, QLabel, QPushButton
 
-from core.common.paths import ASSETS_DIR
+from core.ui.icons import icon, set_button_icon
 from core.localization.ui_translator import translate_ui
 from core.common.version import read_version, VersionError
 
@@ -30,9 +30,9 @@ class AboutDialog(QDialog):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(self.ui)
-        icon = QIcon(str(ASSETS_DIR / 'icons' / 'pysnips-multisize.ico'))
-        self.setWindowIcon(icon)
-        self.ui.findChild(QLabel, 'app_icon').setPixmap(icon.pixmap(QSize(64, 64)))
+        app_icon = icon('branding/pysnips-multisize.ico')
+        self.setWindowIcon(app_icon)
+        self.ui.findChild(QLabel, 'app_icon').setPixmap(app_icon.pixmap(QSize(64, 64)))
         translate_ui(self, localization)
         try:
             app_version = read_version()
@@ -50,4 +50,5 @@ class AboutDialog(QDialog):
         self.ui.findChild(QPushButton, 'forum').clicked.connect(
             lambda: QDesktopServices.openUrl(QUrl(FORUM_URL)))
         self.ui.findChild(QPushButton, 'close').clicked.connect(self.accept)
+        set_button_icon(self.ui.findChild(QPushButton, 'close'), 'actions/close')
         self.resize(374, 230)

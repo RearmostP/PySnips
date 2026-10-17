@@ -1,6 +1,6 @@
 """Explicit startup. No boot framework or developer diagnostics in runtime."""
 import sys
-from PySide6.QtGui import QFontDatabase, QIcon
+from PySide6.QtGui import QFontDatabase
 from PySide6.QtWidgets import QApplication
 from core.common.paths import ASSETS_DIR
 from core.common.user_messages import UserMessageManager
@@ -10,6 +10,7 @@ from core.snips.library import SnippetLibrary
 from core.snips.models import LibraryError
 from core.theme.theme_manager import ThemeManager
 from core.ui.main_window import MainWindow
+from core.ui.icons import icon
 
 
 def load_fonts():
@@ -21,7 +22,7 @@ def load_fonts():
 def main():
     app = QApplication(sys.argv)
     app.setApplicationName('PySnips')
-    app.setWindowIcon(QIcon(str(ASSETS_DIR / 'icons' / 'pysnips-multisize.ico')))
+    app.setWindowIcon(icon('branding/pysnips-multisize.ico'))
     load_fonts()
     localization = Localization()
     messages = UserMessageManager(None, localization)

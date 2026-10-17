@@ -9,6 +9,7 @@ from PySide6.QtWidgets import (QDialog, QLabel, QPushButton, QVBoxLayout,
 
 from core.backup.backup_manager import BackupManager, BackupError
 from core.backup.google_drive import GoogleDrive
+from core.ui.icons import set_button_icon
 
 
 class BackupWorker(QThread):
@@ -76,6 +77,11 @@ class CloudBackupDialog(QDialog):
         layout.addWidget(self.progress)
         self.disconnect_button = QPushButton(self.text('disconnect'))
         layout.addWidget(self.disconnect_button)
+        for button, glyph in ((self.connect_button, 'cloud/connect'),
+                              (self.disconnect_button, 'cloud/disconnect'),
+                              (self.backup_button, 'cloud/upload'),
+                              (self.restore_button, 'cloud/download')):
+            set_button_icon(button, glyph)
         self.connect_button.clicked.connect(lambda: self.start('connect', lambda w: self._connect()))
         self.disconnect_button.clicked.connect(lambda: self.start('disconnect', lambda w: self.provider.disconnect()))
         self.backup_button.clicked.connect(lambda: self.start('backup', self._backup))

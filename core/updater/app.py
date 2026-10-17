@@ -76,7 +76,7 @@ class UpdaterWindow(QWidget):
         self.checksum = None
         self.exit_code = 0
         self.setWindowTitle(self.text('updater.title'))
-        self.setWindowIcon(QIcon(str(ASSETS_DIR / 'icons/pysnips-multisize.ico')))
+        self.setWindowIcon(QIcon(str(ASSETS_DIR / 'icons/branding/pysnips-multisize.ico')))
         self.setLayoutDirection(Qt.RightToLeft if self.localization.rtl else Qt.LeftToRight)
         self.resize(520, 300)
         layout = QVBoxLayout(self)

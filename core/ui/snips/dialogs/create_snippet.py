@@ -6,6 +6,7 @@ from PySide6.QtWidgets import QDialog, QVBoxLayout, QPushButton, QLineEdit, QCom
 from core.localization.ui_translator import translate_ui
 from core.markdown.renderer import render_markdown
 from core.snips.models import LibraryError
+from core.ui.icons import set_button_icon
 
 
 class CreateSnippet(QDialog):
@@ -33,6 +34,10 @@ class CreateSnippet(QDialog):
         self.content_stack.setCurrentIndex(0)
         self.disk_name.hide()
         self.category.addItems(library.categories())
+        for name in ('bold', 'heading', 'code_block', 'list', 'preview', 'media', 'advanced'):
+            set_button_icon(self.ui.findChild(QPushButton, name), 'editor/' + name)
+        set_button_icon(self.ui.findChild(QPushButton, 'save'), 'actions/save')
+        set_button_icon(self.ui.findChild(QPushButton, 'cancel'), 'actions/close')
         if snippet:
             self.title.setText(snippet.title)
             self.tags.setText(', '.join(snippet.tags))

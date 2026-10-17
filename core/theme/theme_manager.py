@@ -40,13 +40,16 @@ class ThemeManager:
             missing = set(template.get_identifiers()) - colors.keys()
             if missing:
                 raise ValueError('Missing colors: ' + ', '.join(sorted(missing)))
-            return template.substitute(colors)
+            return template.substitute(colors), colors
         except (OSError, ValueError) as error:
             raise ValueError(f'Cannot load theme {name!r} ({palette_path}; {stylesheet_path}): {error}') from error
 
     def apply(self, name):
         selected = name if name in self.available_themes() else 'dark'
         # Validate before applying: a broken palette leaves the active theme intact.
-        stylesheet = self._load(selected)
+        stylesheet, colors = self._load(selected)
         self.app.setStyleSheet(stylesheet)
+        # QSS does not update QApplication.palette(); ownerless SVG icons use
+        # these already-validated colors as their application-wide fallback.
+        self.app.setProperty('themeColors', colors)
         self.current = selected

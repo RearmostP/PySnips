@@ -33,7 +33,7 @@ exe = EXE(
     exclude_binaries=True,
     name='PySnips',
     console=False,
-    icon=str(root / 'assets/icons/pysnips-multisize.ico'),
+    icon=str(root / 'assets/icons/branding/pysnips-multisize.ico'),
     upx=False,
 )
 coll = COLLECT(exe, a.binaries, a.datas, name='PySnips', upx=False)

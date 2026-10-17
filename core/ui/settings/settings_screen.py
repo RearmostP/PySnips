@@ -9,6 +9,7 @@ from core.ui.dialogs.about_dialog import AboutDialog
 from core.snips.models import LibraryError
 from core.common.version import read_version, VersionError
 from core.ui.dialogs.cloud_backup import CloudBackupDialog
+from core.ui.icons import set_button_icon
 
 
 class SettingsScreen(QWidget):
@@ -27,6 +28,10 @@ class SettingsScreen(QWidget):
         self.language = self.ui.findChild(QComboBox, 'language')
         self.theme = self.ui.findChild(QComboBox, 'theme')
         self.start = self.ui.findChild(QCheckBox, 'start_on_snips')
+        for name, glyph in (('deleted', 'content/trash'), ('cloud_manage', 'cloud/cloud'),
+                            ('about', 'content/info'), ('check_updates', 'cloud/download')):
+            set_button_icon(self.ui.findChild(QPushButton, name), glyph)
+        set_button_icon(self.ui.findChild(QPushButton, 'back'), 'navigation/arrow_back', mirror_rtl=True)
         for code in localization.available_languages():
             self.language.addItem(localization.language_name(code), code)
         for name in themes.available_themes():

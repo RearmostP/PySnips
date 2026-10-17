@@ -69,7 +69,7 @@
             <item>
              <widget class="QPushButton" name="back">
               <property name="text">
-               <string>← Back</string>
+               <string>Back</string>
               </property>
               <property name="i18nKey" stdset="0">
                <string>common.back</string>

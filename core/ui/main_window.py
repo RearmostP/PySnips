@@ -1,8 +1,7 @@
 from PySide6.QtWidgets import QApplication, QMainWindow, QStackedWidget
 from PySide6.QtCore import QTimer
 from core.common.update_process import UpdaterProcess
-from PySide6.QtGui import QIcon
-from core.common.paths import ASSETS_DIR
+from core.ui.icons import icon
 from core.common.user_messages import UserMessageManager
 from core.localization.ui_translator import translate_ui
 from core.settings.settings import save_settings
@@ -17,7 +16,7 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.library, self.settings, self.localization, self.themes = library, settings, localization, themes
         self.setWindowTitle('PySnips')
-        self.setWindowIcon(QIcon(str(ASSETS_DIR / 'icons' / 'pysnips-multisize.ico')))
+        self.setWindowIcon(icon('branding/pysnips-multisize.ico'))
         self.resize(1024, 768)
         self.messages = UserMessageManager(self, localization)
         self.updater_process = UpdaterProcess(localization, self.messages, self)
