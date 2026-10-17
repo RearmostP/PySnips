@@ -55,12 +55,11 @@ $env:PYSNIPS_DATA_DIR = Join-Path $env:TEMP 'PySnips-build-smoke'
 ```
 
 אם `ISCC.exe` נמצא ב־PATH, אפשר להשתמש ב־`ISCC.exe installer.iss`.
-התוצאה היא `dist/installer/PySnips-0.2.0-Setup.exe`, המכילה את כל
+התוצאה היא `dist/installer/PySnips-0.3.3-Setup.exe`, המכילה את כל
 `dist/PySnips/`, כולל `_internal/`, וגם את `dist/PySnipsUpdater.exe`.
 ההתקנה כוללת גם `assets/` לצד קובצי ההפעלה; משאבי חבילת PyInstaller
 נשארים ב־`_internal/assets` כדי לשמר את פתרון הנתיבים הקיים.
-הפלט כבר מוחרג מ־Git. זהו build מקומי בלבד: אין להחליף את ה־Release
-או tag שפורסמו ל־0.2.0 באמצעות build פיתוח זה.
+הפלט כבר מוחרג מ־Git. בנייה מקומית אינה מפרסמת Release או tag ב־GitHub.
 
 לפני בניית גרסה חדשה, יש לעדכן את `AppVersion` היחיד ב־`installer.iss`
 בהתאם ל־`data/system_data/version.json`, ולבנות מחדש את חבילת PyInstaller.
