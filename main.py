@@ -2,14 +2,15 @@
 import sys
 from PySide6.QtGui import QFontDatabase
 from PySide6.QtWidgets import QApplication
-from core.common.paths import ASSETS_DIR
-from core.common.user_messages import UserMessageManager
-from core.localization.localization import Localization
+
+from core.common.paths import ASSETS_DIR # App assets tool
+from core.common.user_messages import UserMessageManager # App tool
+from core.localization.localization import Localization # App tool
 from core.settings.settings import Settings, load_settings
-from core.snips.library import SnippetLibrary
+from core.snips.library import SnippetLibrary # App library - Tools for snips functions
 from core.snips.models import LibraryError
-from core.theme.theme_manager import ThemeManager
-from core.ui.main_window import MainWindow
+from core.theme.theme_manager import ThemeManager # Theme app tool - The absolute manager
+from core.ui.main_window import MainWindow # App screenses manager
 from core.ui.icons import icon
 
 

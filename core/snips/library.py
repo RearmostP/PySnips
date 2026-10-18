@@ -16,7 +16,8 @@ from core.snips.search import SearchIndex
 
 RESERVED = {'CON', 'PRN', 'AUX', 'NUL', *(f'COM{i}' for i in range(1, 10)), *(f'LPT{i}' for i in range(1, 10))}
 
-
+# פונקציות עזר מחוץ למחלקה בשביל המחלקה
+# בודקת ששם מתאים לשימוש בשם קובץ או תיקייה: בלי תווים אסורים, שמות שמורים וכדומה. מחזירה אותו או מעלה שגיאה.
 def safe_name(value):
     if (not value or value.startswith('.') or value[-1:] in {' ', '.'}
             or re.search(r'[<>:"/\\|?*\x00-\x1f]', value)
@@ -24,12 +25,12 @@ def safe_name(value):
         raise LibraryError('invalid_name')
     return value
 
-
+#יוצרת מהכותרת שם לתיקיית השליף: מחליפה תווים מסוימים בקו תחתון, מקצרת וממירה לאותיות קטנות.
 def make_disk_name(title):
     value = re.sub(r'[^\w-]+', '_', title.strip()).strip('_')[:70].lower() or 'snippet'
     return 'snippet_' + value if value.upper() in RESERVED else value
 
-
+# מקבלת תגיות כרשימה או כמחרוזת מופרדת בפסיקים, מסירה רווחים, תגיות ריקות וכפילויות.
 def normalize_tags(tags):
     values = tags.split(',') if isinstance(tags, str) else tags
     return list(dict.fromkeys(tag.strip() for tag in values if tag.strip()))
@@ -49,12 +50,21 @@ class SnippetLibrary:
         self.category_trash.mkdir(exist_ok=True)
         self.categories_file = self.root / 'categories.json'
         self._safe(self.categories_file, self.root)
-        if not self.categories_file.exists():
-            write_json_atomic(self.categories_file, [
-                {'name': name, 'pinned': False, 'deleted': False}
-                for name in ('Python', 'PySide6')])
-        self.categories()
 
+#קוד ישן - לזיכרון
+# תפקידו היה ליצור קטגוריות ראשונים בהפעלה ראשונה של האפליקצייה
+#
+#        if not self.categories_file.exists():
+#            write_json_atomic(self.categories_file, [
+#                {'name': name, 'pinned': False, 'deleted': False}
+#                for name in ('Python', 'PySide6', kivy)])
+
+        # הקוד אחראי ליצור את הקובץ הקטגוריות במקרה שהוא לא קיים - בהפעלה ראשונה של האפליקצייה
+        if not self.categories_file.exists():
+            write_json_atomic(self.categories_file, [])
+
+        self.categories()
+#  --------------  קוד נכתב עם AI ולא עבר מיפוי של יד אדם  ----------------
     @staticmethod
     def _safe(path, root):
         if (any(p.is_symlink() or p.is_junction() for p in (path, *path.parents))

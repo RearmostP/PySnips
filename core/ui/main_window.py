@@ -70,7 +70,7 @@ class MainWindow(QMainWindow):
 
     def apply_settings(self, settings):
         try:
-            save_settings(settings)
+            save_settings(settings, self.localization) # המשתנה self.localization מועבר ל-save_settings כדי לשהפונקציה תוכל לדעת שהפה נטענה לפני שתשמר להגדרות.
             self.themes.apply(settings.theme)
             self.localization.set_language(settings.language)
             self.settings = settings

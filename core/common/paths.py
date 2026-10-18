@@ -2,6 +2,10 @@ import os
 import sys
 from pathlib import Path
 
+"""
+השורה הזאת בודקת אם sys.frozen קיים עם True, כלומר אם האפליקציה רצה כקובץ EXE או לא
+את "sys.frozen" אפשר להגדיר רק על ידי PyInstaller או Py2Exe, ולכן זהו אינדיקטור טוב לכך שהאפליקציה רצה כקובץ EXE
+"""
 FROZEN = getattr(sys, 'frozen', False)
 PROJECT_ROOT = Path(sys.executable).resolve().parent if FROZEN else Path(__file__).resolve().parents[2]
 RESOURCE_ROOT = Path(getattr(sys, '_MEIPASS', PROJECT_ROOT)) if FROZEN else PROJECT_ROOT
@@ -10,9 +14,22 @@ ASSETS_DIR = RESOURCE_ROOT / 'assets'
 # DATA_DIR הוא שורש הנתונים הניתנים לכתיבה, בנפרד מנתוני ההתקנה.
 if os.environ.get('PYSNIPS_DATA_DIR'):
     DATA_DIR = Path(os.environ['PYSNIPS_DATA_DIR']).resolve()
+
 elif FROZEN and sys.platform == 'win32':
     local_app_data = Path(os.environ.get('LOCALAPPDATA') or Path.home() / 'AppData' / 'Local')
     DATA_DIR = (local_app_data / 'PySnips').resolve()
+
+elif FROZEN and sys.platform == 'linux':
+    data_home = Path(os.environ.get('XDG_DATA_HOME') or Path.home() / '.local' / 'share')
+
+    if not data_home.is_absolute():
+        data_home = Path.home() / '.local' / 'share'
+
+    DATA_DIR = (data_home / 'PySnips').resolve()
+
+elif FROZEN and sys.platform == 'darwin':
+    DATA_DIR = (Path.home() / 'Library' / 'Application Support' / 'PySnips').resolve()
+
 else:
     DATA_DIR = PROJECT_ROOT / 'data'
 

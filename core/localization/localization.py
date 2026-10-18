@@ -1,6 +1,7 @@
 from core.common.paths import LANGUAGES_DIR
 
 
+# מקבל קובץ שפה, ומחזיר מילון ברור של מפתח והמילה
 def parse_language(text):
     result = {}
     for line in text.splitlines():
@@ -16,30 +17,39 @@ def parse_language(text):
 class Localization:
     def __init__(self, language='en', directory=LANGUAGES_DIR):
         self.directory = directory
-        self.english = self._load('en')
+        self.english = self.load('en')
         self.set_language(language)
 
-    def _load(self, language):
+        # היצירה של המשתנים האלא ב __init__ לא חובה, אח ככה יותר ברור
+        self.language = language # זו נוצר נטו בשביל ההזהרה המציקה של PyCharm על כך שלא הוכרז המשתנה ב init ...
+        self.strings = {} # זה הטקסט של השפה
+
+    def load(self, language):
         path = self.directory / (language + '.lang')
-        return parse_language(path.read_text(encoding='utf-8-sig')) if path.is_file() else {}
+        if not path.is_file():
+            raise FileNotFoundError(f'Language file not found: {path}')
+        return parse_language(path.read_text(encoding='utf-8-sig'))
 
     def available_languages(self):
-        return sorted(p.stem for p in self.directory.glob('*.lang'))
+        languages = []
+        for p in self.directory.glob('*.lang'):
+            languages.append(p.stem)
+        return sorted(languages)
 
     def language_name(self, language):
-        return self._load(language).get('language.name', language)
+        return self.load(language).get('language.name', language)
 
     def set_language(self, language):
         self.language = language if language in self.available_languages() else 'en'
-        self.strings = self._load(self.language)
+        self.strings = self.load(self.language)
 
     @property
     def rtl(self):
         return self.strings.get('language.direction', 'ltr').lower() == 'rtl'
 
-    def resolve(self, key, fallback=None):
+# כאן יש שתי פונקצייות שמציעות פעולות שונות במקראה שחסר בקובץ הלוקליזצייה מפתח כל שהוא או את הערך שלו
+    def resolve(self, key, fallback=None): #מחזיר מפתח ריק
         return self.strings.get(key, fallback)
 
-    def text(self, key, **values):
-        # Python-created text also has an English fallback in the external file.
+    def text(self, key, **values): # מחזיר את המילה באנגלית של המפתח
         return self.strings.get(key, self.english.get(key, key)).format(**values)
