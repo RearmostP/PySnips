@@ -6,6 +6,7 @@ from string import Template
 from core.common.paths import THEMES_DIR
 
 
+#פונקציית עזר מחוץ למחלקה, שמזהה מפתחות צבע כפולים בזמן קריאת JSON.
 def _unique_colors(pairs):
     colors = {}
     for key, value in pairs:
@@ -17,13 +18,19 @@ def _unique_colors(pairs):
 
 class ThemeManager:
     def __init__(self, app, directory=THEMES_DIR):
-        self.app = app
+        self.app = app # זה אוביקט מסוג QApplication בשביל שאחרכך דרכו יהיה אפשר לשנות את העיצוב
         self.directory = Path(directory)
         self.current = 'dark'
 
     def available_themes(self):
-        return sorted(p.parent.name for p in self.directory.glob('*/colors.json') if p.is_file())
+        themes = []
+        for path in self.directory.glob('*/colors.json'):
+            if path.is_file():
+                theme_name = path.parent.name
+                themes.append(theme_name)
+        return sorted(themes)
 
+#  --------------  קוד נכתב עם AI ולא עבר מיפוי של יד אדם  ----------------
     def _load(self, name):
         palette_path = self.directory / name / 'colors.json'
         stylesheet_path = self.directory / 'style.qss'

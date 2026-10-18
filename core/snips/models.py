@@ -2,8 +2,8 @@ from dataclasses import dataclass
 
 
 class LibraryError(Exception):
-    """Expected data problem; its key is translated by the UI."""
-
+    """שגיאה מסוג של PySnips"""
+    pass
 
 @dataclass(frozen=True)
 class Snippet:
